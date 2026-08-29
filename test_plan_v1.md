@@ -75,6 +75,14 @@ Testing for V1 was conducted using a **Manual Functional Testing** and **Integra
 | IT-02 | Frontend Dashboard queries `http://localhost:8000/api/v1/dashboard/stats`. | Returns aggregate scan counts from the PostgreSQL database. | Passed |
 | IT-03 | Worker node connects to Redis broker. | Celery worker reports "Ready" and connects to `redis://redis:6379`. | Passed |
 
+### 8.3 Negative Testing
+| Test ID | Scenario | Expected Result | Status |
+|---|---|---|---|
+| NT-01 | Upload a non-image file (e.g., `.txt`) to the Steganography Analyzer. | Frontend rejects the file type before submission or Backend returns HTTP 400 Bad Request. | Passed |
+| NT-02 | Submit an empty form to the Malware Threat Scanner. | Frontend disables the submit button; Backend returns HTTP 422 Validation Error if bypassed. | Passed |
+| NT-03 | Stop the PostgreSQL database container and attempt to load the dashboard. | API gracefully handles the connection failure and returns a structured error rather than crashing the Python process. | Passed |
+| NT-04 | Upload an excessively large file (>50MB) to the scanner endpoints. | API enforces a strict file size limit and returns HTTP 413 Payload Too Large. | Passed |
+
 ---
 
 ## 9. Defect Log & Post-Mortem 
