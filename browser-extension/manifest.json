@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "SentroniX Active Defense",
+  "version": "1.0",
+  "description": "Intercepts and scans downloads for malware and steganography using the local SentroniX platform.",
+  "permissions": [
+    "downloads",
+    "notifications",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://localhost:8000/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "SentroniX"
+  }
+}
