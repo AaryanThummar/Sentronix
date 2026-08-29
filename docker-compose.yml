@@ -1,0 +1,62 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://sentronix:sentronix_pass@db:5432/sentronix
+      - REDIS_URL=redis://redis:6379/0
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./backend:/app
+
+  worker:
+    build:
+      context: ./backend
+    command: celery -A app.workers.celery_app worker --loglevel=info
+    environment:
+      - DATABASE_URL=postgresql://sentronix:sentronix_pass@db:5432/sentronix
+      - REDIS_URL=redis://redis:6379/0
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./backend:/app
+      - /var/run/docker.sock:/var/run/docker.sock  # Allow celery to run docker containers
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=sentronix
+      - POSTGRES_PASSWORD=sentronix_pass
+      - POSTGRES_DB=sentronix
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host 0.0.0.0
+
+volumes:
+  postgres_data:

@@ -1,0 +1,19 @@
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 1;
+}
+
+.bento-card {
+  background-color: theme('colors.surface');
+  border-radius: 12px;
+  border: 0.5px solid theme('colors.outline-variant');
+  padding: theme('spacing.card-padding');
+}
