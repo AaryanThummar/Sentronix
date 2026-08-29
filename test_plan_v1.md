@@ -88,7 +88,7 @@ During the execution of this test plan, several critical environmental and integ
 **Description:** Upon attempting to orchestrate the services via `docker-compose up`, the terminal threw a fatal connection error indicating the daemon socket was unavailable (`failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine`).
 
 **Evidence:**
-![Docker Daemon Error](file:///C:/Users/Keval%20Doshi/.gemini/antigravity-ide/brain/197f306c-586a-453b-abb4-52f08a96303b/.user_uploaded/media_1786727913113.png)
+![Docker Daemon Error](docs/images/media_1786727913113.png)
 
 **Root Cause:** The Docker Desktop background process was terminated or had not fully initialized its Linux subsystem on the Windows host.
 **Resolution:** Manually booted Docker Desktop, verified engine health, and re-executed the compose command successfully.
@@ -101,7 +101,7 @@ During the execution of this test plan, several critical environmental and integ
 **Description:** The Vite development server crashed immediately upon container start. esbuild/rolldown failed to locate a compatible `binding.node` binary for the `linux-musl` architecture.
 
 **Evidence:**
-![Vite Rolldown Error](file:///C:/Users/Keval%20Doshi/.gemini/antigravity-ide/brain/197f306c-586a-453b-abb4-52f08a96303b/.user_uploaded/media_1786728225043.png)
+![Vite Rolldown Error](docs/images/media_1786728225043.png)
 
 **Root Cause:** The `frontend/Dockerfile` utilized `node:22-alpine`. Alpine Linux uses `musl` libc, which lacks out-of-the-box compatibility with the pre-compiled `glibc` binaries required by Vite 5's new Rolldown bundler.
 **Resolution:** Refactored the Dockerfile to use `node:22-slim` (Debian-based), which natively supports `glibc`, resolving all compilation errors.
@@ -114,7 +114,7 @@ During the execution of this test plan, several critical environmental and integ
 **Description:** Submitting files to the Malware and Steganography analysis endpoints resulted in HTTP 422 errors, preventing any analysis from occurring.
 
 **Evidence:**
-![FastAPI 422 Error](file:///C:/Users/Keval%20Doshi/.gemini/antigravity-ide/brain/197f306c-586a-453b-abb4-52f08a96303b/.user_uploaded/media_1786646571428.png)
+![FastAPI 422 Error](docs/images/media_1786646571428.png)
 
 **Root Cause:** The FastAPI backend lacked the `python-multipart` dependency required to decode `multipart/form-data` streams transmitted by the frontend `fetch` requests. Without this dependency, FastAPI rejects form-data payloads.
 **Resolution:** Appended `python-multipart` to `backend/requirements.txt` and rebuilt the backend container.
@@ -127,8 +127,8 @@ During the execution of this test plan, several critical environmental and integ
 **Description:** When exposing the platform via Localtunnel, the backend returned a `502 Bad Gateway`. When accessing the frontend, Vite blocked the host with a DNS security warning. Additionally, API requests were blocked by Microsoft DevTunnels' anti-phishing gateway.
 
 **Evidence:**
-![Tunnel Warning](file:///C:/Users/Keval%20Doshi/.gemini/antigravity-ide/brain/197f306c-586a-453b-abb4-52f08a96303b/.user_uploaded/media_1786733533415.png)
-![Vite Host Error](file:///C:/Users/Keval%20Doshi/.gemini/antigravity-ide/brain/197f306c-586a-453b-abb4-52f08a96303b/.user_uploaded/media_1786733461721.png)
+![Tunnel Warning](docs/images/media_1786733533415.png)
+![Vite Host Error](docs/images/media_1786733461721.png)
 
 **Root Cause:** 
 1. Localtunnel defaulted to resolving the modern Node.js IPv6 `localhost` (`::1`), failing to bridge into Docker Desktop's IPv4 port map.
