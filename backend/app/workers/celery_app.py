@@ -7,11 +7,8 @@ celery_app = Celery(
     backend=settings.REDIS_URI
 )
 
-celery_app.conf.task_routes = {
-    "app.workers.tasks_sast.*": {"queue": "sast_queue"},
-    "app.workers.tasks_file_defense.*": {"queue": "file_defense_queue"},
-    "app.workers.tasks_app_defense.*": {"queue": "app_defense_queue"}
-}
+# Default all task queues for local dev
+celery_app.conf.task_default_queue = 'celery'
 
 # Ensure celery discovers tasks
 celery_app.autodiscover_tasks([

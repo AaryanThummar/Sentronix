@@ -20,9 +20,9 @@ export default function AppDefenseTab() {
 
   const fetchAppData = async () => {
     try {
-      const statsRes = await fetch('https://l9s76d3s-8000.inc1.devtunnels.ms/api/v1/defense/app/stats')
+      const statsRes = await fetch('http://localhost:8000/api/v1/defense/app/stats')
       if (statsRes.ok) setStats(await statsRes.json())
-      const findingsRes = await fetch('https://l9s76d3s-8000.inc1.devtunnels.ms/api/v1/defense/app/findings')
+      const findingsRes = await fetch('http://localhost:8000/api/v1/defense/app/findings')
       if (findingsRes.ok) setFindings(await findingsRes.json())
     } catch (e) {
       console.error(e)
@@ -39,7 +39,7 @@ export default function AppDefenseTab() {
   const startSast = async () => {
     setScanStatus(prev => ({ ...prev, sast: { state: 'Queued', scanId: null, error: null } }))
     try {
-      const res = await fetch('https://l9s76d3s-8000.inc1.devtunnels.ms/api/v1/defense/app/sast', {
+      const res = await fetch('http://localhost:8000/api/v1/defense/app/sast', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ repo_path: sastPath })
@@ -59,7 +59,7 @@ export default function AppDefenseTab() {
   const startDast = async () => {
     setScanStatus(prev => ({ ...prev, dast: { state: 'Queued', scanId: null, error: null } }))
     try {
-      const res = await fetch('https://l9s76d3s-8000.inc1.devtunnels.ms/api/v1/defense/app/dast', {
+      const res = await fetch('http://localhost:8000/api/v1/defense/app/dast', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ target_url: dastUrl, scan_type: dastType })
@@ -79,7 +79,7 @@ export default function AppDefenseTab() {
   const startSca = async () => {
     setScanStatus(prev => ({ ...prev, sca: { state: 'Queued', scanId: null, error: null } }))
     try {
-      const res = await fetch('https://l9s76d3s-8000.inc1.devtunnels.ms/api/v1/defense/app/sca', {
+      const res = await fetch('http://localhost:8000/api/v1/defense/app/sca', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ target_path: scaPath })
@@ -103,7 +103,7 @@ export default function AppDefenseTab() {
     const interval = setInterval(async () => {
       attempts++
       try {
-        const res = await fetch(`https://l9s76d3s-8000.inc1.devtunnels.ms/api/v1/defense/app/results/${scanId}`)
+        const res = await fetch(`http://localhost:8000/api/v1/defense/app/results/${scanId}`)
         if (res.ok) {
           const data = await res.json()
           if (data.findings && data.findings.length > 0) {
@@ -264,15 +264,15 @@ export default function AppDefenseTab() {
       {/* 2. Vulnerability Findings Table */}
       <div className="bento-card overflow-hidden flex flex-col">
         <h3 className="font-headline-sm text-headline-sm text-on-surface mb-4">Application Security Findings</h3>
-        <div className="overflow-x-auto w-full">
+        <div className="overflow-x-auto overflow-y-auto max-h-[360px] w-full pr-1">
           <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b-[0.5px] border-border-strong">
-                <th className="pb-2 font-label-sm text-label-sm text-text-muted font-medium w-24">Severity</th>
-                <th className="pb-2 font-label-sm text-label-sm text-text-muted font-medium">Vulnerability Title</th>
-                <th className="pb-2 font-label-sm text-label-sm text-text-muted font-medium">Tool</th>
-                <th className="pb-2 font-label-sm text-label-sm text-text-muted font-medium">Location</th>
-                <th className="pb-2 font-label-sm text-label-sm text-text-muted font-medium text-right">Review</th>
+            <thead className="sticky top-0 bg-surface z-10 shadow-sm">
+              <tr className="border-b border-border-strong bg-surface">
+                <th className="pb-3 pt-1 font-label-sm text-label-sm text-text-muted font-medium w-24 bg-surface">Severity</th>
+                <th className="pb-3 pt-1 font-label-sm text-label-sm text-text-muted font-medium bg-surface">Vulnerability Title</th>
+                <th className="pb-3 pt-1 font-label-sm text-label-sm text-text-muted font-medium bg-surface">Tool</th>
+                <th className="pb-3 pt-1 font-label-sm text-label-sm text-text-muted font-medium bg-surface">Location</th>
+                <th className="pb-3 pt-1 font-label-sm text-label-sm text-text-muted font-medium text-right bg-surface">Review</th>
               </tr>
             </thead>
             <tbody className="font-body-md text-body-md text-on-surface divide-y-[0.5px] divide-border-subtle">

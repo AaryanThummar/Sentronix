@@ -6,6 +6,8 @@ import {
 } from 'lucide-react'
 import DashboardPage from './pages/DashboardPage'
 import ScansPage from './pages/ScansPage'
+import ReportsPage from './pages/ReportsPage'
+import SettingsPage from './pages/SettingsPage'
 
 // A small wrapper for the nav links to handle active state styling
 function NavLink({ to, icon: Icon, label }) {
@@ -79,8 +81,8 @@ function AppLayout() {
         <Routes>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/scans" element={<ScansPage />} />
-          <Route path="/reports" element={<div className="p-8"><h1 className="font-headline-lg text-headline-lg text-on-surface">Reports</h1></div>} />
-          <Route path="/settings" element={<div className="p-8"><h1 className="font-headline-lg text-headline-lg text-on-surface">Settings</h1></div>} />
+          <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Routes>
       </div>
     </div>

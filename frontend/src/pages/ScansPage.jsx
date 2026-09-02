@@ -32,7 +32,7 @@ export default function ScansPage() {
     formData.append('file', stegFile)
 
     try {
-      const response = await fetch('https://l9s76d3s-8000.inc1.devtunnels.ms/api/v1/steg/analyze', {
+      const response = await fetch('http://localhost:8000/api/v1/steg/analyze', {
         method: 'POST',
         body: formData,
       })
@@ -64,7 +64,7 @@ export default function ScansPage() {
     formData.append('file', threatFile)
 
     try {
-      const response = await fetch('https://l9s76d3s-8000.inc1.devtunnels.ms/api/v1/defense/scan', {
+      const response = await fetch('http://localhost:8000/api/v1/defense/scan', {
         method: 'POST',
         body: formData,
       })
