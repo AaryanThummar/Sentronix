@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { 
   FileText, Download, ShieldCheck, ShieldAlert, AlertTriangle, 
-  CheckCircle2, Printer, Sparkles, Filter, Calendar, FileCode, Check 
+  CheckCircle2, Printer, Sparkles, Filter, Calendar, FileCode, Check,
+  Info, X, Wrench, ArrowRight, Shield
 } from 'lucide-react'
 
 export default function ReportsPage() {
@@ -16,6 +17,7 @@ export default function ReportsPage() {
   const [reportScope, setReportScope] = useState('all')
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedSuccess, setGeneratedSuccess] = useState(false)
+  const [isGradeModalOpen, setIsGradeModalOpen] = useState(false)
 
   // Pre-populated historical reports list
   const [reportHistory, setReportHistory] = useState([
@@ -180,12 +182,29 @@ export default function ReportsPage() {
 
         {/* Top Summary Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-grid-gap">
-          <div className="bento-card bg-surface-container-low flex flex-col justify-center">
-            <span className="font-label-md text-label-md text-text-secondary">Security Posture</span>
+          <div className="bento-card bg-surface-container-low flex flex-col justify-center relative group">
+            <div className="flex items-center justify-between">
+              <span className="font-label-md text-label-md text-text-secondary">Security Posture</span>
+              <button 
+                onClick={() => setIsGradeModalOpen(true)}
+                title="View work needed to achieve Grade A"
+                className="w-6 h-6 rounded-full bg-surface-container hover:bg-primary hover:text-on-primary text-text-muted transition-all flex items-center justify-center cursor-pointer shadow-sm active:scale-95"
+              >
+                <Info size={14} />
+              </button>
+            </div>
             <span className={`font-headline-lg text-headline-lg mt-1 ${stats.critical_high_count > 0 ? 'text-danger-offensive' : 'text-success-defensive'}`}>
               {stats.critical_high_count > 0 ? 'B+ (Action Needed)' : 'A (Secured)'}
             </span>
-            <span className="text-[11px] text-text-muted mt-0.5">Based on latest automated scans</span>
+            <div className="flex items-center justify-between mt-0.5">
+              <span className="text-[11px] text-text-muted">Based on latest automated scans</span>
+              <button 
+                onClick={() => setIsGradeModalOpen(true)}
+                className="text-[11px] text-primary hover:underline font-medium flex items-center gap-0.5"
+              >
+                Remediation Plan ➔
+              </button>
+            </div>
           </div>
 
           <div className="bento-card bg-error-container/10 border border-error-container/20 flex flex-col justify-center">
@@ -364,6 +383,152 @@ export default function ReportsPage() {
         </div>
 
       </div>
+
+      {/* Grade Improvement Roadmap Modal Popup */}
+      {isGradeModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-surface border border-border-strong rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            
+            {/* Modal Header */}
+            <div className="p-6 border-b border-border-strong flex items-start justify-between bg-surface-container-high">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-error-container/20 border border-error-container/30 flex items-center justify-center text-danger-offensive font-bold text-xl font-mono">
+                  B+
+                </div>
+                <div>
+                  <h3 className="font-headline-sm text-headline-sm text-on-surface font-bold">
+                    Security Posture Rating & Action Plan
+                  </h3>
+                  <p className="font-body-sm text-body-sm text-text-muted">
+                    Work required on the website to elevate score from <span className="font-semibold text-danger-offensive">Grade B+</span> to <span className="font-semibold text-success-defensive">Grade A (Hardened)</span>.
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsGradeModalOpen(false)}
+                className="p-1.5 rounded-full hover:bg-surface-container text-text-muted hover:text-on-surface transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Scrollable Body */}
+            <div className="p-6 overflow-y-auto space-y-6 flex-1">
+              
+              {/* Diagnosis Box */}
+              <div className="p-4 rounded-xl bg-surface-container-low border border-border-subtle">
+                <span className="font-label-sm text-label-sm text-text-secondary font-bold uppercase tracking-wider block mb-1">
+                  Root Cause Diagnosis
+                </span>
+                <p className="font-body-sm text-body-sm text-on-surface leading-relaxed">
+                  Your platform scored <strong>Grade B+</strong> because automated SAST and DAST telemetry identified <strong className="text-danger-offensive">{stats.critical_high_count || 3} High/Critical security vulnerabilities</strong> (such as dynamic query concatenation and exposed config headers).
+                </p>
+              </div>
+
+              {/* Actionable Steps Required for Grade A */}
+              <div>
+                <h4 className="font-label-md text-label-md text-on-surface font-bold mb-3 flex items-center gap-2">
+                  <Wrench size={16} className="text-primary" />
+                  Actionable Steps to Reach Grade A:
+                </h4>
+
+                <div className="space-y-3">
+                  
+                  {/* Step 1 */}
+                  <div className="p-3.5 rounded-xl bg-surface-container-low border border-border-subtle hover:border-primary/40 transition-colors flex items-start gap-3">
+                    <span className="w-6 h-6 rounded-full bg-primary-container text-on-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+                      1
+                    </span>
+                    <div className="space-y-1 flex-1">
+                      <div className="flex justify-between items-center">
+                        <span className="font-label-md text-label-md text-on-surface font-semibold">Remediate SQL Injection (CWE-89)</span>
+                        <span className="text-[10px] font-bold bg-error-container text-danger-offensive px-1.5 py-0.5 rounded">CRITICAL</span>
+                      </div>
+                      <p className="font-body-sm text-body-sm text-text-muted text-[12px]">
+                        Replace direct string concatenation in <code className="text-primary font-mono text-[11px]">auth.py</code> with parameterized SQLAlchemy queries or ORM models.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Step 2 */}
+                  <div className="p-3.5 rounded-xl bg-surface-container-low border border-border-subtle hover:border-primary/40 transition-colors flex items-start gap-3">
+                    <span className="w-6 h-6 rounded-full bg-primary-container text-on-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+                      2
+                    </span>
+                    <div className="space-y-1 flex-1">
+                      <div className="flex justify-between items-center">
+                        <span className="font-label-md text-label-md text-on-surface font-semibold">Extract Hardcoded Secrets (CWE-798)</span>
+                        <span className="text-[10px] font-bold bg-tertiary-fixed text-warning-mid px-1.5 py-0.5 rounded">HIGH</span>
+                      </div>
+                      <p className="font-body-sm text-body-sm text-text-muted text-[12px]">
+                        Migrate hardcoded <code className="text-primary font-mono text-[11px]">JWT_SECRET</code> values from config files into encrypted environment secrets (<code className="font-mono text-[11px]">.env</code>).
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Step 3 */}
+                  <div className="p-3.5 rounded-xl bg-surface-container-low border border-border-subtle hover:border-primary/40 transition-colors flex items-start gap-3">
+                    <span className="w-6 h-6 rounded-full bg-primary-container text-on-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+                      3
+                    </span>
+                    <div className="space-y-1 flex-1">
+                      <div className="flex justify-between items-center">
+                        <span className="font-label-md text-label-md text-on-surface font-semibold">Restrict CORS & Add Security Headers (CWE-942)</span>
+                        <span className="text-[10px] font-bold bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded">MEDIUM</span>
+                      </div>
+                      <p className="font-body-sm text-body-sm text-text-muted text-[12px]">
+                        Change <code className="text-primary font-mono text-[11px]">allow_origins=["*"]</code> in FastAPI to whitelist explicit domains and enforce <code className="font-mono text-[11px]">X-Content-Type-Options: nosniff</code>.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Step 4 */}
+                  <div className="p-3.5 rounded-xl bg-surface-container-low border border-border-subtle hover:border-primary/40 transition-colors flex items-start gap-3">
+                    <span className="w-6 h-6 rounded-full bg-primary-container text-on-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+                      4
+                    </span>
+                    <div className="space-y-1 flex-1">
+                      <div className="flex justify-between items-center">
+                        <span className="font-label-md text-label-md text-on-surface font-semibold">Update Vulnerable Third-Party Packages</span>
+                        <span className="text-[10px] font-bold bg-surface-variant text-text-secondary px-1.5 py-0.5 rounded">LOW / SCA</span>
+                      </div>
+                      <p className="font-body-sm text-body-sm text-text-muted text-[12px]">
+                        Run automated package audits via Trivy SCA to update outdated dependencies with known CVE advisories.
+                      </p>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              {/* Target Posture Outcome */}
+              <div className="p-4 rounded-xl bg-success-defensive/10 border border-success-defensive/20 flex items-center gap-3">
+                <ShieldCheck size={28} className="text-success-defensive shrink-0" />
+                <div>
+                  <span className="font-label-md text-label-md text-success-defensive font-bold block">
+                    Target Outcome: Grade A (Zero Active Vulnerabilities)
+                  </span>
+                  <span className="font-body-sm text-body-sm text-text-muted text-[12px]">
+                    Completing these 4 fixes will automatically elevate your organizational security rating to <strong>Grade A (98%+ Compliance)</strong>.
+                  </span>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-border-strong bg-surface-container flex items-center justify-end gap-3">
+              <button
+                onClick={() => setIsGradeModalOpen(false)}
+                className="px-4 py-2 rounded-lg font-label-md text-label-md bg-surface-container-high hover:bg-surface-hover text-on-surface border border-border-subtle transition-colors"
+              >
+                Close Roadmap
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
     </main>
   )
 }
