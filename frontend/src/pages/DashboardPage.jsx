@@ -20,13 +20,13 @@ export default function DashboardPage() {
 
   const fetchDashboardData = async () => {
     try {
-      const statsRes = await fetch('https://l9s76d3s-8000.inc1.devtunnels.ms/api/v1/dashboard/stats');
+      const statsRes = await fetch('http://localhost:8000/api/v1/dashboard/stats');
       if (statsRes.ok) {
         const statsData = await statsRes.json();
         setStats(statsData);
       }
       
-      const findingsRes = await fetch('https://l9s76d3s-8000.inc1.devtunnels.ms/api/v1/dashboard/findings');
+      const findingsRes = await fetch('http://localhost:8000/api/v1/dashboard/findings');
       if (findingsRes.ok) {
         const findingsData = await findingsRes.json();
         setFindings(findingsData);

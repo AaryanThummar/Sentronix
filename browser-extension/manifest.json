@@ -12,6 +12,12 @@
   "host_permissions": [
     "http://localhost:8000/*"
   ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "defense@sentronix.app",
+      "strict_min_version": "109.0"
+    }
+  },
   "background": {
     "service_worker": "background.js"
   },
