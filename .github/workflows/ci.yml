@@ -55,52 +55,22 @@ jobs:
       - name: Build Frontend (Vite)
         run: npm run build
 
-  discord-notification:
-    name: Discord CI/CD Notification
+  notify:
+    name: Discord Notification
     needs: [backend-ci, frontend-ci]
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - name: Send Discord Webhook Alert
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      - name: Notify Discord on failure
+        if: needs.backend-ci.result == 'failure' || needs.frontend-ci.result == 'failure'
         run: |
-          if [ -z "$DISCORD_WEBHOOK" ]; then
-            echo "DISCORD_WEBHOOK secret is not set. Skipping notification."
-            exit 0
+          if [ -n "${{ secrets.DISCORD_CICD_WEBHOOK }}" ]; then
+            curl -H "Content-Type: application/json" -X POST -d '{"content": "❌ CI failed on ${{ github.ref_name }} — ${{ github.actor }} — ${{ github.event.head_commit.message }}"}' ${{ secrets.DISCORD_CICD_WEBHOOK }}
           fi
 
-          STATUS="${{ needs.backend-ci.result == 'success' && needs.frontend-ci.result == 'success' && 'SUCCESS' || 'FAILURE' }}"
-          COLOR=$([ "$STATUS" = "SUCCESS" ] && echo 3066993 || echo 15158332)
-          EMOJI=$([ "$STATUS" = "SUCCESS" ] && echo "✅" || echo "❌")
-
-          PAYLOAD=$(cat <<EOF
-          {
-            "embeds": [
-              {
-                "title": "$EMOJI SentroniX CI Pipeline: $STATUS",
-                "description": "**Commit:** \`${{ github.sha }}\`\n**Branch:** \`${{ github.ref_name }}\`\n**Author:** ${{ github.actor }}\n**Event:** \`${{ github.event_name }}\`",
-                "color": $COLOR,
-                "fields": [
-                  {
-                    "name": "Backend Test & Lint",
-                    "value": "${{ needs.backend-ci.result }}",
-                    "inline": true
-                  },
-                  {
-                    "name": "Frontend Build",
-                    "value": "${{ needs.frontend-ci.result }}",
-                    "inline": true
-                  }
-                ],
-                "footer": {
-                  "text": "SentroniX Automated Purple Team CI/CD | KAN-23"
-                },
-                "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-              }
-            ]
-          }
-          EOF
-          )
-
-          curl -H "Content-Type: application/json" -X POST -d "$PAYLOAD" "$DISCORD_WEBHOOK"
+      - name: Notify Discord on success
+        if: needs.backend-ci.result == 'success' && needs.frontend-ci.result == 'success'
+        run: |
+          if [ -n "${{ secrets.DISCORD_CICD_WEBHOOK }}" ]; then
+            curl -H "Content-Type: application/json" -X POST -d '{"content": "✅ CI passed on ${{ github.ref_name }}"}' ${{ secrets.DISCORD_CICD_WEBHOOK }}
+          fi
