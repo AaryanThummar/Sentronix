@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.database import engine, Base
-from app.api.v1 import auth, steg, dashboard, defense, app_defense
+from app.api.v1 import auth, steg, dashboard, defense, app_defense, ai
 from app.models import user, vulnerability, steg as steg_model
 
 # Initialize DB tables (for SQLite ease of use without Alembic initially)
@@ -24,6 +24,7 @@ app.include_router(steg.router, prefix="/api/v1/steg", tags=["Steganography"])
 app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["Dashboard"])
 app.include_router(defense.router, prefix="/api/v1/defense", tags=["Defensive Tools"])
 app.include_router(app_defense.router, prefix="/api/v1/defense/app", tags=["App & Code-Level Defense"])
+app.include_router(ai.router, prefix="/api/v1/ai", tags=["AI Remediation"])
 
 @app.get("/")
 def read_root():

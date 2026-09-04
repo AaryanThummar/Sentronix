@@ -4,6 +4,7 @@ import {
   Wand2, Eye, Code, Scan, Radar
 } from 'lucide-react'
 import AppDefenseTab from '../components/Dashboard/AppDefenseTab'
+import AIPatchModal from '../components/AIPatchModal'
 
 export default function DashboardPage() {
   const [findings, setFindings] = useState([]);
@@ -17,6 +18,10 @@ export default function DashboardPage() {
   });
   const [lastUpdated, setLastUpdated] = useState(new Date().toLocaleTimeString());
   const [activeTab, setActiveTab] = useState('overview');
+
+  // AI Patch Modal State
+  const [selectedPatchFinding, setSelectedPatchFinding] = useState(null);
+  const [isPatchModalOpen, setIsPatchModalOpen] = useState(false);
 
   const fetchDashboardData = async () => {
     try {
@@ -44,6 +49,11 @@ export default function DashboardPage() {
     }, 10000); // Poll every 10s
     return () => clearInterval(interval);
   }, []);
+
+  const handleOpenPatch = (finding) => {
+    setSelectedPatchFinding(finding);
+    setIsPatchModalOpen(true);
+  };
 
   return (
     <main className="p-4 md:p-8 flex-1 overflow-y-auto">
@@ -198,12 +208,18 @@ export default function DashboardPage() {
                       <td className="py-3 font-label-md text-label-md text-text-secondary truncate max-w-[150px]">{f.location}</td>
                       <td className="py-3 text-right">
                         {f.action === 'patch' ? (
-                          <button className="font-label-md text-label-md text-primary hover:text-primary-container flex items-center justify-end gap-1 w-full">
+                          <button 
+                            onClick={() => handleOpenPatch(f)}
+                            className="font-label-md text-label-md text-primary hover:text-primary-container flex items-center justify-end gap-1 w-full"
+                          >
                             <Wand2 size={16} />
                             AI Patch
                           </button>
                         ) : (
-                          <button className="font-label-md text-label-md text-text-muted hover:text-on-surface flex items-center justify-end gap-1 w-full">
+                          <button 
+                            onClick={() => handleOpenPatch(f)}
+                            className="font-label-md text-label-md text-text-muted hover:text-on-surface flex items-center justify-end gap-1 w-full"
+                          >
                             <Eye size={16} />
                             Review
                           </button>
@@ -254,9 +270,20 @@ export default function DashboardPage() {
           </div>
         </div>
         ) : (
-          <AppDefenseTab />
+          <AppDefenseTab onOpenPatch={(finding) => handleOpenPatch(finding)} />
         )}
       </div>
+
+      {/* AI Patch Modal */}
+      {isPatchModalOpen && selectedPatchFinding && (
+        <AIPatchModal 
+          finding={selectedPatchFinding}
+          onClose={() => setIsPatchModalOpen(false)}
+          onRemediated={() => {
+            fetchDashboardData();
+          }}
+        />
+      )}
     </main>
   )
 }

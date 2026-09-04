@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { Play, ShieldAlert, Code, Link, Archive, RefreshCw, X, FileText, ChevronRight } from 'lucide-react'
+import { Play, ShieldAlert, Code, Link, Archive, RefreshCw, X, FileText, ChevronRight, Wand2 } from 'lucide-react'
 
-export default function AppDefenseTab() {
+export default function AppDefenseTab({ onOpenPatch }) {
   const [sastPath, setSastPath] = useState('./backend')
   const [dastUrl, setDastUrl] = useState('http://localhost:8000')
   const [dastType, setDastType] = useState('nuclei')
@@ -364,6 +364,21 @@ export default function AppDefenseTab() {
                 <pre className="bg-inverse-surface text-on-secondary p-3 rounded-lg font-mono text-[11px] whitespace-pre-wrap overflow-x-auto border border-border-strong">
                   {selectedFinding.payload}
                 </pre>
+              </div>
+            )}
+
+            {onOpenPatch && (
+              <div className="pt-2 border-t border-border-strong">
+                <button
+                  onClick={() => {
+                    onOpenPatch(selectedFinding);
+                    setDrawerOpen(false);
+                  }}
+                  className="w-full py-2.5 px-4 bg-primary text-on-primary rounded-xl font-label-md text-label-md font-bold hover:bg-primary-container transition-all flex items-center justify-center gap-2 shadow-md"
+                >
+                  <Wand2 size={16} />
+                  ✨ Generate AI Remediation Patch
+                </button>
               </div>
             )}
           </div>
