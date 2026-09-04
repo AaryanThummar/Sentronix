@@ -75,15 +75,13 @@ async def vulnerability_watchdog():
                         if top_finding.get("severity") in ["CRITICAL", "HIGH"] and top_finding.get("id") != last_notified_finding_id:
                             last_notified_finding_id = top_finding.get("id")
                             
-                            # Find target alert channel (Strictly avoid #general)
+                            # Find target alert channel (Strictly mod-only alerts channel)
                             for guild in bot.guilds:
                                 alert_channel = (
-                                    discord.utils.get(guild.text_channels, name="security-alerts") or
-                                    discord.utils.get(guild.text_channels, name="ci-cd-alerts") or
-                                    discord.utils.get(guild.text_channels, name="app-code-defense") or
-                                    discord.utils.get(guild.text_channels, name="file-data-defense")
+                                    discord.utils.get(guild.text_channels, name="mod-security-alerts") or
+                                    discord.utils.get(guild.text_channels, name="mod-only")
                                 )
-                                if alert_channel and alert_channel.name != "general":
+                                if alert_channel:
                                     embed = discord.Embed(
                                         title=f"🚨 New {top_finding.get('severity')} Security Finding Detected!",
                                         description=f"**{top_finding.get('title')}**\n\n{top_finding.get('description', '')}",
@@ -92,7 +90,7 @@ async def vulnerability_watchdog():
                                     embed.add_field(name="Scanner Tool", value=f"`{top_finding.get('tool')}`", inline=True)
                                     embed.add_field(name="Target Location", value=f"`{top_finding.get('location')}`", inline=True)
                                     embed.add_field(name="Action Required", value="Type `!patch` or open SentroniX Dashboard to generate AI remediation.", inline=False)
-                                    embed.set_footer(text="SentroniX Automated Threat Interceptor")
+                                    embed.set_footer(text="SentroniX Automated Threat Interceptor • Mod Alerts Channel")
                                     await alert_channel.send(embed=embed)
     except Exception:
         pass
