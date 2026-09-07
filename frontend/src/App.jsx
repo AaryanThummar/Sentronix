@@ -10,6 +10,9 @@ import ReportsPage from './pages/ReportsPage'
 import SettingsPage from './pages/SettingsPage'
 import PurpleTeamArenaPage from './pages/PurpleTeamArenaPage'
 
+import NotificationCenter from './components/NotificationCenter'
+import UserProfileDropdown from './components/UserProfileDropdown'
+
 // A small wrapper for the nav links to handle active state styling
 function NavLink({ to, icon: Icon, label }) {
   const location = useLocation()
@@ -70,13 +73,9 @@ function AppLayout() {
               <input className="bg-transparent border-none focus:outline-none ml-2 text-body-md text-on-surface w-full" placeholder="Search telemetry..." type="text"/>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <button className="text-on-surface-variant hover:text-primary transition-colors focus:ring-2 focus:ring-primary/20 rounded-full p-1">
-              <Bell size={20} />
-            </button>
-            <button className="text-on-surface-variant hover:text-primary transition-colors focus:ring-2 focus:ring-primary/20 rounded-full p-1">
-              <User size={20} />
-            </button>
+          <div className="flex items-center gap-3">
+            <NotificationCenter />
+            <UserProfileDropdown />
           </div>
         </header>
 
