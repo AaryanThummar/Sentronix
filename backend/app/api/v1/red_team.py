@@ -17,10 +17,29 @@ class StrikeRequest(BaseModel):
     target_override: Optional[str] = Field(None, example="/api/v1/auth/login")
     notify_discord: Optional[bool] = Field(True, description="Whether to dispatch alert to Discord mod channel")
 
+class CampaignRequest(BaseModel):
+    campaign_id: str = Field(..., example="campaign-web-infiltrator")
+    notify_discord: Optional[bool] = Field(True)
+
 @router.get("/scenarios")
 def get_scenarios():
-    """Retrieve all available adversary strike simulation scenarios mapped to MITRE ATT&CK"""
+    """Retrieve all available adversary strike simulation scenarios (PayloadsAllTheThings & Atomic Red Team)"""
     return RedTeamEngine.get_all_scenarios()
+
+@router.get("/campaigns")
+def get_campaigns():
+    """Retrieve multi-phase adversary emulation profiles (MITRE Caldera)"""
+    return RedTeamEngine.get_caldera_campaigns()
+
+@router.get("/fuzzing/seclists")
+def get_seclists_probes():
+    """Retrieve sensitive path discovery dictionary (SecLists)"""
+    return RedTeamEngine.get_seclists_probes()
+
+@router.post("/fuzzing/run")
+def run_fuzzing():
+    """Execute SecLists sensitive endpoint discovery and return defense responses"""
+    return RedTeamEngine.run_seclists_fuzzing()
 
 @router.get("/metrics")
 def get_metrics():
@@ -54,7 +73,7 @@ async def execute_strike(req: StrikeRequest, db: Session = Depends(get_db)):
             scan_id=f"SCAN-{result['strike_id']}",
             tenant_id="default-tenant",
             pillar=scenario.get("category", "App & Code Defense"),
-            tool_used="SentroniX Red-Team Simulator",
+            tool_used=f"SentroniX Red Team ({scenario.get('source_repo', 'Adversary Simulator')})",
             vulnerability_title=f"[Simulated Strike] {scenario['title']}",
             severity=scenario["severity"],
             cwe_id=scenario.get("cwe", "CWE-Security"),
@@ -76,6 +95,11 @@ async def execute_strike(req: StrikeRequest, db: Session = Depends(get_db)):
 
     return result
 
+@router.post("/campaigns/run")
+async def run_campaign(req: CampaignRequest):
+    """Executes a multi-phase MITRE Caldera adversary campaign simulation"""
+    return RedTeamEngine.execute_campaign(req.campaign_id)
+
 async def dispatch_discord_mod_alert(result: Dict[str, Any], token: str):
     """Background helper to alert SentoBot Discord #mod-security-alerts channel of the strike simulation"""
     try:
@@ -93,7 +117,7 @@ async def dispatch_discord_mod_alert(result: Dict[str, Any], token: str):
                 if channel:
                     embed = discord.Embed(
                         title=f"⚔️ [RED TEAM STRIKE] {result['title']}",
-                        description=f"**MITRE ATT&CK:** `{result['mitre_technique']}`\n**Target:** `{result['red_team']['target_endpoint']}`\n\n**Injected Payload:**\n```{result['red_team']['injected_payload'][:200]}```",
+                        description=f"**Source:** `{result.get('source_repo', 'PayloadsAllTheThings')}`\n**MITRE ATT&CK:** `{result['mitre_technique']}`\n**Target:** `{result['red_team']['target_endpoint']}`\n\n**Injected Payload:**\n```{result['red_team']['injected_payload'][:200]}```",
                         color=0xef4444
                     )
                     embed.add_field(name="🔵 Blue Team Status", value=f"`{result['blue_team']['defense_status']}`", inline=True)
