@@ -53,6 +53,15 @@ export default function ReportsPage() {
     }
   ])
 
+  const [dashboardStats, setDashboardStats] = useState({
+    risk_grade: 'D',
+    risk_label: 'High Risk',
+    critical_findings: 0,
+    blocked_threats: 0,
+    files_analyzed: 0,
+    severity_stats: { CRITICAL: 0, HIGH: 0, MEDIUM: 0, LOW: 0 }
+  })
+
   useEffect(() => {
     const fetchTelemetry = async () => {
       try {
@@ -65,6 +74,11 @@ export default function ReportsPage() {
         if (findingsRes.ok) {
           const findingsData = await findingsRes.json()
           setFindings(findingsData)
+        }
+        const dashRes = await fetch('http://localhost:8000/api/v1/dashboard/stats')
+        if (dashRes.ok) {
+          const dashData = await dashRes.json()
+          setDashboardStats(dashData)
         }
       } catch (err) {
         console.error('Error fetching report data:', err)
@@ -193,11 +207,15 @@ export default function ReportsPage() {
                 <Info size={14} />
               </button>
             </div>
-            <span className={`font-headline-lg text-headline-lg mt-1 ${stats.critical_high_count > 0 ? 'text-danger-offensive' : 'text-success-defensive'}`}>
-              {stats.critical_high_count > 0 ? 'B+ (Action Needed)' : 'A (Secured)'}
+            <span className={`font-headline-lg text-headline-lg mt-1 ${
+              dashboardStats.risk_grade === 'A' ? 'text-success-defensive' :
+              dashboardStats.risk_grade === 'B' ? 'text-primary' :
+              dashboardStats.risk_grade === 'C' ? 'text-warning-mid' : 'text-danger-offensive'
+            }`}>
+              {dashboardStats.risk_grade} ({dashboardStats.risk_label})
             </span>
             <div className="flex items-center justify-between mt-0.5">
-              <span className="text-[11px] text-text-muted">Based on latest automated scans</span>
+              <span className="text-[11px] text-text-muted">Based on live platform telemetry</span>
               <button 
                 onClick={() => setIsGradeModalOpen(true)}
                 className="text-[11px] text-primary hover:underline font-medium flex items-center gap-0.5"
@@ -393,14 +411,14 @@ export default function ReportsPage() {
             <div className="p-6 border-b border-border-strong flex items-start justify-between bg-surface-container-high">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-error-container/20 border border-error-container/30 flex items-center justify-center text-danger-offensive font-bold text-xl font-mono">
-                  B+
+                  {dashboardStats.risk_grade}
                 </div>
                 <div>
-                  <h3 className="font-headline-sm text-headline-sm text-on-surface font-bold">
+                  <h3 className="font-headline-sm text-headline-sm text-on-surface">
                     Security Posture Rating & Action Plan
                   </h3>
                   <p className="font-body-sm text-body-sm text-text-muted">
-                    Work required on the website to elevate score from <span className="font-semibold text-danger-offensive">Grade B+</span> to <span className="font-semibold text-success-defensive">Grade A (Hardened)</span>.
+                    Work required on the platform to elevate score from <span className="font-semibold text-danger-offensive">Grade {dashboardStats.risk_grade} ({dashboardStats.risk_label})</span> to <span className="font-semibold text-success-defensive">Grade A (Hardened)</span>.
                   </p>
                 </div>
               </div>
@@ -421,7 +439,7 @@ export default function ReportsPage() {
                   Root Cause Diagnosis
                 </span>
                 <p className="font-body-sm text-body-sm text-on-surface leading-relaxed">
-                  Your platform scored <strong>Grade B+</strong> because automated SAST and DAST telemetry identified <strong className="text-danger-offensive">{stats.critical_high_count || 3} High/Critical security vulnerabilities</strong> (such as dynamic query concatenation and exposed config headers).
+                  Your platform is currently rated <strong>Grade {dashboardStats.risk_grade} ({dashboardStats.risk_label})</strong> because automated SAST, DAST, and defensive telemetry identified <strong className="text-danger-offensive">{dashboardStats.critical_findings || 0} Critical and {(dashboardStats.severity_stats?.HIGH || 0) + (stats.critical_high_count || 0)} High security vulnerabilities</strong> requiring remediation patches.
                 </p>
               </div>
 

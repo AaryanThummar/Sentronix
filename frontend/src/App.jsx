@@ -2,12 +2,13 @@ import React from 'react'
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom'
 import { 
   Plus, LayoutDashboard, Shield, FileText, Settings, 
-  Search, Bell, User 
+  Search, Bell, User, Swords 
 } from 'lucide-react'
 import DashboardPage from './pages/DashboardPage'
 import ScansPage from './pages/ScansPage'
 import ReportsPage from './pages/ReportsPage'
 import SettingsPage from './pages/SettingsPage'
+import PurpleTeamArenaPage from './pages/PurpleTeamArenaPage'
 
 // A small wrapper for the nav links to handle active state styling
 function NavLink({ to, icon: Icon, label }) {
@@ -51,6 +52,7 @@ function AppLayout() {
         
         <ul className="flex flex-col gap-1 w-full flex-grow">
           <li><NavLink to="/" icon={LayoutDashboard} label="Dashboard" /></li>
+          <li><NavLink to="/arena" icon={Swords} label="Purple Team Arena" /></li>
           <li><NavLink to="/scans" icon={Shield} label="Scans & Workers" /></li>
           <li><NavLink to="/reports" icon={FileText} label="Reports" /></li>
           <li><NavLink to="/settings" icon={Settings} label="Settings" /></li>
@@ -80,6 +82,7 @@ function AppLayout() {
 
         <Routes>
           <Route path="/" element={<DashboardPage />} />
+          <Route path="/arena" element={<PurpleTeamArenaPage />} />
           <Route path="/scans" element={<ScansPage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
