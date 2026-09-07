@@ -4,7 +4,7 @@ from typing import Optional, List, Dict, Any
 from app.services.red_team_engine import RedTeamEngine, STRIKE_HISTORY
 from app.core.database import get_db
 from sqlalchemy.orm import Session
-from app.models.vulnerability import Vulnerability
+from app.models.vulnerability import UnifiedFinding
 import os
 import aiohttp
 import asyncio
@@ -50,12 +50,17 @@ async def execute_strike(req: StrikeRequest, db: Session = Depends(get_db)):
 
     # Automatically record finding into DB to link with AI Remediation pipeline
     try:
-        new_vuln = Vulnerability(
-            title=f"[Simulated Strike] {scenario['title']}",
-            tool="SentroniX Red-Team Simulator",
+        new_vuln = UnifiedFinding(
+            scan_id=f"SCAN-{result['strike_id']}",
+            tenant_id="default-tenant",
+            pillar=scenario.get("category", "App & Code Defense"),
+            tool_used="SentroniX Red-Team Simulator",
+            vulnerability_title=f"[Simulated Strike] {scenario['title']}",
             severity=scenario["severity"],
+            cwe_id=scenario.get("cwe", "CWE-Security"),
             location=result["red_team"]["target_endpoint"],
-            description=f"Adversary strike simulation ({scenario['mitre_technique']}). Injected: {result['red_team']['injected_payload']}. Intercepted by {result['blue_team']['inspection_rule']}."
+            description=f"Adversary strike simulation ({scenario['mitre_technique']}). Injected: {result['red_team']['injected_payload']}. Intercepted by {result['blue_team']['inspection_rule']}.",
+            raw_payload=result["red_team"]["injected_payload"]
         )
         db.add(new_vuln)
         db.commit()
