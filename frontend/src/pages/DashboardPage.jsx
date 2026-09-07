@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { 
   PieChart, Swords, Bug, Zap, Shield, ShieldCheck, FolderOpen, 
-  Wand2, Eye, Code, Scan, Radar
+  Wand2, Eye, Code, Scan, Radar, ArrowRight, Crosshair
 } from 'lucide-react'
 import AppDefenseTab from '../components/Dashboard/AppDefenseTab'
 import AIPatchModal from '../components/AIPatchModal'
@@ -111,37 +112,53 @@ export default function DashboardPage() {
           </div>
 
           {/* 2. Offensive Operations */}
-          <div className="bento-card col-span-1 md:col-span-4 flex flex-col">
-            <h3 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 mb-4">
-              <Swords className="text-danger-offensive" size={24} />
-              Offensive Ops
-            </h3>
-            <div className="flex-1 flex flex-col justify-center space-y-4">
-              <div className="flex items-center justify-between p-3 rounded-lg bg-error-container/20 border border-error-container">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-error-container rounded text-danger-offensive">
-                    <Bug size={20} />
-                  </div>
-                  <div>
-                    <p className="font-label-md text-label-md text-on-surface">Critical Findings</p>
-                    <p className="font-body-sm text-body-sm text-text-muted">Awaiting triage</p>
-                  </div>
-                </div>
-                <span className="font-headline-md text-headline-md text-danger-offensive">{stats.critical_findings}</span>
+          <div className="bento-card col-span-1 md:col-span-4 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+                  <Swords className="text-danger-offensive" size={24} />
+                  Offensive Ops
+                </h3>
+                <span className="text-[11px] font-mono text-red-400 bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20">
+                  RED TEAM
+                </span>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-surface-container-low border border-border-subtle">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-surface-variant rounded text-text-secondary">
-                    <Zap size={20} />
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-error-container/20 border border-error-container">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-error-container rounded text-danger-offensive">
+                      <Bug size={20} />
+                    </div>
+                    <div>
+                      <p className="font-label-md text-label-md text-on-surface">Critical Findings</p>
+                      <p className="font-body-sm text-body-sm text-text-muted">Awaiting triage</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-label-md text-label-md text-on-surface">Active Exploits</p>
-                    <p className="font-body-sm text-body-sm text-text-muted">Currently running</p>
-                  </div>
+                  <span className="font-headline-md text-headline-md text-danger-offensive">{stats.critical_findings}</span>
                 </div>
-                <span className="font-headline-md text-headline-md text-on-surface">12</span>
+                <div className="flex items-center justify-between p-3 rounded-lg bg-surface-container-low border border-border-subtle">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-surface-variant rounded text-text-secondary">
+                      <Zap size={20} />
+                    </div>
+                    <div>
+                      <p className="font-label-md text-label-md text-on-surface">Active Vectors</p>
+                      <p className="font-body-sm text-body-sm text-text-muted">Adversary simulation</p>
+                    </div>
+                  </div>
+                  <span className="font-headline-md text-headline-md text-on-surface">6</span>
+                </div>
               </div>
             </div>
+
+            <Link 
+              to="/arena"
+              className="mt-4 w-full py-2 px-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-colors"
+            >
+              <Crosshair size={14} />
+              Launch Purple Team Arena
+              <ArrowRight size={14} />
+            </Link>
           </div>
 
           {/* 3. Defensive Operations */}
