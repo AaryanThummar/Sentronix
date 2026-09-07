@@ -233,45 +233,44 @@ export default function PurpleTeamArenaPage() {
   }
 
   return (
-    <main className="p-4 md:p-8 flex-1 overflow-y-auto space-y-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <main className="p-4 md:p-8 flex-1 overflow-y-auto space-y-grid-gap">
+      <div className="max-w-7xl mx-auto space-y-grid-gap">
         
         {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            {/* Top 4 Repos Integration Badges */}
             <div className="flex flex-wrap items-center gap-2 mb-2">
-              <span className="bg-red-500/10 text-red-400 border border-red-500/20 text-[11px] font-mono px-2 py-0.5 rounded-full flex items-center gap-1">
-                <Crosshair size={11} className="text-red-400" />
+              <span className="bg-accent-soft text-primary font-bold text-[11px] px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                <Crosshair size={12} className="text-primary" />
                 Atomic Red Team
               </span>
-              <span className="bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[11px] font-mono px-2 py-0.5 rounded-full flex items-center gap-1">
-                <Code size={11} className="text-purple-400" />
+              <span className="bg-accent-soft text-primary font-bold text-[11px] px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                <Code size={12} className="text-primary" />
                 PayloadsAllTheThings
               </span>
-              <span className="bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[11px] font-mono px-2 py-0.5 rounded-full flex items-center gap-1">
-                <ShieldCheck size={11} className="text-blue-400" />
+              <span className="bg-accent-soft text-primary font-bold text-[11px] px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                <ShieldCheck size={12} className="text-primary" />
                 MITRE Caldera
               </span>
-              <span className="bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[11px] font-mono px-2 py-0.5 rounded-full flex items-center gap-1">
-                <Database size={11} className="text-amber-400" />
+              <span className="bg-accent-soft text-primary font-bold text-[11px] px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                <Database size={12} className="text-primary" />
                 SecLists
               </span>
             </div>
 
-            <h1 className="text-2xl md:text-3xl font-bold text-on-surface flex items-center gap-2.5">
+            <h1 className="font-headline-lg text-headline-lg text-on-surface flex items-center gap-2.5">
               <Swords className="text-primary" size={28} />
               Purple Team Arena & Adversary Simulator
             </h1>
-            <p className="text-sm text-text-muted mt-1">
-              Harness industry-standard offensive intelligence to safely launch adversary vectors, evaluate live AST & WAF interception, and deploy AI remediation diffs.
+            <p className="font-body-md text-body-md text-text-muted mt-1">
+              Safely launch adversary vectors, evaluate live AST & WAF interception, and deploy automated AI remediation diffs.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
             <button 
               onClick={() => { fetchScenarios(); fetchCampaigns(); fetchMetrics(); fetchHistory(); }}
-              className="px-3 py-2 bg-surface-container hover:bg-surface-container-high text-text-secondary hover:text-on-surface text-xs font-medium rounded-lg border border-border flex items-center gap-1.5 transition-colors"
+              className="px-3 py-2 bg-surface-container hover:bg-surface-container-high text-text-secondary hover:text-on-surface font-label-md text-label-md rounded-lg border border-outline-variant flex items-center gap-1.5 transition-colors"
             >
               <RefreshCw size={14} />
               Refresh Arena
@@ -279,136 +278,136 @@ export default function PurpleTeamArenaPage() {
           </div>
         </div>
 
-        {/* Purple Team Resilience Scorecard */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-surface border border-outline-variant rounded-xl p-4 flex flex-col justify-between">
-            <span className="text-xs text-text-muted font-medium">Simulated Strikes Executed</span>
+        {/* Purple Team Resilience Scorecard (Clean SentroniX Theme) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-grid-gap">
+          <div className="bento-card bg-surface-container-low flex flex-col justify-between">
+            <span className="font-label-md text-label-md text-text-secondary">Simulated Strikes Executed</span>
             <div className="flex items-baseline gap-2 mt-2">
-              <span className="text-2xl font-bold text-on-surface">{metrics.total_simulated_strikes}</span>
-              <span className="text-xs text-text-muted font-mono">vectors</span>
+              <span className="font-headline-lg text-headline-lg text-on-surface">{metrics.total_simulated_strikes}</span>
+              <span className="font-label-sm text-label-sm text-text-muted">vectors</span>
             </div>
           </div>
 
-          <div className="bg-surface border border-outline-variant rounded-xl p-4 flex flex-col justify-between">
-            <span className="text-xs text-text-muted font-medium">Interception Rate</span>
+          <div className="bento-card bg-surface-container-low flex flex-col justify-between">
+            <span className="font-label-md text-label-md text-text-secondary">Interception Rate</span>
             <div className="flex items-baseline gap-2 mt-2">
-              <span className="text-2xl font-bold text-emerald-400">{metrics.interception_success_rate}%</span>
-              <span className="text-xs text-emerald-500/80 font-medium">Neutralized</span>
+              <span className="font-headline-lg text-headline-lg text-success-defensive font-bold">{metrics.interception_success_rate}%</span>
+              <span className="font-label-sm text-label-sm text-success-defensive">Neutralized</span>
             </div>
           </div>
 
-          <div className="bg-surface border border-outline-variant rounded-xl p-4 flex flex-col justify-between">
-            <span className="text-xs text-text-muted font-medium">Avg Detection Latency</span>
+          <div className="bento-card bg-surface-container-low flex flex-col justify-between">
+            <span className="font-label-md text-label-md text-text-secondary">Avg Detection Latency</span>
             <div className="flex items-baseline gap-2 mt-2">
-              <span className="text-2xl font-bold text-cyan-400">{metrics.average_detection_latency_ms}</span>
-              <span className="text-xs text-text-muted font-mono">ms</span>
+              <span className="font-headline-lg text-headline-lg text-primary font-bold">{metrics.average_detection_latency_ms}</span>
+              <span className="font-label-sm text-label-sm text-text-muted">ms</span>
             </div>
           </div>
 
-          <div className="bg-surface border border-outline-variant rounded-xl p-4 flex flex-col justify-between">
-            <span className="text-xs text-text-muted font-medium">Defensive Resilience</span>
+          <div className="bento-card bg-surface-container-low flex flex-col justify-between">
+            <span className="font-label-md text-label-md text-text-secondary">Defensive Resilience</span>
             <div className="flex items-baseline gap-2 mt-2">
-              <span className="text-2xl font-bold text-purple-400">{metrics.resilience_grade}</span>
-              <span className="text-xs text-purple-300 font-medium">Hardened</span>
+              <span className="font-headline-lg text-headline-lg text-primary font-bold">{metrics.resilience_grade}</span>
+              <span className="font-label-sm text-label-sm text-text-muted">Hardened</span>
             </div>
           </div>
         </div>
 
-        {/* Operation Mode Tabs (Atomic Vectors, Caldera Campaigns, SecLists Fuzzing) */}
-        <div className="flex gap-4 border-b border-border">
+        {/* Operation Mode Tabs */}
+        <div className="flex gap-6 border-b border-border-strong">
           <button 
             onClick={() => setActiveMode('atomic')}
-            className={`pb-2.5 px-2 font-semibold text-xs transition-all flex items-center gap-2 ${
+            className={`pb-2.5 px-1 font-label-md text-label-md transition-all flex items-center gap-2 ${
               activeMode === 'atomic' 
                 ? 'text-primary border-b-2 border-primary font-bold' 
                 : 'text-text-secondary hover:text-on-surface'
             }`}
           >
-            <Crosshair size={15} />
-            Atomic Strikes & Payloads (Atomic Red Team & PayloadsAllTheThings)
+            <Crosshair size={16} />
+            Atomic Strikes & Payloads
           </button>
           
           <button 
             onClick={() => setActiveMode('caldera')}
-            className={`pb-2.5 px-2 font-semibold text-xs transition-all flex items-center gap-2 ${
+            className={`pb-2.5 px-1 font-label-md text-label-md transition-all flex items-center gap-2 ${
               activeMode === 'caldera' 
                 ? 'text-primary border-b-2 border-primary font-bold' 
                 : 'text-text-secondary hover:text-on-surface'
             }`}
           >
-            <Swords size={15} />
+            <Swords size={16} />
             Adversary Campaigns (MITRE Caldera)
           </button>
 
           <button 
             onClick={() => setActiveMode('seclists')}
-            className={`pb-2.5 px-2 font-semibold text-xs transition-all flex items-center gap-2 ${
+            className={`pb-2.5 px-1 font-label-md text-label-md transition-all flex items-center gap-2 ${
               activeMode === 'seclists' 
                 ? 'text-primary border-b-2 border-primary font-bold' 
                 : 'text-text-secondary hover:text-on-surface'
             }`}
           >
-            <Database size={15} />
+            <Database size={16} />
             Sensitive Path Fuzzer (SecLists)
           </button>
         </div>
 
         {/* ================= MODE 1: ATOMIC STRIKES ================= */}
         {activeMode === 'atomic' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-grid-gap">
             
             {/* 🔴 LEFT PANE: Red Team Adversary Launchpad */}
-            <div className="bg-surface border border-red-500/30 rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden shadow-lg shadow-red-500/5">
-              <div className="space-y-4 relative z-10">
-                <div className="flex items-center justify-between border-b border-border pb-3">
+            <div className="bento-card flex flex-col justify-between">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-outline-variant pb-3">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400">
+                    <div className="w-8 h-8 rounded-lg bg-error-container/40 flex items-center justify-center text-danger-offensive">
                       <Crosshair size={18} />
                     </div>
                     <div>
-                      <h2 className="text-base font-bold text-on-surface">Red Team Launchpad</h2>
-                      <p className="text-xs text-text-muted">Atomic Test & Payload Injector</p>
+                      <h2 className="font-headline-sm text-headline-sm text-on-surface">Red Team Launchpad</h2>
+                      <p className="font-body-sm text-body-sm text-text-muted">Atomic Test & Payload Injector</p>
                     </div>
                   </div>
-                  <span className="text-xs bg-red-500/20 text-red-300 border border-red-500/30 px-2 py-0.5 rounded font-mono font-bold">
+                  <span className="font-label-sm text-label-sm bg-error-container/30 text-danger-offensive px-2 py-0.5 rounded font-bold">
                     {activeScenario?.source_repo || 'OFFENSIVE OPS'}
                   </span>
                 </div>
 
                 {/* Scenario Selector */}
                 <div>
-                  <label className="block text-xs font-medium text-text-secondary mb-1.5">
+                  <label className="block font-label-md text-label-md text-text-secondary mb-1.5">
                     Select Atomic Scenario
                   </label>
                   <select 
                     value={selectedScenarioId}
                     onChange={(e) => handleScenarioChange(e.target.value)}
-                    className="w-full bg-surface-container-high border border-outline-variant rounded-lg px-3 py-2 text-sm text-on-surface focus:outline-none focus:border-red-500 transition-colors"
+                    className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-label-md text-label-md text-on-surface focus:outline-none focus:border-primary transition-colors"
                   >
                     {scenarios.map(s => (
                       <option key={s.id} value={s.id}>
-                        [{s.severity}] {s.title} ({s.mitre_tactic})
+                        [{s.severity}] {s.title}
                       </option>
                     ))}
                   </select>
                 </div>
 
-                {/* MITRE ATT&CK Metadata Badge */}
+                {/* MITRE ATT&CK Metadata Card */}
                 {activeScenario && (
-                  <div className="p-3 bg-surface-container/60 border border-border rounded-lg space-y-1.5">
+                  <div className="p-3 bg-surface-container-low border border-outline-variant rounded-lg space-y-1.5 text-xs">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-text-muted">MITRE ATT&CK Tactic</span>
-                      <span className="text-xs font-mono font-semibold text-red-400 bg-red-500/10 px-2 py-0.5 rounded">
+                      <span className="text-text-muted">MITRE ATT&CK Tactic:</span>
+                      <span className="font-semibold text-danger-offensive bg-error-container/30 px-2 py-0.5 rounded">
                         {activeScenario.mitre_tactic}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-text-muted">Technique ID</span>
-                      <span className="text-xs font-mono text-text-secondary">{activeScenario.mitre_technique}</span>
+                      <span className="text-text-muted">Technique ID:</span>
+                      <span className="font-mono text-on-surface">{activeScenario.mitre_technique}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-text-muted">Classification</span>
-                      <span className="text-xs font-mono text-text-secondary">{activeScenario.cwe} • {activeScenario.owasp}</span>
+                      <span className="text-text-muted">Classification:</span>
+                      <span className="font-mono text-text-secondary">{activeScenario.cwe} • {activeScenario.owasp}</span>
                     </div>
                   </div>
                 )}
@@ -416,15 +415,15 @@ export default function PurpleTeamArenaPage() {
                 {/* PayloadsAllTheThings Presets */}
                 {activeScenario?.payload_variants && activeScenario.payload_variants.length > 0 && (
                   <div>
-                    <span className="text-xs font-medium text-text-secondary block mb-1.5">
-                      💡 PayloadsAllTheThings Presets (Click to load):
+                    <span className="font-label-md text-label-md text-text-secondary block mb-1.5">
+                      💡 Preset Payloads (Click to load):
                     </span>
                     <div className="flex flex-wrap gap-1.5">
                       {activeScenario.payload_variants.map((variant, idx) => (
                         <button 
                           key={idx}
                           onClick={() => setCustomPayload(variant)}
-                          className="text-[11px] font-mono bg-black/40 hover:bg-red-500/10 border border-border hover:border-red-500/40 text-red-300 px-2 py-1 rounded transition-colors truncate max-w-xs"
+                          className="font-mono text-xs bg-surface-container-low hover:bg-surface-container-high border border-outline-variant text-text-secondary hover:text-primary px-2.5 py-1 rounded transition-colors truncate max-w-xs text-left"
                           title={variant}
                         >
                           {variant}
@@ -434,29 +433,29 @@ export default function PurpleTeamArenaPage() {
                   </div>
                 )}
 
-                {/* Target Endpoint Override */}
+                {/* Target Endpoint */}
                 <div>
-                  <label className="block text-xs font-medium text-text-secondary mb-1.5">
+                  <label className="block font-label-md text-label-md text-text-secondary mb-1.5">
                     Target Endpoint
                   </label>
                   <input 
-                    type="text"
+                    type="text" 
                     value={targetOverride}
                     onChange={(e) => setTargetOverride(e.target.value)}
                     placeholder="/api/v1/auth/login"
-                    className="w-full bg-surface-container-high border border-outline-variant rounded-lg px-3 py-2 text-xs font-mono text-on-surface focus:outline-none focus:border-red-500 transition-colors"
+                    className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-mono text-xs text-on-surface focus:outline-none focus:border-primary"
                   />
                 </div>
 
-                {/* Injected Payload Editor */}
+                {/* Injected Payload */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-xs font-medium text-text-secondary">
+                    <label className="font-label-md text-label-md text-text-secondary">
                       Injected Adversarial Payload
                     </label>
                     <button 
                       onClick={() => setCustomPayload(activeScenario?.default_payload || '')}
-                      className="text-[11px] text-text-muted hover:text-red-400 transition-colors"
+                      className="text-xs text-text-muted hover:text-primary transition-colors"
                     >
                       Reset Default
                     </button>
@@ -465,40 +464,40 @@ export default function PurpleTeamArenaPage() {
                     rows={3}
                     value={customPayload}
                     onChange={(e) => setCustomPayload(e.target.value)}
-                    className="w-full bg-black/40 border border-red-500/30 rounded-lg p-2.5 text-xs font-mono text-red-300 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500/50 transition-all resize-none"
+                    className="w-full bg-surface-container-low border border-outline-variant rounded-lg p-3 font-mono text-xs text-on-surface focus:outline-none focus:border-primary resize-none"
                     placeholder="Enter custom payload..."
                   />
                 </div>
 
-                {/* Discord Alert Toggle */}
+                {/* Discord Mod Alert Checkbox */}
                 <div className="flex items-center gap-2 pt-1">
                   <input 
                     type="checkbox" 
                     id="discordAlert" 
                     checked={notifyDiscord} 
                     onChange={(e) => setNotifyDiscord(e.target.checked)}
-                    className="rounded border-outline-variant text-red-500 focus:ring-red-500/20"
+                    className="rounded border-outline-variant text-primary focus:ring-primary/20"
                   />
                   <label htmlFor="discordAlert" className="text-xs text-text-secondary cursor-pointer">
-                    Broadcast event to SentoBot <code className="text-red-400 bg-red-500/10 px-1 py-0.5 rounded">#mod-security-alerts</code>
+                    Broadcast event to SentoBot <code className="text-primary bg-accent-soft px-1 py-0.5 rounded">#mod-security-alerts</code>
                   </label>
                 </div>
               </div>
 
-              {/* Strike Trigger Button */}
-              <div className="mt-5 pt-4 border-t border-border relative z-10">
+              {/* Action Button */}
+              <div className="mt-5 pt-4 border-t border-outline-variant">
                 <button 
                   onClick={handleExecuteStrike}
                   disabled={isStriking}
-                  className={`w-full py-3 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-lg transition-all ${
+                  className={`w-full py-2.5 px-4 rounded-lg font-label-md text-label-md flex items-center justify-center gap-2 transition-colors ${
                     isStriking 
-                      ? 'bg-red-950 text-red-300 border border-red-800 cursor-not-allowed' 
-                      : 'bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white shadow-red-600/20 active:scale-[0.99]'
+                      ? 'bg-surface-variant text-text-muted cursor-not-allowed' 
+                      : 'bg-primary text-on-primary hover:bg-surface-tint active:scale-[0.99]'
                   }`}
                 >
                   {isStriking ? (
                     <>
-                      <RefreshCw size={16} className="animate-spin text-red-300" />
+                      <RefreshCw size={16} className="animate-spin" />
                       Transmitting Adversary Vector...
                     </>
                   ) : (
@@ -511,80 +510,80 @@ export default function PurpleTeamArenaPage() {
               </div>
             </div>
 
-            {/* 🔵 RIGHT PANE: Blue Team Defensive Interception Telemetry */}
-            <div className="bg-surface border border-blue-500/30 rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden shadow-lg shadow-blue-500/5">
-              <div className="space-y-4 relative z-10">
-                <div className="flex items-center justify-between border-b border-border pb-3">
+            {/* 🔵 RIGHT PANE: Blue Team Threat Interception Telemetry */}
+            <div className="bento-card flex flex-col justify-between">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-outline-variant pb-3">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400">
+                    <div className="w-8 h-8 rounded-lg bg-success-defensive/10 flex items-center justify-center text-success-defensive">
                       <ShieldCheck size={18} />
                     </div>
                     <div>
-                      <h2 className="text-base font-bold text-on-surface">Blue Team Interceptor</h2>
-                      <p className="text-xs text-text-muted">Real-Time Threat Telemetry</p>
+                      <h2 className="font-headline-sm text-headline-sm text-on-surface">Blue Team Interceptor</h2>
+                      <p className="font-body-sm text-body-sm text-text-muted">Real-Time Threat Telemetry</p>
                     </div>
                   </div>
-                  <span className="text-xs bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded font-mono font-bold">
+                  <span className="font-label-sm text-label-sm bg-success-defensive/10 text-success-defensive px-2 py-0.5 rounded font-bold">
                     ACTIVE DEFENSE
                   </span>
                 </div>
 
                 {strikeResult ? (
-                  <div className="space-y-3.5 animate-fadeIn">
-                    <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex items-center justify-between">
+                  <div className="space-y-3">
+                    <div className="p-3 bg-success-defensive/10 border border-success-defensive/20 rounded-lg flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
-                        <CheckCircle2 size={20} className="text-emerald-400" />
+                        <CheckCircle2 size={20} className="text-success-defensive" />
                         <div>
-                          <span className="text-xs font-bold text-emerald-400 block">
+                          <span className="font-label-md text-label-md font-bold text-success-defensive block">
                             {strikeResult.blue_team.defense_status}
                           </span>
-                          <span className="text-[11px] text-text-muted">
+                          <span className="text-xs text-text-muted">
                             HTTP Status: {strikeResult.blue_team.status_code} Forbidden
                           </span>
                         </div>
                       </div>
-                      <span className="text-xs font-mono font-bold text-cyan-300 bg-cyan-500/10 px-2 py-1 rounded border border-cyan-500/20">
+                      <span className="font-mono text-xs font-bold text-primary bg-accent-soft px-2.5 py-1 rounded">
                         ⚡ {strikeResult.blue_team.latency_ms} ms
                       </span>
                     </div>
 
-                    <div className="p-3 bg-surface-container/80 border border-border rounded-xl space-y-1">
-                      <span className="text-xs text-text-muted block">Detection & AST Rule Triggered</span>
-                      <span className="text-xs font-mono font-semibold text-blue-300 block">
+                    <div className="p-3 bg-surface-container-low border border-outline-variant rounded-lg space-y-1">
+                      <span className="text-xs text-text-muted block">Detection & AST Rule Triggered:</span>
+                      <span className="font-mono text-xs font-semibold text-primary block">
                         {strikeResult.blue_team.inspection_rule}
                       </span>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 text-xs">
-                      <div className="p-2.5 bg-black/40 border border-border rounded-lg">
-                        <span className="text-text-muted block text-[11px]">Injected Vector</span>
-                        <code className="text-red-400 font-mono block mt-1 truncate">
+                      <div className="p-2.5 bg-surface-container-low border border-outline-variant rounded-lg">
+                        <span className="text-text-muted block">Injected Vector:</span>
+                        <code className="text-danger-offensive font-mono block mt-1 truncate">
                           {strikeResult.red_team.injected_payload}
                         </code>
                       </div>
-                      <div className="p-2.5 bg-black/40 border border-border rounded-lg">
-                        <span className="text-text-muted block text-[11px]">Threat Confidence</span>
-                        <span className="text-emerald-400 font-semibold block mt-1">
+                      <div className="p-2.5 bg-surface-container-low border border-outline-variant rounded-lg">
+                        <span className="text-text-muted block">Threat Confidence:</span>
+                        <span className="text-success-defensive font-semibold block mt-1">
                           {strikeResult.blue_team.threat_score}% (High Fidelity)
                         </span>
                       </div>
                     </div>
 
-                    <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl space-y-1">
-                      <div className="flex items-center gap-1.5 text-purple-400 font-semibold text-xs">
+                    <div className="p-3 bg-accent-soft border border-primary/20 rounded-lg space-y-1">
+                      <div className="flex items-center gap-1.5 text-primary font-bold text-xs">
                         <Sparkles size={14} />
                         Purple Team AI Remediation Path
                       </div>
-                      <p className="text-xs text-text-secondary leading-relaxed">
+                      <p className="text-xs text-on-surface leading-relaxed">
                         {strikeResult.blue_team.remediation_hint}
                       </p>
                     </div>
                   </div>
                 ) : (
-                  <div className="h-64 flex flex-col items-center justify-center text-center p-6 border border-dashed border-border rounded-xl text-text-muted">
+                  <div className="h-64 flex flex-col items-center justify-center text-center p-6 border border-dashed border-outline-variant rounded-xl text-text-muted">
                     <ShieldAlert size={36} className="text-text-muted mb-2 opacity-50" />
-                    <p className="text-sm font-medium text-text-secondary">Awaiting Adversary Strike Execution</p>
-                    <p className="text-xs text-text-muted mt-1 max-w-xs">
+                    <p className="font-headline-sm text-headline-sm text-on-surface">Awaiting Adversary Strike Execution</p>
+                    <p className="font-body-sm text-body-sm text-text-muted mt-1 max-w-xs">
                       Select a scenario on the left and click "Execute Atomic Strike" to observe live defensive interception.
                     </p>
                   </div>
@@ -592,14 +591,14 @@ export default function PurpleTeamArenaPage() {
               </div>
 
               {/* AI Patch Trigger Button */}
-              <div className="mt-5 pt-4 border-t border-border relative z-10">
+              <div className="mt-5 pt-4 border-t border-outline-variant">
                 <button 
                   onClick={handleOpenAIPatch}
                   disabled={!strikeResult}
-                  className={`w-full py-3 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-lg transition-all ${
+                  className={`w-full py-2.5 px-4 rounded-lg font-label-md text-label-md flex items-center justify-center gap-2 transition-colors ${
                     strikeResult
-                      ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-purple-600/20 active:scale-[0.99]'
-                      : 'bg-surface-container text-text-muted border border-border cursor-not-allowed'
+                      ? 'bg-primary-container text-on-primary hover:bg-surface-tint active:scale-[0.99]'
+                      : 'bg-surface-variant text-text-muted cursor-not-allowed'
                   }`}
                 >
                   <Sparkles size={18} />
@@ -612,14 +611,14 @@ export default function PurpleTeamArenaPage() {
 
         {/* ================= MODE 2: MITRE CALDERA CAMPAIGNS ================= */}
         {activeMode === 'caldera' && (
-          <div className="bg-surface border border-outline-variant rounded-2xl p-6 space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-4">
+          <div className="bento-card space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-outline-variant pb-4">
               <div>
-                <h2 className="text-lg font-bold text-on-surface flex items-center gap-2">
+                <h2 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
                   <Swords className="text-primary" size={20} />
                   MITRE Caldera Autonomous Adversary Campaigns
                 </h2>
-                <p className="text-xs text-text-muted mt-0.5">
+                <p className="font-body-sm text-body-sm text-text-muted mt-0.5">
                   Simulate multi-stage APT campaigns traversing reconnaissance, public exploitation, and privilege escalation in automated sequence.
                 </p>
               </div>
@@ -628,7 +627,7 @@ export default function PurpleTeamArenaPage() {
                 <select 
                   value={selectedCampaignId}
                   onChange={(e) => setSelectedCampaignId(e.target.value)}
-                  className="bg-surface-container-high border border-outline-variant rounded-lg px-3 py-2 text-xs text-on-surface focus:outline-none"
+                  className="bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-label-md text-label-md text-on-surface focus:outline-none"
                 >
                   {campaigns.map(c => (
                     <option key={c.id} value={c.id}>
@@ -640,7 +639,7 @@ export default function PurpleTeamArenaPage() {
                 <button 
                   onClick={handleRunCampaign}
                   disabled={isCampaignRunning}
-                  className="px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white rounded-lg text-xs font-bold flex items-center gap-2 shadow-lg transition-all"
+                  className="px-4 py-2 bg-primary text-on-primary hover:bg-surface-tint rounded-lg font-label-md text-label-md flex items-center gap-2 transition-colors"
                 >
                   {isCampaignRunning ? <RefreshCw size={14} className="animate-spin" /> : <Play size={14} />}
                   Launch Campaign
@@ -648,28 +647,27 @@ export default function PurpleTeamArenaPage() {
               </div>
             </div>
 
-            {/* Campaign Stages Progression */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               {campaigns.find(c => c.id === selectedCampaignId)?.stages.map((stage, idx) => (
-                <div key={idx} className="p-4 bg-surface-container/60 border border-border rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div key={idx} className="p-4 bg-surface-container-low border border-outline-variant rounded-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center text-primary font-bold text-xs">
+                    <div className="w-8 h-8 rounded-full bg-accent-soft flex items-center justify-center text-primary font-bold text-xs">
                       {stage.phase}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-on-surface">{stage.tactic}</span>
-                        <span className="text-[11px] font-mono text-red-400 bg-red-500/10 px-2 py-0.5 rounded">
+                        <span className="font-label-md text-label-md text-on-surface font-bold">{stage.tactic}</span>
+                        <span className="text-[11px] font-mono text-danger-offensive bg-error-container/30 px-2 py-0.5 rounded">
                           {stage.technique}
                         </span>
                       </div>
                       <p className="text-xs text-text-secondary mt-0.5">{stage.action}</p>
-                      <code className="text-[11px] text-zinc-400 font-mono block mt-1">Payload: {stage.payload}</code>
+                      <code className="text-[11px] text-text-muted font-mono block mt-1">Payload: {stage.payload}</code>
                     </div>
                   </div>
 
                   <div className="text-right">
-                    <span className="px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
+                    <span className="px-2.5 py-1 rounded bg-success-defensive/10 text-success-defensive border border-success-defensive/20 text-xs font-semibold">
                       🛡️ WAF Interceptor Ready
                     </span>
                   </div>
@@ -681,14 +679,14 @@ export default function PurpleTeamArenaPage() {
 
         {/* ================= MODE 3: SECLISTS FUZZING ================= */}
         {activeMode === 'seclists' && (
-          <div className="bg-surface border border-outline-variant rounded-2xl p-6 space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-4">
+          <div className="bento-card space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-outline-variant pb-4">
               <div>
-                <h2 className="text-lg font-bold text-on-surface flex items-center gap-2">
-                  <Database className="text-amber-400" size={20} />
+                <h2 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+                  <Database className="text-primary" size={20} />
                   SecLists Sensitive Path & Parameter Discovery
                 </h2>
-                <p className="text-xs text-text-muted mt-0.5">
+                <p className="font-body-sm text-body-sm text-text-muted mt-0.5">
                   Probe common sensitive paths (e.g. `/.env`, `/.git/HEAD`, `/api/swagger.json`) to audit perimeter exposure.
                 </p>
               </div>
@@ -696,7 +694,7 @@ export default function PurpleTeamArenaPage() {
               <button 
                 onClick={handleRunSecListsFuzzing}
                 disabled={isFuzzing}
-                className="px-4 py-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white rounded-lg text-xs font-bold flex items-center gap-2 shadow-lg transition-all"
+                className="px-4 py-2 bg-primary text-on-primary hover:bg-surface-tint rounded-lg font-label-md text-label-md flex items-center gap-2 transition-colors"
               >
                 {isFuzzing ? <RefreshCw size={14} className="animate-spin" /> : <Search size={14} />}
                 Run SecLists Probe Scan
@@ -707,7 +705,7 @@ export default function PurpleTeamArenaPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
-                    <tr className="border-b border-border text-text-muted uppercase text-[10px] tracking-wider">
+                    <tr className="border-b border-outline-variant text-text-muted uppercase text-[10px] tracking-wider">
                       <th className="pb-2.5">Probed Path</th>
                       <th className="pb-2.5">Artifact Category</th>
                       <th className="pb-2.5">Risk Rating</th>
@@ -715,19 +713,19 @@ export default function PurpleTeamArenaPage() {
                       <th className="pb-2.5">Inspection Description</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border/60">
+                  <tbody className="divide-y divide-outline-variant">
                     {seclistsResults.map((p, idx) => (
-                      <tr key={idx} className="hover:bg-surface-hover transition-colors">
-                        <td className="py-2.5 font-mono text-amber-300 font-semibold">{p.path}</td>
+                      <tr key={idx} className="hover:bg-surface-container-high transition-colors">
+                        <td className="py-2.5 font-mono text-primary font-semibold">{p.path}</td>
                         <td className="py-2.5 text-text-secondary">{p.type}</td>
                         <td className="py-2.5">
                           <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                            p.risk === 'CRITICAL' ? 'bg-red-500/20 text-red-400' : (p.risk === 'HIGH' ? 'bg-amber-500/20 text-amber-400' : 'bg-blue-500/20 text-blue-400')
+                            p.risk === 'CRITICAL' ? 'bg-error-container text-danger-offensive' : (p.risk === 'HIGH' ? 'bg-error-container/40 text-danger-offensive' : 'bg-accent-soft text-primary')
                           }`}>
                             {p.risk}
                           </span>
                         </td>
-                        <td className="py-2.5 font-mono text-emerald-400">{p.status}</td>
+                        <td className="py-2.5 font-mono text-success-defensive">{p.status}</td>
                         <td className="py-2.5 text-text-muted">{p.description}</td>
                       </tr>
                     ))}
@@ -735,7 +733,7 @@ export default function PurpleTeamArenaPage() {
                 </table>
               </div>
             ) : (
-              <div className="py-8 text-center text-text-muted border border-dashed border-border rounded-xl">
+              <div className="py-8 text-center text-text-muted border border-dashed border-outline-variant rounded-xl">
                 <Database size={32} className="mx-auto text-text-muted opacity-40 mb-2" />
                 <p className="text-xs">Click "Run SecLists Probe Scan" to evaluate sensitive endpoint exposures.</p>
               </div>
@@ -744,27 +742,27 @@ export default function PurpleTeamArenaPage() {
         )}
 
         {/* Live CLI Strike Terminal */}
-        <div className="bg-black/90 border border-outline-variant rounded-2xl p-4 shadow-xl font-mono text-xs overflow-hidden">
-          <div className="flex items-center justify-between border-b border-zinc-800 pb-2.5 mb-3 text-text-muted">
+        <div className="bento-card bg-surface-container-lowest font-mono text-xs overflow-hidden">
+          <div className="flex items-center justify-between border-b border-outline-variant pb-2.5 mb-3 text-text-muted">
             <div className="flex items-center gap-2">
-              <Terminal size={15} className="text-emerald-400" />
-              <span className="font-semibold text-zinc-300">Live Strike & Interception Console</span>
+              <Terminal size={15} className="text-primary" />
+              <span className="font-semibold text-on-surface">Live Strike & Interception Console</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-              <span className="text-[11px] text-zinc-400">Stream Online</span>
+              <span className="w-2 h-2 rounded-full bg-success-defensive animate-ping"></span>
+              <span className="text-[11px] text-text-secondary">Stream Online</span>
             </div>
           </div>
 
-          <div className="h-40 overflow-y-auto space-y-1 pr-2 text-zinc-300">
+          <div className="h-40 overflow-y-auto space-y-1 pr-2 text-on-surface">
             {terminalLogs.length > 0 ? (
               terminalLogs.map((log, idx) => {
-                let colorClass = "text-zinc-300"
-                if (log.includes("🔴")) colorClass = "text-red-400 font-semibold"
-                else if (log.includes("🔵")) colorClass = "text-blue-400 font-semibold"
-                else if (log.includes("✨")) colorClass = "text-purple-300 font-bold"
-                else if (log.includes("⚡")) colorClass = "text-cyan-300"
-                else if (log.includes("🔍") || log.includes("⚔️")) colorClass = "text-amber-300 font-semibold"
+                let colorClass = "text-on-surface"
+                if (log.includes("🔴")) colorClass = "text-danger-offensive font-semibold"
+                else if (log.includes("🔵")) colorClass = "text-primary font-semibold"
+                else if (log.includes("✨")) colorClass = "text-primary font-bold"
+                else if (log.includes("⚡")) colorClass = "text-success-defensive"
+                else if (log.includes("🔍") || log.includes("⚔️")) colorClass = "text-on-surface font-semibold"
                 return (
                   <div key={idx} className={`${colorClass} leading-relaxed font-mono`}>
                     {log}
@@ -772,7 +770,7 @@ export default function PurpleTeamArenaPage() {
                 )
               })
             ) : (
-              <div className="text-zinc-500 italic py-6 text-center">
+              <div className="text-text-muted italic py-6 text-center">
                 Console initialized. Execute an atomic strike, Caldera campaign, or SecLists probe to monitor real-time packet transmissions.
               </div>
             )}
@@ -781,9 +779,9 @@ export default function PurpleTeamArenaPage() {
 
         {/* Recent Strike Simulation History Table */}
         {history.length > 0 && (
-          <div className="bg-surface border border-outline-variant rounded-2xl p-5 space-y-4">
+          <div className="bento-card space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-bold text-on-surface flex items-center gap-2">
+              <h2 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
                 <Layers size={18} className="text-primary" />
                 Recent Simulation History
               </h2>
@@ -793,7 +791,7 @@ export default function PurpleTeamArenaPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-border text-text-muted uppercase text-[10px] tracking-wider">
+                  <tr className="border-b border-outline-variant text-text-muted uppercase text-[10px] tracking-wider">
                     <th className="pb-2.5">Strike ID</th>
                     <th className="pb-2.5">Scenario / Technique</th>
                     <th className="pb-2.5">Source Repo</th>
@@ -803,17 +801,17 @@ export default function PurpleTeamArenaPage() {
                     <th className="pb-2.5">Defense Verdict</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border/60">
+                <tbody className="divide-y divide-outline-variant">
                   {history.slice(0, 5).map((item, idx) => (
-                    <tr key={idx} className="hover:bg-surface-hover transition-colors">
+                    <tr key={idx} className="hover:bg-surface-container-high transition-colors">
                       <td className="py-2.5 font-mono text-text-secondary">{item.strike_id}</td>
                       <td className="py-2.5 font-medium text-on-surface">{item.title}</td>
-                      <td className="py-2.5 font-mono text-purple-300">{item.source_repo || 'PayloadsAllTheThings'}</td>
+                      <td className="py-2.5 font-mono text-primary">{item.source_repo || 'PayloadsAllTheThings'}</td>
                       <td className="py-2.5 font-mono text-text-muted">{item.red_team.target_endpoint}</td>
-                      <td className="py-2.5 font-mono text-red-300 max-w-xs truncate">{item.red_team.injected_payload}</td>
-                      <td className="py-2.5 font-mono text-cyan-400">{item.blue_team.latency_ms} ms</td>
+                      <td className="py-2.5 font-mono text-danger-offensive max-w-xs truncate">{item.red_team.injected_payload}</td>
+                      <td className="py-2.5 font-mono text-primary font-bold">{item.blue_team.latency_ms} ms</td>
                       <td className="py-2.5">
-                        <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold text-[11px]">
+                        <span className="px-2 py-0.5 rounded bg-success-defensive/10 text-success-defensive border border-success-defensive/20 font-semibold text-[11px]">
                           {item.blue_team.defense_status}
                         </span>
                       </td>
