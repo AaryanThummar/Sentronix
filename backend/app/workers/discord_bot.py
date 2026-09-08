@@ -19,6 +19,79 @@ intents.presences = True
 bot = commands.Bot(command_prefix="!", intents=intents, help_command=None)
 last_notified_finding_id = None
 
+# ----------------- INTERACTIVE DISCORD ACTION BUTTONS -----------------
+class VulnerabilityAlertView(discord.ui.View):
+    def __init__(self, finding_data: dict):
+        super().__init__(timeout=None)
+        self.finding_data = finding_data
+
+    @discord.ui.button(label="✨ Generate AI Patch", style=discord.ButtonStyle.primary, emoji="✨")
+    async def generate_patch_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer(ephemeral=False)
+        async with aiohttp.ClientSession() as session:
+            payload = {
+                "title": self.finding_data.get("title", "Security Finding"),
+                "tool": self.finding_data.get("tool", "SentroniX Interceptor"),
+                "severity": self.finding_data.get("severity", "CRITICAL"),
+                "location": self.finding_data.get("location", "app/main.py"),
+                "description": self.finding_data.get("description", ""),
+                "api_key": GEMINI_KEY
+            }
+            try:
+                async with session.post(f"{API_BASE_URL}/api/v1/ai/patch", json=payload) as res:
+                    if res.status == 200:
+                        data = await res.json()
+                        embed = discord.Embed(
+                            title=f"✨ Automated AI Remediation: {self.finding_data.get('title')}",
+                            description=f"**CWE:** `{data.get('cwe', 'CWE-Security')}` | **OWASP:** `{data.get('owasp_category', 'OWASP Top 10')}`\n\n**🔍 Root Cause Diagnosis:**\n{data.get('root_cause', '')}",
+                            color=0x10b981
+                        )
+                        diff_text = data.get("diff", data.get("remediated_snippet", ""))
+                        if len(diff_text) > 1000:
+                            diff_text = diff_text[:1000] + "\n... [diff truncated]"
+                        embed.add_field(name="🛠️ Unified Code Diff", value=f"```diff\n{diff_text}\n```", inline=False)
+                        embed.add_field(name="🛡️ Security Rationale", value=data.get("explanation", "Input validation & parameterized query applied."), inline=False)
+                        embed.set_footer(text=f"Remediated via {data.get('source', 'Google Gemini 3.6 Flash')}")
+                        await interaction.followup.send(embed=embed)
+                    else:
+                        await interaction.followup.send("❌ Error contacting AI Remediation Engine.")
+            except Exception as e:
+                await interaction.followup.send(f"❌ Failed to generate patch: {e}")
+
+    @discord.ui.button(label="🎫 Create Jira Issue", style=discord.ButtonStyle.secondary, emoji="🎫")
+    async def create_jira_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer(ephemeral=False)
+        async with aiohttp.ClientSession() as session:
+            payload = {
+                "title": self.finding_data.get("title", "Security Finding"),
+                "tool": self.finding_data.get("tool", "SentroniX Interceptor"),
+                "severity": self.finding_data.get("severity", "CRITICAL"),
+                "location": self.finding_data.get("location", "app/main.py"),
+                "description": self.finding_data.get("description", "")
+            }
+            try:
+                async with session.post(f"{API_BASE_URL}/api/v1/ai/jira-ticket", json=payload) as res:
+                    if res.status == 200:
+                        data = await res.json()
+                        embed = discord.Embed(
+                            title=f"🎫 Jira Issue Created: {data.get('ticket_key', 'STX-1042')}",
+                            description=f"**Summary:** `{data.get('summary')}`\n**Priority:** `{data.get('priority', 'High')}`\n**Issue URL:** {data.get('ticket_url', 'http://localhost:8080/browse/STX-1042')}",
+                            color=0x3b82f6
+                        )
+                        embed.set_footer(text="SentroniX Jira Bridge")
+                        await interaction.followup.send(embed=embed)
+                    else:
+                        await interaction.followup.send("❌ Failed to create Jira ticket.")
+            except Exception as e:
+                await interaction.followup.send(f"❌ Error: {e}")
+
+    @discord.ui.button(label="🛡️ Acknowledge", style=discord.ButtonStyle.success, emoji="✅")
+    async def acknowledge_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
+        button.disabled = True
+        button.label = f"Triaged by {interaction.user.name}"
+        await interaction.response.edit_message(view=self)
+        await interaction.followup.send(f"🔒 Alert acknowledged and marked as in-triage by {interaction.user.mention}.")
+
 @bot.event
 async def on_ready():
     print(f"==================================================")
@@ -89,9 +162,11 @@ async def vulnerability_watchdog():
                                     )
                                     embed.add_field(name="Scanner Tool", value=f"`{top_finding.get('tool')}`", inline=True)
                                     embed.add_field(name="Target Location", value=f"`{top_finding.get('location')}`", inline=True)
-                                    embed.add_field(name="Action Required", value="Type `!patch` or open SentroniX Dashboard to generate AI remediation.", inline=False)
+                                    embed.add_field(name="Action Required", value="Click buttons below or use `!patch` to remediate.", inline=False)
                                     embed.set_footer(text="SentroniX Automated Threat Interceptor • Mod Alerts Channel")
-                                    await alert_channel.send(embed=embed)
+                                    
+                                    view = VulnerabilityAlertView(top_finding)
+                                    await alert_channel.send(embed=embed, view=view)
     except Exception:
         pass
 
@@ -106,6 +181,7 @@ async def help_cmd(ctx):
     )
     embed.add_field(name="📊 `!status` or `/status`", value="Check live health of backend API, DB, and active scanners.", inline=False)
     embed.add_field(name="🎯 `!posture` or `/posture`", value="View current security grade (A-D) and threat breakdown.", inline=False)
+    embed.add_field(name="⚔️ `!arena` or `/arena`", value="Trigger simulated adversary strikes from Discord.", inline=False)
     embed.add_field(name="🔍 `!scans` or `/scans`", value="List recent security findings and steganography alerts.", inline=False)
     embed.add_field(name="✨ `!patch <finding_title>`", value="Generate an automated AI remediation patch with unified Git diff.", inline=False)
     embed.add_field(name="🧠 `!ask <question>`", value="Ask Gemini AI any cybersecurity or remediation question.", inline=False)
@@ -178,6 +254,38 @@ async def posture(ctx):
 
     embed.set_footer(text="SentroniX Purple-Team Security Engine")
     await ctx.send(embed=embed)
+
+@bot.hybrid_command(name="arena", description="Simulate an adversary strike and test live interception")
+async def arena_cmd(ctx, scenario: str = "sqli-auth-bypass"):
+    await ctx.defer()
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.post(f"{API_BASE_URL}/api/v1/red-team/strike", json={"scenario_id": scenario, "notify_discord": False}) as res:
+                if res.status == 200:
+                    data = await res.json()
+                    embed = discord.Embed(
+                        title=f"⚔️ Strike Emulation: {data.get('title')}",
+                        description=f"**MITRE ATT&CK:** `{data.get('mitre_technique')}`\n**Target:** `{data.get('red_team', {}).get('target_endpoint')}`\n\n**Payload:**\n```{data.get('red_team', {}).get('injected_payload')}```",
+                        color=0xef4444
+                    )
+                    embed.add_field(name="Defense Status", value=f"🔵 `{data.get('blue_team', {}).get('defense_status')}`", inline=True)
+                    embed.add_field(name="Latency", value=f"⚡ `{data.get('blue_team', {}).get('latency_ms')} ms`", inline=True)
+                    embed.add_field(name="Inspection Rule", value=f"`{data.get('blue_team', {}).get('inspection_rule')}`", inline=False)
+                    embed.set_footer(text="SentroniX Purple Team Arena")
+                    
+                    finding_stub = {
+                        "title": data.get("title"),
+                        "tool": "Red Team Simulator",
+                        "severity": data.get("severity", "CRITICAL"),
+                        "location": data.get("red_team", {}).get("target_endpoint"),
+                        "description": data.get("purple_team_convergence", {}).get("summary", "")
+                    }
+                    view = VulnerabilityAlertView(finding_stub)
+                    await ctx.send(embed=embed, view=view)
+                else:
+                    await ctx.send(f"❌ Error executing strike (HTTP {res.status})")
+        except Exception as e:
+            await ctx.send(f"❌ Strike error: {e}")
 
 @bot.hybrid_command(name="scans", description="Show latest security findings across SAST, DAST, and Steg")
 async def scans(ctx):
