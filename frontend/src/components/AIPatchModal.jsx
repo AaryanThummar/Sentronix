@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { 
   X, Wand2, Shield, CheckCircle2, Copy, Download, 
-  ExternalLink, Key, Sparkles, AlertTriangle, FileCode, Check, RefreshCw
+  ExternalLink, Key, Sparkles, AlertTriangle, FileCode, Check, RefreshCw,
+  GitPullRequest, GitBranch, GitFork, ArrowUpRight
 } from 'lucide-react'
 
 export default function AIPatchModal({ finding, onClose, onRemediated }) {
@@ -16,11 +18,22 @@ export default function AIPatchModal({ finding, onClose, onRemediated }) {
 
   // Actions state
   const [copied, setCopied] = useState(false)
-  const [jiraStatus, setJiraStatus] = useState(null) // { ticket_key, ticket_url }
+  const [jiraStatus, setJiraStatus] = useState(null)
   const [isJiraLoading, setIsJiraLoading] = useState(false)
   const [isApplying, setIsApplying] = useState(false)
   const [applied, setApplied] = useState(false)
   const [activeTab, setActiveTab] = useState('diff') // 'diff' | 'analysis' | 'verification'
+
+  // GitHub PR State
+  const [showGitHubDrawer, setShowGitHubDrawer] = useState(false)
+  const [isGitHubLoading, setIsGitHubLoading] = useState(false)
+  const [githubStatus, setGithubStatus] = useState(null)
+  const [repoOwner, setRepoOwner] = useState(() => localStorage.getItem('sentronix_github_owner') || 'Keval-Doshi')
+  const [repoName, setRepoName] = useState(() => localStorage.getItem('sentronix_github_repo') || 'SentroniX')
+  const [baseBranch, setBaseBranch] = useState(() => localStorage.getItem('sentronix_github_base') || 'main')
+  const [customBranch, setCustomBranch] = useState('')
+  const [githubToken, setGithubToken] = useState(() => localStorage.getItem('sentronix_github_token') || '')
+  const [copiedBranchCmd, setCopiedBranchCmd] = useState(false)
 
   useEffect(() => {
     if (finding) {
@@ -124,6 +137,49 @@ export default function AIPatchModal({ finding, onClose, onRemediated }) {
     }
   }
 
+  const handleCreateGitHubPR = async () => {
+    if (!patchData) return
+    setIsGitHubLoading(true)
+    try {
+      const res = await fetch('http://localhost:8000/api/v1/ai/github-pr', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(githubToken ? { 'X-GitHub-Token': githubToken } : {})
+        },
+        body: JSON.stringify({
+          title: finding.title,
+          severity: finding.severity,
+          location: finding.location,
+          cwe: patchData.cwe,
+          diff: patchData.diff,
+          explanation: patchData.explanation,
+          verification_steps: patchData.verification_steps,
+          repo_owner: repoOwner.trim() || 'Keval-Doshi',
+          repo_name: repoName.trim() || 'SentroniX',
+          base_branch: baseBranch.trim() || 'main',
+          branch_name: customBranch.trim() || null,
+          github_token: githubToken.trim() || null
+        })
+      })
+
+      if (!res.ok) throw new Error(`HTTP Error ${res.status}`)
+      const data = await res.json()
+      setGithubStatus(data)
+      setShowGitHubDrawer(false)
+    } catch (err) {
+      alert('Failed to create GitHub PR: ' + err.message)
+    } finally {
+      setIsGitHubLoading(false)
+    }
+  }
+
+  const handleCopyBranchCmd = (cmd) => {
+    navigator.clipboard.writeText(cmd)
+    setCopiedBranchCmd(true)
+    setTimeout(() => setCopiedBranchCmd(false), 2000)
+  }
+
   const handleApplyRemediation = async () => {
     setIsApplying(true)
     try {
@@ -148,8 +204,8 @@ export default function AIPatchModal({ finding, onClose, onRemediated }) {
 
   if (!finding) return null
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in overflow-y-auto">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in overflow-y-auto">
       <div className="bg-surface border border-border-strong rounded-2xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col my-8 max-h-[90vh]">
         
         {/* Modal Header */}
@@ -433,6 +489,120 @@ export default function AIPatchModal({ finding, onClose, onRemediated }) {
                 </div>
               )}
 
+              {/* GitHub PR Result Banner */}
+              {githubStatus && (
+                <div className="p-3 bg-accent-soft border border-primary/40 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs animate-fade-in">
+                  <div className="flex items-center gap-2">
+                    <GitPullRequest size={16} className="text-primary flex-shrink-0" />
+                    <div>
+                      <span className="text-on-surface font-bold">{githubStatus.message}</span>
+                      <div className="flex items-center gap-2 mt-0.5 text-[11px] text-text-secondary">
+                        <span>Target: <code className="font-mono text-primary">{githubStatus.base || 'main'}</code></span>
+                        <span>•</span>
+                        <span>Branch: <code className="font-mono text-primary">{githubStatus.branch}</code></span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleCopyBranchCmd(githubStatus.checkout_cmd || `git checkout ${githubStatus.branch}`)}
+                      className="px-2.5 py-1 rounded bg-surface border border-outline-variant text-[11px] font-mono hover:bg-surface-hover flex items-center gap-1 text-text-secondary hover:text-on-surface"
+                      title="Copy branch command"
+                    >
+                      {copiedBranchCmd ? <Check size={12} className="text-success-defensive" /> : <Copy size={12} />}
+                      {copiedBranchCmd ? 'Copied' : 'git checkout'}
+                    </button>
+                    <a
+                      href={githubStatus.pr_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-3 py-1 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-bold flex items-center gap-1 text-[11px] shadow-sm"
+                    >
+                      <span>View PR #{githubStatus.pr_number}</span>
+                      <ArrowUpRight size={12} />
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {/* GitHub PR Configuration Drawer */}
+              {showGitHubDrawer && (
+                <div className="p-4 bg-surface-container-low border border-primary/30 rounded-xl space-y-3 animate-fade-in">
+                  <div className="flex items-center justify-between border-b border-border-subtle pb-2">
+                    <span className="text-xs font-bold text-on-surface flex items-center gap-1.5">
+                      <GitPullRequest size={15} className="text-primary" /> Automated GitHub Remediation PR
+                    </span>
+                    <button onClick={() => setShowGitHubDrawer(false)} className="text-text-muted hover:text-on-surface">
+                      <X size={14} />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <label className="block text-[11px] font-bold text-text-secondary mb-1">Target Repository</label>
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="text"
+                          value={repoOwner}
+                          onChange={(e) => { setRepoOwner(e.target.value); localStorage.setItem('sentronix_github_owner', e.target.value); }}
+                          placeholder="Owner"
+                          className="w-1/2 px-2 py-1.5 rounded bg-surface border border-border-subtle text-on-surface text-xs focus:outline-none focus:border-primary"
+                        />
+                        <span className="text-text-muted">/</span>
+                        <input
+                          type="text"
+                          value={repoName}
+                          onChange={(e) => { setRepoName(e.target.value); localStorage.setItem('sentronix_github_repo', e.target.value); }}
+                          placeholder="Repo"
+                          className="w-1/2 px-2 py-1.5 rounded bg-surface border border-border-subtle text-on-surface text-xs focus:outline-none focus:border-primary"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-text-secondary mb-1">Base Branch</label>
+                      <input
+                        type="text"
+                        value={baseBranch}
+                        onChange={(e) => { setBaseBranch(e.target.value); localStorage.setItem('sentronix_github_base', e.target.value); }}
+                        placeholder="main"
+                        className="w-full px-2 py-1.5 rounded bg-surface border border-border-subtle text-on-surface text-xs focus:outline-none focus:border-primary"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="text-xs">
+                    <label className="block text-[11px] font-bold text-text-secondary mb-1">
+                      GitHub Personal Access Token (Optional for Live Push)
+                    </label>
+                    <input
+                      type="password"
+                      value={githubToken}
+                      onChange={(e) => { setGithubToken(e.target.value); localStorage.setItem('sentronix_github_token', e.target.value); }}
+                      placeholder="ghp_xxxxxxxxxxxxxxxxxxxx (Leave blank for staging simulation)"
+                      className="w-full px-2.5 py-1.5 rounded bg-surface border border-border-subtle text-on-surface text-xs font-mono focus:outline-none focus:border-primary"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-1">
+                    <button
+                      onClick={() => setShowGitHubDrawer(false)}
+                      className="px-3 py-1.5 text-xs text-text-muted hover:text-on-surface"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleCreateGitHubPR}
+                      disabled={isGitHubLoading}
+                      className="px-4 py-1.5 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-bold text-xs flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+                    >
+                      <GitPullRequest size={14} />
+                      {isGitHubLoading ? 'Opening PR...' : 'Submit Pull Request'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Jira Result Banner */}
               {jiraStatus && (
                 <div className="p-3 bg-primary/10 border border-primary/30 rounded-xl flex items-center justify-between text-xs animate-fade-in">
@@ -451,7 +621,7 @@ export default function AIPatchModal({ finding, onClose, onRemediated }) {
 
         {/* Modal Footer / Actions */}
         <div className="p-4 border-t border-border-strong bg-surface-container-low flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={handleCopyDiff}
               disabled={loading || !patchData}
@@ -467,6 +637,18 @@ export default function AIPatchModal({ finding, onClose, onRemediated }) {
               className="px-3 py-2 rounded-lg bg-surface border border-border-subtle text-xs font-medium text-on-surface hover:bg-surface-hover flex items-center gap-1.5 transition-colors disabled:opacity-50"
             >
               <Download size={14} /> Download .patch
+            </button>
+
+            <button
+              onClick={() => setShowGitHubDrawer(!showGitHubDrawer)}
+              disabled={loading || !patchData}
+              className={`px-3 py-2 rounded-lg border text-xs font-medium flex items-center gap-1.5 transition-colors disabled:opacity-50 ${
+                showGitHubDrawer
+                  ? 'bg-accent-soft border-primary text-primary font-bold'
+                  : 'bg-surface border-border-subtle text-text-secondary hover:text-on-surface hover:bg-surface-hover'
+              }`}
+            >
+              <GitPullRequest size={14} className="text-primary" /> Create GitHub PR
             </button>
 
             <button
@@ -502,6 +684,7 @@ export default function AIPatchModal({ finding, onClose, onRemediated }) {
         </div>
 
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

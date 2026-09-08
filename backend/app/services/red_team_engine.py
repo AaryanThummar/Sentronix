@@ -467,6 +467,192 @@ class RedTeamEngine:
         return results
 
     @staticmethod
+    def run_live_endpoint_scan(
+        target_url: str,
+        method: str = "GET",
+        vectors: Optional[List[str]] = None,
+        custom_headers: Optional[Dict[str, str]] = None,
+        custom_payload: Optional[str] = None
+    ) -> Dict[str, Any]:
+        import urllib.request
+        import urllib.error
+        import urllib.parse
+        import ssl
+        import time
+
+        if not vectors:
+            vectors = ["sqli", "xss", "ssrf", "path_traversal", "seclists"]
+
+        payload_map = {
+            "sqli": {
+                "name": "SQL Injection (SQLi) Probe",
+                "cwe": "CWE-89",
+                "severity": "CRITICAL",
+                "payload": custom_payload or "admin' OR '1'='1' --",
+                "detection_pattern": ["sql", "syntax", "error", "sqlite", "postgres", "mysql", "token", "auth"]
+            },
+            "xss": {
+                "name": "Reflected Cross-Site Scripting (XSS)",
+                "cwe": "CWE-79",
+                "severity": "HIGH",
+                "payload": custom_payload or "<script>alert('SentroniX-XSS')</script>",
+                "detection_pattern": ["<script>", "alert(", "SentroniX-XSS"]
+            },
+            "ssrf": {
+                "name": "SSRF Cloud Metadata Probe",
+                "cwe": "CWE-918",
+                "severity": "CRITICAL",
+                "payload": "http://169.254.169.254/latest/meta-data/",
+                "detection_pattern": ["ami-id", "instance-id", "security-credentials"]
+            },
+            "path_traversal": {
+                "name": "Path Traversal Arbitrary File Read",
+                "cwe": "CWE-22",
+                "severity": "HIGH",
+                "payload": "../../../../etc/passwd",
+                "detection_pattern": ["root:x:0:0", "daemon:x", "/bin/bash"]
+            },
+            "seclists": {
+                "name": "SecLists Sensitive Config Discovery",
+                "cwe": "CWE-200",
+                "severity": "MEDIUM",
+                "payload": "/.env",
+                "detection_pattern": ["DB_PASSWORD", "SECRET_KEY", "API_KEY", "DATABASE_URL"]
+            }
+        }
+
+        # Normalize target URL
+        if not target_url.startswith("http://") and not target_url.startswith("https://"):
+            target_url = "http://" + target_url
+
+        scan_id = f"LIVE-SCAN-{uuid.uuid4().hex[:6].upper()}"
+        start_time = time.time()
+        probes_executed = []
+        vulnerabilities_found = []
+
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+
+        for vec_key in vectors:
+            vec_info = payload_map.get(vec_key, {
+                "name": f"Custom Vector ({vec_key})",
+                "cwe": "CWE-Security",
+                "severity": "MEDIUM",
+                "payload": custom_payload or "' OR 1=1 --",
+                "detection_pattern": ["error", "exception"]
+            })
+
+            probe_url = target_url
+            probe_payload = vec_info["payload"]
+            
+            # If GET request, append payload as query param; if endpoint discovery, append path
+            if vec_key == "seclists":
+                if probe_url.endswith("/"):
+                    probe_url = probe_url.rstrip("/")
+                probe_url += probe_payload
+                req_data = None
+            elif method.upper() == "GET":
+                sep = "&" if "?" in probe_url else "?"
+                probe_url = f"{probe_url}{sep}q={urllib.parse.quote(probe_payload)}"
+                req_data = None
+            else:
+                req_data = json.dumps({"input": probe_payload, "query": probe_payload}).encode("utf-8")
+
+            req_headers = {
+                "User-Agent": "SentroniX-RedTeam-Fuzzer/2.0",
+                "Accept": "*/*"
+            }
+            if custom_headers:
+                req_headers.update(custom_headers)
+            if req_data and "Content-Type" not in req_headers:
+                req_headers["Content-Type"] = "application/json"
+
+            probe_start = time.time()
+            status_code = None
+            response_body = ""
+            status_label = "PENDING"
+            waf_blocked = False
+            vulnerable = False
+
+            try:
+                req = urllib.request.Request(probe_url, data=req_data, headers=req_headers, method=method.upper())
+                with urllib.request.urlopen(req, context=ctx, timeout=3.0) as resp:
+                    status_code = resp.getcode()
+                    resp_bytes = resp.read()
+                    response_body = resp_bytes.decode("utf-8", errors="ignore")[:500]
+                    probe_latency = round((time.time() - probe_start) * 1000, 2)
+                    
+                    # Check reflection or signature
+                    matched_pattern = next((p for p in vec_info["detection_pattern"] if p in response_body), None)
+                    if matched_pattern:
+                        vulnerable = True
+                        status_label = f"EXPLOIT REFLECTED ({matched_pattern})"
+                    else:
+                        status_label = f"HTTP {status_code} OK (Safe)"
+            except urllib.error.HTTPError as e:
+                status_code = e.code
+                probe_latency = round((time.time() - probe_start) * 1000, 2)
+                try:
+                    response_body = e.read().decode("utf-8", errors="ignore")[:500]
+                except Exception:
+                    response_body = "HTTP Error"
+
+                if status_code in [403, 406]:
+                    waf_blocked = True
+                    status_label = f"HTTP {status_code} - WAF BLOCKED"
+                elif status_code == 500:
+                    vulnerable = True
+                    status_label = f"HTTP 500 - UNCAUGHT EXCEPTION"
+                else:
+                    status_label = f"HTTP {status_code}"
+            except Exception as e:
+                probe_latency = round((time.time() - probe_start) * 1000, 2)
+                status_code = 0
+                status_label = f"CONNECTION REFUSED / UNREACHABLE ({str(e)[:30]})"
+                response_body = f"Host unreachable or timeout: {str(e)}"
+
+            if vulnerable:
+                vulnerabilities_found.append({
+                    "vector": vec_info["name"],
+                    "cwe": vec_info["cwe"],
+                    "severity": vec_info["severity"],
+                    "payload": probe_payload,
+                    "endpoint": probe_url,
+                    "evidence": status_label
+                })
+
+            probes_executed.append({
+                "vector_key": vec_key,
+                "name": vec_info["name"],
+                "method": method.upper(),
+                "url": probe_url,
+                "payload": probe_payload,
+                "status_code": status_code,
+                "status_label": status_label,
+                "latency_ms": probe_latency,
+                "waf_blocked": waf_blocked,
+                "vulnerable": vulnerable,
+                "response_snippet": response_body[:200]
+            })
+
+        total_latency = round((time.time() - start_time) * 1000, 2)
+        risk_score = "CRITICAL" if len(vulnerabilities_found) > 1 else ("HIGH" if vulnerabilities_found else "HARDENED")
+
+        return {
+            "scan_id": scan_id,
+            "target_url": target_url,
+            "method": method.upper(),
+            "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
+            "total_probes": len(probes_executed),
+            "vulnerabilities_count": len(vulnerabilities_found),
+            "vulnerabilities": vulnerabilities_found,
+            "probes": probes_executed,
+            "total_latency_ms": total_latency,
+            "risk_score": risk_score
+        }
+
+    @staticmethod
     def get_metrics() -> Dict[str, Any]:
         total_strikes = max(len(STRIKE_HISTORY), 18)
         blocked_count = len([s for s in STRIKE_HISTORY if "BLOCKED" in s["blue_team"]["defense_status"]]) if STRIKE_HISTORY else total_strikes
@@ -487,3 +673,4 @@ class RedTeamEngine:
             "seclists_probes_count": len(SECLISTS_PROBES),
             "active_waf_rules_count": len(WAF_RULES)
         }
+

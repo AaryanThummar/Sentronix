@@ -31,6 +31,15 @@ export default function PurpleTeamArenaPage() {
   const [seclistsResults, setSeclistsResults] = useState([])
   const [isFuzzing, setIsFuzzing] = useState(false)
 
+  // Live Target Endpoint Fuzzer State
+  const [liveTargetUrl, setLiveTargetUrl] = useState('http://localhost:8000/api/v1/auth/login')
+  const [liveMethod, setLiveMethod] = useState('POST')
+  const [liveVectors, setLiveVectors] = useState(['sqli', 'xss', 'ssrf', 'path_traversal', 'seclists'])
+  const [liveCustomPayload, setLiveCustomPayload] = useState('')
+  const [liveCustomHeaders, setLiveCustomHeaders] = useState('')
+  const [liveScanResult, setLiveScanResult] = useState(null)
+  const [isLiveScanning, setIsLiveScanning] = useState(false)
+
   // Execution & Telemetry State
   const [isStriking, setIsStriking] = useState(false)
   const [strikeResult, setStrikeResult] = useState(null)
@@ -257,6 +266,75 @@ export default function PurpleTeamArenaPage() {
     }
   }
 
+  const toggleLiveVector = (vecKey) => {
+    setLiveVectors(prev => 
+      prev.includes(vecKey) ? prev.filter(v => v !== vecKey) : [...prev, vecKey]
+    )
+  }
+
+  const handleRunLiveScan = async () => {
+    if (!liveTargetUrl.trim()) return
+    setIsLiveScanning(true)
+    const timestamp = new Date().toLocaleTimeString()
+    setTerminalLogs(prev => [
+      `[${timestamp}] 🎯 [LIVE FUZZER] Launching targeted adversary attack probes against: ${liveTargetUrl}`,
+      `[${timestamp}] ⚡ [METHOD] ${liveMethod} | Vectors: [${liveVectors.join(', ')}]`,
+      ...prev
+    ])
+
+    let customHeadersObj = {}
+    if (liveCustomHeaders.trim()) {
+      try {
+        customHeadersObj = JSON.parse(liveCustomHeaders)
+      } catch (e) {
+        // keep empty
+      }
+    }
+
+    try {
+      const res = await fetch('http://localhost:8000/api/v1/red-team/live-scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          target_url: liveTargetUrl.trim(),
+          method: liveMethod,
+          vectors: liveVectors,
+          custom_headers: customHeadersObj,
+          custom_payload: liveCustomPayload.trim() || null
+        })
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        setLiveScanResult(data)
+        const completionTime = new Date().toLocaleTimeString()
+        setTerminalLogs(prev => [
+          `[${completionTime}] 🏁 [SCAN COMPLETE] ${data.total_probes} probes fired in ${data.total_latency_ms}ms. Found ${data.vulnerabilities_count} actionable findings.`,
+          ...prev
+        ])
+        fetchMetrics()
+        fetchHistory()
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setIsLiveScanning(false)
+    }
+  }
+
+  const handleOpenLiveFindingPatch = (vuln) => {
+    const findingObj = {
+      id: vuln.db_finding_id || 998,
+      title: vuln.vector,
+      severity: vuln.severity,
+      tool: 'SentroniX Live Target Fuzzer',
+      location: vuln.endpoint,
+      description: `Active endpoint vulnerability detected on ${vuln.endpoint}. Evidence: ${vuln.evidence}. Injected payload: ${vuln.payload}`
+    }
+    setPatchModalFinding(findingObj)
+    setIsPatchModalOpen(true)
+  }
+
   const handleOpenAIPatch = () => {
     if (!strikeResult && !activeScenario) return
     const findingObj = {
@@ -382,6 +460,18 @@ export default function PurpleTeamArenaPage() {
           >
             <Sliders size={16} />
             WAF Defense Policy Switchboard
+          </button>
+
+          <button 
+            onClick={() => setActiveMode('live_fuzzer')}
+            className={`pb-2.5 px-1 font-label-md text-label-md transition-all flex items-center gap-2 whitespace-nowrap ${
+              activeMode === 'live_fuzzer' 
+                ? 'text-primary border-b-2 border-primary font-bold' 
+                : 'text-text-secondary hover:text-on-surface'
+            }`}
+          >
+            <Globe size={16} />
+            Live Target Fuzzer
           </button>
 
           <button 
@@ -952,6 +1042,289 @@ export default function PurpleTeamArenaPage() {
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {/* ================= MODE 5: LIVE TARGET ENDPOINT FUZZER ================= */}
+        {activeMode === 'live_fuzzer' && (
+          <div className="space-y-grid-gap">
+            {/* Target Setup Launchpad */}
+            <div className="bento-card">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-outline-variant pb-4 mb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                    <Globe size={20} />
+                  </div>
+                  <div>
+                    <h2 className="font-headline-sm text-headline-sm text-on-surface">Live Target URL & Endpoint Fuzzer</h2>
+                    <p className="font-body-sm text-body-sm text-text-muted">
+                      Dispatch live adversarial payload bursts against internal or external staging targets with real-time WAF analysis.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs px-2.5 py-1 rounded-full bg-accent-soft text-primary font-bold border border-primary/20">
+                    Live Socket Fuzzer
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Target URL & Method */}
+                <div className="lg:col-span-2 space-y-4">
+                  <div>
+                    <label className="block font-label-md text-label-md text-text-secondary mb-1.5">
+                      Target URL or API Endpoint
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={liveMethod}
+                        onChange={(e) => setLiveMethod(e.target.value)}
+                        className="px-3 py-2 rounded-lg bg-surface border border-outline-variant text-on-surface font-mono text-xs font-bold focus:outline-none focus:border-primary"
+                      >
+                        <option value="GET">GET</option>
+                        <option value="POST">POST</option>
+                        <option value="PUT">PUT</option>
+                        <option value="DELETE">DELETE</option>
+                      </select>
+                      <input
+                        type="text"
+                        value={liveTargetUrl}
+                        onChange={(e) => setLiveTargetUrl(e.target.value)}
+                        placeholder="http://localhost:8000/api/v1/auth/login"
+                        className="flex-1 px-3 py-2 rounded-lg bg-surface border border-outline-variant text-on-surface font-mono text-xs focus:outline-none focus:border-primary"
+                      />
+                    </div>
+
+                    {/* Quick Presets */}
+                    <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                      <span className="text-[11px] text-text-muted">Presets:</span>
+                      <button
+                        onClick={() => { setLiveTargetUrl('http://localhost:8000/api/v1/auth/login'); setLiveMethod('POST'); }}
+                        className="text-[11px] px-2 py-0.5 rounded bg-surface-container hover:bg-surface-container-high text-primary font-mono transition-colors"
+                      >
+                        /auth/login (POST)
+                      </button>
+                      <button
+                        onClick={() => { setLiveTargetUrl('http://localhost:8000/api/v1/health'); setLiveMethod('GET'); }}
+                        className="text-[11px] px-2 py-0.5 rounded bg-surface-container hover:bg-surface-container-high text-primary font-mono transition-colors"
+                      >
+                        /health (GET)
+                      </button>
+                      <button
+                        onClick={() => { setLiveTargetUrl('http://localhost:8000/docs'); setLiveMethod('GET'); }}
+                        className="text-[11px] px-2 py-0.5 rounded bg-surface-container hover:bg-surface-container-high text-primary font-mono transition-colors"
+                      >
+                        /docs (Swagger)
+                      </button>
+                      <button
+                        onClick={() => { setLiveTargetUrl('https://httpbin.org/get'); setLiveMethod('GET'); }}
+                        className="text-[11px] px-2 py-0.5 rounded bg-surface-container hover:bg-surface-container-high text-primary font-mono transition-colors"
+                      >
+                        httpbin.org/get
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Attack Vector Multi-Select */}
+                  <div>
+                    <label className="block font-label-md text-label-md text-text-secondary mb-2">
+                      Attack Vector Suites to Execute
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {[
+                        { key: 'sqli', label: 'SQL Injection (SQLi)', icon: '💉' },
+                        { key: 'xss', label: 'Cross-Site Scripting (XSS)', icon: '⚡' },
+                        { key: 'ssrf', label: 'SSRF Cloud Metadata', icon: '☁️' },
+                        { key: 'path_traversal', label: 'Path Traversal', icon: '📁' },
+                        { key: 'seclists', label: 'SecLists Sensitive Files', icon: '🗃️' }
+                      ].map(vec => (
+                        <button
+                          key={vec.key}
+                          type="button"
+                          onClick={() => toggleLiveVector(vec.key)}
+                          className={`p-2.5 rounded-lg border text-left flex items-center justify-between text-xs transition-all ${
+                            liveVectors.includes(vec.key)
+                              ? 'bg-primary/10 border-primary text-on-surface font-semibold'
+                              : 'bg-surface border-outline-variant text-text-muted hover:border-primary/50'
+                          }`}
+                        >
+                          <span className="flex items-center gap-1.5">
+                            <span>{vec.icon}</span>
+                            <span>{vec.label}</span>
+                          </span>
+                          {liveVectors.includes(vec.key) && (
+                            <Check size={14} className="text-primary flex-shrink-0" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right side controls: Custom payload & trigger */}
+                <div className="space-y-4 flex flex-col justify-between">
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block font-label-md text-label-md text-text-secondary mb-1">
+                        Custom Payload Override (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={liveCustomPayload}
+                        onChange={(e) => setLiveCustomPayload(e.target.value)}
+                        placeholder="Leave blank to use suite defaults"
+                        className="w-full px-3 py-2 rounded-lg bg-surface border border-outline-variant text-on-surface font-mono text-xs focus:outline-none focus:border-primary"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-label-md text-label-md text-text-secondary mb-1">
+                        Custom Request Headers (JSON)
+                      </label>
+                      <input
+                        type="text"
+                        value={liveCustomHeaders}
+                        onChange={(e) => setLiveCustomHeaders(e.target.value)}
+                        placeholder='{"X-Sentronix-Test": "true"}'
+                        className="w-full px-3 py-2 rounded-lg bg-surface border border-outline-variant text-on-surface font-mono text-xs focus:outline-none focus:border-primary"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleRunLiveScan}
+                    disabled={isLiveScanning || !liveTargetUrl.trim() || liveVectors.length === 0}
+                    className="w-full py-3 px-4 rounded-xl bg-danger-offensive text-on-primary hover:bg-error font-headline-sm text-sm font-bold flex items-center justify-center gap-2 shadow-lg hover:shadow-error/20 transition-all disabled:opacity-50"
+                  >
+                    {isLiveScanning ? (
+                      <>
+                        <RefreshCw size={18} className="animate-spin" />
+                        Firing Live Attack Bursts...
+                      </>
+                    ) : (
+                      <>
+                        <Play size={18} />
+                        Launch Live Fuzzing Scan ({liveVectors.length} Vectors)
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Live Scan Results Matrix */}
+            {liveScanResult && (
+              <div className="bento-card space-y-4 animate-fade-in">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-outline-variant pb-3">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 size={20} className="text-primary" />
+                    <div>
+                      <h3 className="font-headline-sm text-headline-sm text-on-surface">
+                        Live Scan Telemetry: {liveScanResult.target_url}
+                      </h3>
+                      <p className="font-body-sm text-xs text-text-muted">
+                        Completed at {liveScanResult.timestamp} • Duration: {liveScanResult.total_latency_ms} ms
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold border ${
+                      liveScanResult.risk_score === 'CRITICAL' 
+                        ? 'bg-error-container text-danger-offensive border-danger-offensive/30'
+                        : liveScanResult.risk_score === 'HIGH'
+                        ? 'bg-tertiary-fixed text-warning-mid border-warning-mid/30'
+                        : 'bg-success-defensive/10 text-success-defensive border-success-defensive/30'
+                    }`}>
+                      Risk: {liveScanResult.risk_score}
+                    </span>
+
+                    <span className="px-3 py-1 rounded-full bg-surface-container text-xs font-mono text-on-surface border border-outline-variant">
+                      {liveScanResult.vulnerabilities_count} Findings / {liveScanResult.total_probes} Probes
+                    </span>
+                  </div>
+                </div>
+
+                {/* Probes Results Table */}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="text-text-secondary border-b border-outline-variant">
+                        <th className="pb-2.5">Attack Vector</th>
+                        <th className="pb-2.5">Method</th>
+                        <th className="pb-2.5">Injected Payload</th>
+                        <th className="pb-2.5">Status Code</th>
+                        <th className="pb-2.5">Latency</th>
+                        <th className="pb-2.5">WAF / Defense Result</th>
+                        <th className="pb-2.5 text-right">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-outline-variant">
+                      {liveScanResult.probes.map((probe, idx) => (
+                        <tr key={idx} className="hover:bg-surface-container transition-colors">
+                          <td className="py-3 font-semibold text-on-surface">
+                            {probe.name}
+                          </td>
+                          <td className="py-3 font-mono font-bold text-text-secondary">
+                            {probe.method}
+                          </td>
+                          <td className="py-3 font-mono text-text-muted max-w-xs truncate" title={probe.payload}>
+                            {probe.payload}
+                          </td>
+                          <td className="py-3">
+                            <span className={`px-2 py-0.5 rounded font-mono font-bold text-[11px] ${
+                              probe.status_code === 200 
+                                ? 'bg-surface-container-high text-on-surface'
+                                : probe.status_code === 403 || probe.status_code === 406
+                                ? 'bg-success-defensive/10 text-success-defensive'
+                                : probe.status_code === 500
+                                ? 'bg-error-container text-danger-offensive'
+                                : 'bg-surface text-text-muted'
+                            }`}>
+                              {probe.status_code ? `HTTP ${probe.status_code}` : 'TIMEOUT'}
+                            </span>
+                          </td>
+                          <td className="py-3 font-mono text-primary font-bold">
+                            {probe.latency_ms} ms
+                          </td>
+                          <td className="py-3">
+                            {probe.waf_blocked ? (
+                              <span className="px-2 py-0.5 rounded bg-success-defensive/10 text-success-defensive border border-success-defensive/20 font-semibold text-[11px] flex items-center gap-1 w-fit">
+                                <ShieldCheck size={12} /> WAF Blocked
+                              </span>
+                            ) : probe.vulnerable ? (
+                              <span className="px-2 py-0.5 rounded bg-error-container text-danger-offensive border border-danger-offensive/20 font-semibold text-[11px] flex items-center gap-1 w-fit animate-pulse">
+                                <AlertCircle size={12} /> Vulnerable ({probe.status_label})
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded bg-surface-container text-text-secondary text-[11px]">
+                                {probe.status_label}
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 text-right">
+                            <button
+                              onClick={() => handleOpenLiveFindingPatch({
+                                vector: probe.name,
+                                severity: probe.vulnerable ? 'HIGH' : 'MEDIUM',
+                                endpoint: probe.url,
+                                payload: probe.payload,
+                                evidence: probe.status_label
+                              })}
+                              className="px-2.5 py-1 rounded bg-primary text-on-primary hover:bg-primary-container font-semibold text-[11px] inline-flex items-center gap-1 shadow-sm transition-colors"
+                            >
+                              <Sparkles size={11} /> AI Patch
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
