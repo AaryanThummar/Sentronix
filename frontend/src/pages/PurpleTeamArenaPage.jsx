@@ -3,19 +3,23 @@ import {
   Swords, ShieldAlert, Zap, Terminal, Sparkles, AlertCircle, 
   CheckCircle2, Clock, Send, RefreshCw, Layers, ShieldCheck, 
   ChevronRight, ArrowRight, Crosshair, Code, FileText, Globe, 
-  Database, Search, Play, Check, Shield
+  Database, Search, Play, Check, Shield, Sliders, ToggleLeft, ToggleRight,
+  Copy, Eye, Lock, ShieldX
 } from 'lucide-react'
 import AIPatchModal from '../components/AIPatchModal'
 
 export default function PurpleTeamArenaPage() {
-  const [activeMode, setActiveMode] = useState('atomic') // 'atomic' | 'caldera' | 'seclists'
+  const [activeMode, setActiveMode] = useState('atomic') // 'atomic' | 'caldera' | 'seclists' | 'waf_sandbox'
   
-  // Scenarios State (PayloadsAllTheThings & Atomic Red Team)
+  // Scenarios State
   const [scenarios, setScenarios] = useState([])
   const [selectedScenarioId, setSelectedScenarioId] = useState('')
   const [customPayload, setCustomPayload] = useState('')
   const [targetOverride, setTargetOverride] = useState('')
   const [notifyDiscord, setNotifyDiscord] = useState(true)
+  
+  // WAF Rules State
+  const [wafRules, setWafRules] = useState({})
   
   // Caldera Campaigns State
   const [campaigns, setCampaigns] = useState([])
@@ -39,6 +43,8 @@ export default function PurpleTeamArenaPage() {
     resilience_grade: 'A+'
   })
   const [history, setHistory] = useState([])
+  const [isPacketModalOpen, setIsPacketModalOpen] = useState(false)
+  const [copiedPacket, setCopiedPacket] = useState(false)
 
   // AI Patch Modal State
   const [patchModalFinding, setPatchModalFinding] = useState(null)
@@ -46,6 +52,7 @@ export default function PurpleTeamArenaPage() {
 
   useEffect(() => {
     fetchScenarios()
+    fetchWafRules()
     fetchCampaigns()
     fetchMetrics()
     fetchHistory()
@@ -68,6 +75,36 @@ export default function PurpleTeamArenaPage() {
     }
   }
 
+  const fetchWafRules = async () => {
+    try {
+      const res = await fetch('http://localhost:8000/api/v1/red-team/waf-rules')
+      if (res.ok) {
+        const data = await res.json()
+        setWafRules(data)
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  const handleToggleWafRule = async (ruleKey, currentVal) => {
+    const newVal = !currentVal
+    setWafRules(prev => ({
+      ...prev,
+      [ruleKey]: { ...prev[ruleKey], enabled: newVal }
+    }))
+
+    try {
+      await fetch('http://localhost:8000/api/v1/red-team/waf-rules/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rule_key: ruleKey, enabled: newVal })
+      })
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   const fetchCampaigns = async () => {
     try {
       const res = await fetch('http://localhost:8000/api/v1/red-team/campaigns')
@@ -84,10 +121,7 @@ export default function PurpleTeamArenaPage() {
   const fetchMetrics = async () => {
     try {
       const res = await fetch('http://localhost:8000/api/v1/red-team/metrics')
-      if (res.ok) {
-        const data = await res.json()
-        setMetrics(data)
-      }
+      if (res.ok) setMetrics(await res.json())
     } catch (e) {
       // ignore
     }
@@ -96,10 +130,7 @@ export default function PurpleTeamArenaPage() {
   const fetchHistory = async () => {
     try {
       const res = await fetch('http://localhost:8000/api/v1/red-team/history')
-      if (res.ok) {
-        const data = await res.json()
-        setHistory(data)
-      }
+      if (res.ok) setHistory(await res.json())
     } catch (e) {
       // ignore
     }
@@ -128,6 +159,12 @@ export default function PurpleTeamArenaPage() {
     setTerminalLogs(prev => [...newLogs, ...prev])
 
     try {
+      // Collect current WAF rule states
+      const wafOverrides = {}
+      Object.keys(wafRules).forEach(k => {
+        wafOverrides[k] = wafRules[k].enabled
+      })
+
       const res = await fetch('http://localhost:8000/api/v1/red-team/strike', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -135,7 +172,8 @@ export default function PurpleTeamArenaPage() {
           scenario_id: selectedScenarioId,
           custom_payload: customPayload,
           target_override: targetOverride,
-          notify_discord: notifyDiscord
+          notify_discord: notifyDiscord,
+          waf_overrides: wafOverrides
         })
       })
 
@@ -144,10 +182,11 @@ export default function PurpleTeamArenaPage() {
         setStrikeResult(data)
         
         const completionTime = new Date().toLocaleTimeString()
+        const isBlocked = data.blue_team.defense_status.includes("INTERCEPTED")
         const interceptionLogs = [
-          `[${completionTime}] 🔵 [BLUE TEAM] 🛡️ THREAT INTERCEPTED! Rule fired: ${data.blue_team.inspection_rule}`,
+          `[${completionTime}] ${isBlocked ? '🔵 [BLUE TEAM] 🛡️ THREAT INTERCEPTED!' : '⚠️ [BLUE TEAM] 🚨 DEFENSE BYPASS! WAF rule disabled.'} Rule fired: ${data.blue_team.inspection_rule}`,
           `[${completionTime}] ⚡ [TELEMETRY] Latency: ${data.blue_team.latency_ms}ms | Decision: ${data.blue_team.defense_status} (HTTP ${data.blue_team.status_code})`,
-          `[${completionTime}] ✨ [PURPLE TEAM] Attack Neutralized. AI Remediation Diff ready for deployment.`
+          `[${completionTime}] ✨ [PURPLE TEAM] ${data.purple_team_convergence.verdict}. Telemetry packet logged.`
         ]
         setTerminalLogs(prev => [...interceptionLogs, ...prev])
         
@@ -180,7 +219,7 @@ export default function PurpleTeamArenaPage() {
         setCampaignResult(data)
         const completionTime = new Date().toLocaleTimeString()
         setTerminalLogs(prev => [
-          `[${completionTime}] 🔵 [BLUE TEAM] Caldera Campaign Interception Complete: All ${data.stages_count} phases successfully blocked.`,
+          `[${completionTime}] 🔵 [BLUE TEAM] Caldera Campaign Interception Complete: All ${data.stages_count} phases successfully evaluated.`,
           ...prev
         ])
         fetchMetrics()
@@ -232,6 +271,12 @@ export default function PurpleTeamArenaPage() {
     setIsPatchModalOpen(true)
   }
 
+  const handleCopyPacket = (text) => {
+    navigator.clipboard.writeText(text)
+    setCopiedPacket(true)
+    setTimeout(() => setCopiedPacket(false), 2000)
+  }
+
   return (
     <main className="p-4 md:p-8 flex-1 overflow-y-auto space-y-grid-gap">
       <div className="max-w-7xl mx-auto space-y-grid-gap">
@@ -260,16 +305,16 @@ export default function PurpleTeamArenaPage() {
 
             <h1 className="font-headline-lg text-headline-lg text-on-surface flex items-center gap-2.5">
               <Swords className="text-primary" size={28} />
-              Purple Team Arena & Adversary Simulator
+              Purple Team Arena & Defense Sandbox
             </h1>
             <p className="font-body-md text-body-md text-text-muted mt-1">
-              Safely launch adversary vectors, evaluate live AST & WAF interception, and deploy automated AI remediation diffs.
+              Safely launch adversary vectors, inspect raw HTTP packet streams, configure live WAF defense policies, and deploy automated AI remediation diffs.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
             <button 
-              onClick={() => { fetchScenarios(); fetchCampaigns(); fetchMetrics(); fetchHistory(); }}
+              onClick={() => { fetchScenarios(); fetchWafRules(); fetchCampaigns(); fetchMetrics(); fetchHistory(); }}
               className="px-3 py-2 bg-surface-container hover:bg-surface-container-high text-text-secondary hover:text-on-surface font-label-md text-label-md rounded-lg border border-outline-variant flex items-center gap-1.5 transition-colors"
             >
               <RefreshCw size={14} />
@@ -278,7 +323,7 @@ export default function PurpleTeamArenaPage() {
           </div>
         </div>
 
-        {/* Purple Team Resilience Scorecard (Clean SentroniX Theme) */}
+        {/* Purple Team Resilience Scorecard */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-grid-gap">
           <div className="bento-card bg-surface-container-low flex flex-col justify-between">
             <span className="font-label-md text-label-md text-text-secondary">Simulated Strikes Executed</span>
@@ -314,10 +359,10 @@ export default function PurpleTeamArenaPage() {
         </div>
 
         {/* Operation Mode Tabs */}
-        <div className="flex gap-6 border-b border-border-strong">
+        <div className="flex gap-6 border-b border-border-strong overflow-x-auto">
           <button 
             onClick={() => setActiveMode('atomic')}
-            className={`pb-2.5 px-1 font-label-md text-label-md transition-all flex items-center gap-2 ${
+            className={`pb-2.5 px-1 font-label-md text-label-md transition-all flex items-center gap-2 whitespace-nowrap ${
               activeMode === 'atomic' 
                 ? 'text-primary border-b-2 border-primary font-bold' 
                 : 'text-text-secondary hover:text-on-surface'
@@ -328,8 +373,20 @@ export default function PurpleTeamArenaPage() {
           </button>
           
           <button 
+            onClick={() => setActiveMode('waf_sandbox')}
+            className={`pb-2.5 px-1 font-label-md text-label-md transition-all flex items-center gap-2 whitespace-nowrap ${
+              activeMode === 'waf_sandbox' 
+                ? 'text-primary border-b-2 border-primary font-bold' 
+                : 'text-text-secondary hover:text-on-surface'
+            }`}
+          >
+            <Sliders size={16} />
+            WAF Defense Policy Switchboard
+          </button>
+
+          <button 
             onClick={() => setActiveMode('caldera')}
-            className={`pb-2.5 px-1 font-label-md text-label-md transition-all flex items-center gap-2 ${
+            className={`pb-2.5 px-1 font-label-md text-label-md transition-all flex items-center gap-2 whitespace-nowrap ${
               activeMode === 'caldera' 
                 ? 'text-primary border-b-2 border-primary font-bold' 
                 : 'text-text-secondary hover:text-on-surface'
@@ -341,7 +398,7 @@ export default function PurpleTeamArenaPage() {
 
           <button 
             onClick={() => setActiveMode('seclists')}
-            className={`pb-2.5 px-1 font-label-md text-label-md transition-all flex items-center gap-2 ${
+            className={`pb-2.5 px-1 font-label-md text-label-md transition-all flex items-center gap-2 whitespace-nowrap ${
               activeMode === 'seclists' 
                 ? 'text-primary border-b-2 border-primary font-bold' 
                 : 'text-text-secondary hover:text-on-surface'
@@ -406,8 +463,8 @@ export default function PurpleTeamArenaPage() {
                       <span className="font-mono text-on-surface">{activeScenario.mitre_technique}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-text-muted">Classification:</span>
-                      <span className="font-mono text-text-secondary">{activeScenario.cwe} • {activeScenario.owasp}</span>
+                      <span className="text-text-muted">WAF Defense Key:</span>
+                      <span className="font-mono text-primary font-semibold">{activeScenario.waf_rule_key}</span>
                     </div>
                   </div>
                 )}
@@ -523,22 +580,42 @@ export default function PurpleTeamArenaPage() {
                       <p className="font-body-sm text-body-sm text-text-muted">Real-Time Threat Telemetry</p>
                     </div>
                   </div>
-                  <span className="font-label-sm text-label-sm bg-success-defensive/10 text-success-defensive px-2 py-0.5 rounded font-bold">
-                    ACTIVE DEFENSE
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {strikeResult && (
+                      <button 
+                        onClick={() => setIsPacketModalOpen(true)}
+                        className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 bg-accent-soft px-2 py-1 rounded"
+                      >
+                        <Eye size={12} /> Inspect HTTP Packet
+                      </button>
+                    )}
+                    <span className="font-label-sm text-label-sm bg-success-defensive/10 text-success-defensive px-2 py-0.5 rounded font-bold">
+                      ACTIVE DEFENSE
+                    </span>
+                  </div>
                 </div>
 
                 {strikeResult ? (
                   <div className="space-y-3">
-                    <div className="p-3 bg-success-defensive/10 border border-success-defensive/20 rounded-lg flex items-center justify-between">
+                    <div className={`p-3 rounded-lg flex items-center justify-between border ${
+                      strikeResult.blue_team.defense_status.includes("INTERCEPTED") 
+                        ? 'bg-success-defensive/10 border-success-defensive/20' 
+                        : 'bg-error-container/30 border-error-container'
+                    }`}>
                       <div className="flex items-center gap-2.5">
-                        <CheckCircle2 size={20} className="text-success-defensive" />
+                        {strikeResult.blue_team.defense_status.includes("INTERCEPTED") ? (
+                          <CheckCircle2 size={20} className="text-success-defensive" />
+                        ) : (
+                          <AlertTriangle size={20} className="text-danger-offensive" />
+                        )}
                         <div>
-                          <span className="font-label-md text-label-md font-bold text-success-defensive block">
+                          <span className={`font-label-md text-label-md font-bold block ${
+                            strikeResult.blue_team.defense_status.includes("INTERCEPTED") ? 'text-success-defensive' : 'text-danger-offensive'
+                          }`}>
                             {strikeResult.blue_team.defense_status}
                           </span>
                           <span className="text-xs text-text-muted">
-                            HTTP Status: {strikeResult.blue_team.status_code} Forbidden
+                            HTTP Status: {strikeResult.blue_team.status_code} {strikeResult.blue_team.status_code === 403 ? 'Forbidden' : 'OK (Unfiltered)'}
                           </span>
                         </div>
                       </div>
@@ -609,7 +686,62 @@ export default function PurpleTeamArenaPage() {
           </div>
         )}
 
-        {/* ================= MODE 2: MITRE CALDERA CAMPAIGNS ================= */}
+        {/* ================= MODE 2: WAF DEFENSE POLICY SWITCHBOARD ================= */}
+        {activeMode === 'waf_sandbox' && (
+          <div className="bento-card space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-outline-variant pb-4">
+              <div>
+                <h2 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+                  <Sliders className="text-primary" size={20} />
+                  WAF Defensive Inspection Policy Switchboard
+                </h2>
+                <p className="font-body-sm text-body-sm text-text-muted mt-0.5">
+                  Toggle individual defensive filters on/off in real-time to simulate defense bypasses or evaluate strict enforcement.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {Object.keys(wafRules).map((key) => {
+                const rule = wafRules[key]
+                return (
+                  <div key={key} className="p-4 bg-surface-container-low border border-outline-variant rounded-xl flex items-start justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-label-md text-label-md text-on-surface font-bold">{rule.name}</span>
+                        <code className="text-[10px] font-mono text-primary bg-accent-soft px-1.5 py-0.5 rounded">
+                          {key}
+                        </code>
+                      </div>
+                      <p className="text-xs text-text-secondary leading-relaxed">{rule.description}</p>
+                    </div>
+
+                    <button 
+                      onClick={() => handleToggleWafRule(key, rule.enabled)}
+                      className={`p-1.5 rounded-lg border flex items-center gap-1.5 text-xs font-bold transition-all ${
+                        rule.enabled 
+                          ? 'bg-success-defensive/10 text-success-defensive border-success-defensive/30' 
+                          : 'bg-surface-container text-text-muted border-outline-variant'
+                      }`}
+                    >
+                      {rule.enabled ? (
+                        <>
+                          <Check size={14} /> ACTIVE
+                        </>
+                      ) : (
+                        <>
+                          <ShieldX size={14} className="text-danger-offensive" /> DISABLED
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ================= MODE 3: MITRE CALDERA CAMPAIGNS ================= */}
         {activeMode === 'caldera' && (
           <div className="bento-card space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-outline-variant pb-4">
@@ -677,7 +809,7 @@ export default function PurpleTeamArenaPage() {
           </div>
         )}
 
-        {/* ================= MODE 3: SECLISTS FUZZING ================= */}
+        {/* ================= MODE 4: SECLISTS FUZZING ================= */}
         {activeMode === 'seclists' && (
           <div className="bento-card space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-outline-variant pb-4">
@@ -824,6 +956,87 @@ export default function PurpleTeamArenaPage() {
         )}
 
       </div>
+
+      {/* ================= DEEP HTTP PACKET INSPECTOR MODAL ================= */}
+      {isPacketModalOpen && strikeResult && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-surface border border-outline-variant rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden animate-fadeIn">
+            
+            {/* Header */}
+            <div className="p-4 bg-surface-container-low border-b border-outline-variant flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Terminal size={18} className="text-primary" />
+                <h3 className="font-bold text-sm text-on-surface">
+                  Deep HTTP Packet Stream Inspector ({strikeResult.strike_id})
+                </h3>
+              </div>
+              <button 
+                onClick={() => setIsPacketModalOpen(false)}
+                className="p-1.5 rounded-full hover:bg-surface-container text-text-muted hover:text-on-surface transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 overflow-y-auto space-y-4 text-xs font-mono">
+              
+              {/* Raw Request */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="font-bold text-danger-offensive flex items-center gap-1.5">
+                    🔴 Raw Injected Request (Client / Adversary)
+                  </span>
+                  <button 
+                    onClick={() => handleCopyPacket(strikeResult.red_team.raw_packet)}
+                    className="text-[11px] text-text-muted hover:text-primary flex items-center gap-1"
+                  >
+                    <Copy size={12} /> Copy
+                  </button>
+                </div>
+                <pre className="p-3 bg-surface-container-low border border-outline-variant rounded-lg text-on-surface whitespace-pre-wrap leading-relaxed">
+                  {strikeResult.red_team.raw_packet}
+                </pre>
+              </div>
+
+              {/* Raw Response */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="font-bold text-success-defensive flex items-center gap-1.5">
+                    🔵 Raw Defensive Response (WAF / Server Interceptor)
+                  </span>
+                  <button 
+                    onClick={() => handleCopyPacket(strikeResult.blue_team.raw_packet)}
+                    className="text-[11px] text-text-muted hover:text-primary flex items-center gap-1"
+                  >
+                    <Copy size={12} /> Copy
+                  </button>
+                </div>
+                <pre className="p-3 bg-surface-container-low border border-outline-variant rounded-lg text-on-surface whitespace-pre-wrap leading-relaxed">
+                  {strikeResult.blue_team.raw_packet}
+                </pre>
+              </div>
+
+            </div>
+
+            {/* Footer */}
+            <div className="p-3.5 bg-surface-container-low border-t border-outline-variant flex items-center justify-between">
+              {copiedPacket ? (
+                <span className="text-xs text-success-defensive font-semibold">✓ Packet copied to clipboard!</span>
+              ) : (
+                <span className="text-xs text-text-muted">Inspection Latency: {strikeResult.blue_team.latency_ms} ms</span>
+              )}
+              <button 
+                onClick={() => setIsPacketModalOpen(false)}
+                className="px-4 py-1.5 bg-primary text-on-primary rounded-lg text-xs font-bold"
+              >
+                Close Inspector
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
       {/* AI Patch Remediation Modal */}
       {isPatchModalOpen && patchModalFinding && (

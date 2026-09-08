@@ -15,15 +15,30 @@ class StrikeRequest(BaseModel):
     custom_payload: Optional[str] = Field(None, example="admin' OR '1'='1' --")
     target_override: Optional[str] = Field(None, example="/api/v1/auth/login")
     notify_discord: Optional[bool] = Field(True, description="Whether to dispatch alert to Discord mod channel")
+    waf_overrides: Optional[Dict[str, bool]] = Field(None, description="Dynamic WAF rule toggles")
 
 class CampaignRequest(BaseModel):
     campaign_id: str = Field(..., example="campaign-web-infiltrator")
     notify_discord: Optional[bool] = Field(True)
 
+class WAFToggleRequest(BaseModel):
+    rule_key: str = Field(..., example="AST_SQLI_GUARD")
+    enabled: bool = Field(..., example=True)
+
 @router.get("/scenarios")
 def get_scenarios():
     """Retrieve all available adversary strike simulation scenarios (PayloadsAllTheThings & Atomic Red Team)"""
     return RedTeamEngine.get_all_scenarios()
+
+@router.get("/waf-rules")
+def get_waf_rules():
+    """Retrieve all WAF defensive inspection rules and policy states"""
+    return RedTeamEngine.get_waf_rules()
+
+@router.post("/waf-rules/toggle")
+def toggle_waf_rule(req: WAFToggleRequest):
+    """Dynamically enable or disable a WAF rule in the sandbox"""
+    return RedTeamEngine.toggle_waf_rule(req.rule_key, req.enabled)
 
 @router.get("/campaigns")
 def get_campaigns():
@@ -63,7 +78,8 @@ async def execute_strike(req: StrikeRequest, db: Session = Depends(get_db)):
     result = RedTeamEngine.execute_strike(
         scenario_id=req.scenario_id,
         custom_payload=req.custom_payload,
-        target_override=req.target_override
+        target_override=req.target_override,
+        waf_overrides=req.waf_overrides
     )
 
     # Automatically record finding into DB to link with AI Remediation pipeline

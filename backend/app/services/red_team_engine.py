@@ -1,5 +1,6 @@
 import time
 import uuid
+import json
 from typing import Dict, List, Any, Optional
 from datetime import datetime
 
@@ -27,6 +28,7 @@ SCENARIOS: List[Dict[str, Any]] = [
         ],
         "description": "Simulates an adversarial attempt to bypass SQL authentication by injecting a boolean tautology into login parameters.",
         "detection_rule": "SENTRONIX-AST-SQLI-001 (Tautology & Unsanitized AST Parameter Match)",
+        "waf_rule_key": "AST_SQLI_GUARD",
         "remediation_hint": "Utilize parameterized queries (SQLAlchemy ORM / Prepared Statements) and sanitize input fields."
     },
     {
@@ -49,6 +51,7 @@ SCENARIOS: List[Dict[str, Any]] = [
         ],
         "description": "Emulates an attacker attempting to execute arbitrary JavaScript in the context of an authenticated victim session.",
         "detection_rule": "SENTRONIX-WAF-XSS-004 (Script Tag & DOM Node Mutation Interceptor)",
+        "waf_rule_key": "WAF_XSS_INTERCEPTOR",
         "remediation_hint": "Enforce strict Context-Aware Output Encoding and a stringent Content Security Policy (CSP)."
     },
     {
@@ -71,6 +74,7 @@ SCENARIOS: List[Dict[str, Any]] = [
         ],
         "description": "Adversary probes internal endpoints attempting to force the backend server into retrieving sensitive cloud IAM credentials.",
         "detection_rule": "SENTRONIX-NET-SSRF-009 (Link-Local IP Range & Cloud Metadata Blacklist)",
+        "waf_rule_key": "SSRF_METADATA_FILTER",
         "remediation_hint": "Block link-local addresses (169.254.0.0/16, 127.0.0.1) and enforce strict egress URL allowlisting."
     },
     {
@@ -92,6 +96,7 @@ SCENARIOS: List[Dict[str, Any]] = [
         ],
         "description": "Simulates horizontal and vertical privilege escalation by altering object identifiers in API parameter paths.",
         "detection_rule": "SENTRONIX-AUTH-IDOR-003 (Tenant Isolation & Contextual Ownership Check)",
+        "waf_rule_key": "IDOR_CONTEXT_GUARD",
         "remediation_hint": "Enforce RBAC/ABAC checks validating that the current session token owns the requested resource ID."
     },
     {
@@ -113,6 +118,7 @@ SCENARIOS: List[Dict[str, Any]] = [
         ],
         "description": "Adversary conceals an executable reverse shell payload inside image pixel bitplanes to bypass perimeter file filters.",
         "detection_rule": "SENTRONIX-STEG-ANALYZER-002 (Shannon Entropy > 7.95 + LSB Chi-Square Anomaly)",
+        "waf_rule_key": "STEG_ENTROPY_ANALYZER",
         "remediation_hint": "Strip non-essential EXIF metadata and re-encode all uploaded images to neutralize LSB artifacts."
     },
     {
@@ -134,6 +140,7 @@ SCENARIOS: List[Dict[str, Any]] = [
         ],
         "description": "Emulates an attacker modifying the JWT algorithm header to 'none' to bypass cryptographic signature verification.",
         "detection_rule": "SENTRONIX-AUTH-JWT-007 (Strict Algorithm Enforcement & Null Signature Rejection)",
+        "waf_rule_key": "JWT_STRICT_ALGORITHM",
         "remediation_hint": "Explicitly restrict accepted JWT algorithms to RS256/HS256 and reject tokens specifying 'none'."
     },
     {
@@ -156,6 +163,7 @@ SCENARIOS: List[Dict[str, Any]] = [
         ],
         "description": "Adversary appends shell metacharacters to execute arbitrary system binaries on the host container.",
         "detection_rule": "SENTRONIX-AST-RCE-008 (Shell Metacharacter & Subprocess Token Inspection)",
+        "waf_rule_key": "AST_RCE_GUARD",
         "remediation_hint": "Avoid shell execution (`subprocess.Popen(..., shell=True)`). Use parameterized process args and strict regex validation."
     },
     {
@@ -178,6 +186,7 @@ SCENARIOS: List[Dict[str, Any]] = [
         ],
         "description": "Emulates an attacker using relative path traversal tokens to escape application root and read sensitive system files.",
         "detection_rule": "SENTRONIX-FS-TRAVERSAL-005 (Dot-Dot-Slash Sequence & Path Normalization Check)",
+        "waf_rule_key": "PATH_TRAVERSAL_GUARD",
         "remediation_hint": "Resolve path canonicalization via `os.path.abspath` and verify destination stays inside the designated safe directory root."
     }
 ]
@@ -261,11 +270,23 @@ SECLISTS_PROBES: List[Dict[str, Any]] = [
     {"path": "/debug/pprof/", "type": "Runtime Profiler", "expected_status": 404, "risk": "MEDIUM", "description": "Go memory & CPU stack trace disclosure"}
 ]
 
+# WAF Rules Master List
+WAF_RULES: Dict[str, Dict[str, Any]] = {
+    "AST_SQLI_GUARD": {"name": "SQLi Tautology & AST Parser", "enabled": True, "description": "Detects boolean tautologies, stacked queries, and UNION statements"},
+    "WAF_XSS_INTERCEPTOR": {"name": "DOM & Script Mutation Guard", "enabled": True, "description": "Sanitizes malicious script tags and inline event handlers"},
+    "SSRF_METADATA_FILTER": {"name": "Cloud Metadata & Link-Local Filter", "enabled": True, "description": "Blocks 169.254.0.0/16, loopback, and internal CIDR ranges"},
+    "IDOR_CONTEXT_GUARD": {"name": "Tenant Context & Ownership Interceptor", "enabled": True, "description": "Validates resource ID against authenticated session token"},
+    "STEG_ENTROPY_ANALYZER": {"name": "LSB Bitplane & Shannon Entropy Filter", "enabled": True, "description": "Inspects image bitplanes for high entropy malware shells"},
+    "JWT_STRICT_ALGORITHM": {"name": "Strict JWT Signature Enforcement", "enabled": True, "description": "Rejects 'none' algorithm and unverified signature headers"},
+    "AST_RCE_GUARD": {"name": "Shell Metacharacter & RCE Token Guard", "enabled": True, "description": "Blocks piping, command chaining, and subshell executions"},
+    "PATH_TRAVERSAL_GUARD": {"name": "Canonical Path Normalizer", "enabled": True, "description": "Prevents directory traversal escapes (../, %2e%2e)"}
+}
+
 # Historical execution in-memory cache for live sessions
 STRIKE_HISTORY: List[Dict[str, Any]] = []
 
 class RedTeamEngine:
-    """Core Purple-Team Adversary Emulation & Blue-Team Interception Engine (Top 4 Repos Integrated)"""
+    """Core Purple-Team Adversary Emulation & Blue-Team Interception Engine (Top 4 Repos + Deep Packet Sandbox)"""
 
     @staticmethod
     def get_all_scenarios() -> List[Dict[str, Any]]:
@@ -287,7 +308,23 @@ class RedTeamEngine:
         return SECLISTS_PROBES
 
     @staticmethod
-    def execute_strike(scenario_id: str, custom_payload: str = None, target_override: str = None) -> Dict[str, Any]:
+    def get_waf_rules() -> Dict[str, Dict[str, Any]]:
+        return WAF_RULES
+
+    @staticmethod
+    def toggle_waf_rule(rule_key: str, enabled: bool) -> Dict[str, Any]:
+        if rule_key in WAF_RULES:
+            WAF_RULES[rule_key]["enabled"] = enabled
+            return {"rule_key": rule_key, "enabled": enabled, "status": "Updated"}
+        return {"error": "Rule key not found"}
+
+    @staticmethod
+    def execute_strike(
+        scenario_id: str, 
+        custom_payload: str = None, 
+        target_override: str = None,
+        waf_overrides: Dict[str, bool] = None
+    ) -> Dict[str, Any]:
         scenario = RedTeamEngine.get_scenario_by_id(scenario_id)
         if not scenario:
             scenario = SCENARIOS[0]
@@ -295,11 +332,57 @@ class RedTeamEngine:
         payload = custom_payload if custom_payload and custom_payload.strip() else scenario["default_payload"]
         target = target_override if target_override and target_override.strip() else scenario["target_endpoint"]
 
+        # Check if corresponding WAF rule is enabled
+        rule_key = scenario.get("waf_rule_key", "AST_SQLI_GUARD")
+        rule_enabled = WAF_RULES.get(rule_key, {}).get("enabled", True)
+        if waf_overrides and rule_key in waf_overrides:
+            rule_enabled = waf_overrides[rule_key]
+
         start_time = time.time()
         inspection_latency_ms = round((time.time() - start_time) * 1000 + 48.5, 2)
 
         strike_id = f"STRIKE-{uuid.uuid4().hex[:8].upper()}"
         timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+
+        # Construct Deep HTTP Raw Packet Transmissions
+        http_method = "POST" if ("login" in target or "comments" in target or "scan" in target) else "GET"
+        raw_http_request = (
+            f"{http_method} {target} HTTP/1.1\r\n"
+            f"Host: sentronix.internal\r\n"
+            f"User-Agent: Mozilla/5.0 (SentroniX-Adversary-Emulation/2.1; MITRE-{scenario['mitre_tactic']})\r\n"
+            f"Content-Type: application/json\r\n"
+            f"X-Forwarded-For: 203.0.113.195\r\n"
+            f"X-Adversary-Strike-ID: {strike_id}\r\n"
+            f"Content-Length: {len(payload.encode('utf-8'))}\r\n\r\n"
+            f'{{"payload": "{payload}"}}'
+        )
+
+        if rule_enabled:
+            defense_status = "INTERCEPTED & BLOCKED"
+            status_code = 403
+            raw_http_response = (
+                f"HTTP/1.1 403 Forbidden\r\n"
+                f"Server: SentroniX-WAF/2.1\r\n"
+                f"Date: {timestamp}\r\n"
+                f"Content-Type: application/json\r\n"
+                f"X-Threat-Intercept: Blocked-By-Rule\r\n"
+                f"X-Rule-Fired: {scenario['detection_rule']}\r\n"
+                f"Connection: close\r\n\r\n"
+                f'{{"status": "blocked", "strike_id": "{strike_id}", "rule": "{scenario["detection_rule"]}", "reason": "Adversary Payload Neutralized"}}\n'
+            )
+            verdict = "ATTACK NEUTRALIZED"
+        else:
+            defense_status = "VULNERABILITY TRIPPED (WAF DISABLED)"
+            status_code = 200
+            raw_http_response = (
+                f"HTTP/1.1 200 OK\r\n"
+                f"Server: SentroniX-App/2.1\r\n"
+                f"Date: {timestamp}\r\n"
+                f"Content-Type: application/json\r\n"
+                f"X-Threat-Intercept: Bypass-WAF-Disabled\r\n\r\n"
+                f'{{"status": "exploited", "strike_id": "{strike_id}", "warning": "Defense rule {rule_key} was disabled. Attack succeeded!"}}\n'
+            )
+            verdict = "EXPLOIT SUCCEEDED (DEFENSE DISABLED)"
 
         interception_result = {
             "strike_id": strike_id,
@@ -312,24 +395,28 @@ class RedTeamEngine:
             "mitre_technique": scenario["mitre_technique"],
             "cwe": scenario["cwe"],
             "owasp": scenario["owasp"],
+            "waf_rule_key": rule_key,
+            "waf_rule_enabled": rule_enabled,
             "red_team": {
                 "target_endpoint": target,
                 "injected_payload": payload,
                 "payload_bytes": len(payload.encode("utf-8")),
-                "status": "TRANSMITTED"
+                "status": "TRANSMITTED",
+                "raw_packet": raw_http_request
             },
             "blue_team": {
-                "defense_status": "INTERCEPTED & BLOCKED",
-                "status_code": 403,
+                "defense_status": defense_status,
+                "status_code": status_code,
                 "inspection_rule": scenario["detection_rule"],
                 "latency_ms": inspection_latency_ms,
                 "threat_score": 98.4 if scenario["severity"] == "CRITICAL" else 87.2,
-                "remediation_hint": scenario["remediation_hint"]
+                "remediation_hint": scenario["remediation_hint"],
+                "raw_packet": raw_http_response
             },
             "purple_team_convergence": {
-                "verdict": "ATTACK NEUTRALIZED",
+                "verdict": verdict,
                 "ai_patch_available": True,
-                "summary": f"Red Team adversary emulated {scenario['mitre_technique']} (via {scenario.get('source_repo')}) against {target}. SentroniX Interception Engine triggered {scenario['detection_rule']} in {inspection_latency_ms}ms."
+                "summary": f"Red Team adversary emulated {scenario['mitre_technique']} against {target}. Defense rule {rule_key} ({'Enabled' if rule_enabled else 'Disabled'}) resulted in {defense_status} ({inspection_latency_ms}ms)."
             }
         }
 
@@ -382,7 +469,7 @@ class RedTeamEngine:
     @staticmethod
     def get_metrics() -> Dict[str, Any]:
         total_strikes = max(len(STRIKE_HISTORY), 18)
-        blocked_count = total_strikes
+        blocked_count = len([s for s in STRIKE_HISTORY if "BLOCKED" in s["blue_team"]["defense_status"]]) if STRIKE_HISTORY else total_strikes
         avg_latency = 48.2
 
         if STRIKE_HISTORY:
@@ -392,10 +479,11 @@ class RedTeamEngine:
         return {
             "total_simulated_strikes": total_strikes,
             "intercepted_threats": blocked_count,
-            "interception_success_rate": 100.0,
+            "interception_success_rate": round((blocked_count / max(total_strikes, 1)) * 100.0, 1),
             "average_detection_latency_ms": avg_latency,
             "resilience_grade": "A+",
             "active_scenarios_count": len(SCENARIOS),
             "caldera_campaigns_count": len(CALDERA_CAMPAIGNS),
-            "seclists_probes_count": len(SECLISTS_PROBES)
+            "seclists_probes_count": len(SECLISTS_PROBES),
+            "active_waf_rules_count": len(WAF_RULES)
         }
