@@ -63,8 +63,8 @@ export default function SettingsPage() {
   }
 
   return (
-    <main className="p-4 md:p-8 flex-1 overflow-y-auto">
-      <div className="max-w-6xl mx-auto space-y-grid-gap">
+    <main className="w-full max-w-full p-3 sm:p-5 md:p-6 lg:p-8 flex-1 overflow-y-auto overflow-x-hidden space-y-6">
+      <div className="w-full max-w-[98%] xl:max-w-[95%] 2xl:max-w-[92%] mx-auto space-y-6">
         
         {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
@@ -73,14 +73,14 @@ export default function SettingsPage() {
               <Settings className="text-primary" size={28} />
               Platform Configuration & Integrations
             </h1>
-            <p className="font-body-md text-body-md text-text-muted mt-1">
+            <p className="font-body-md text-body-md text-text-muted mt-1 max-w-4xl">
               Configure AI engines, scanner rulebooks, Jira ticketing pipelines, and notification webhooks.
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-shrink-0">
             <button
               onClick={handleSave}
-              className="px-5 py-2.5 bg-primary hover:bg-surface-tint text-on-primary rounded-lg font-label-md text-label-md flex items-center gap-2 shadow-sm transition-all active:scale-[0.98]"
+              className="px-5 py-2.5 bg-primary hover:bg-surface-tint text-on-primary rounded-lg font-label-md text-label-md flex items-center gap-2 shadow-sm transition-all active:scale-[0.98] whitespace-nowrap"
             >
               {saveStatus === 'saving' ? (
                 <><RefreshCw size={16} className="animate-spin" /> Saving Changes...</>
@@ -94,7 +94,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex gap-2 border-b border-border-strong pb-2 overflow-x-auto">
+        <div className="flex gap-2 border-b border-border-strong pb-2 overflow-x-auto scrollbar-none w-full">
           <button
             onClick={() => setActiveTab('ai_general')}
             className={`px-4 py-2 rounded-lg font-label-md text-label-md transition-colors flex items-center gap-2 ${activeTab === 'ai_general' ? 'bg-primary-container text-on-primary font-bold' : 'text-text-secondary hover:bg-surface-container-low hover:text-on-surface'}`}

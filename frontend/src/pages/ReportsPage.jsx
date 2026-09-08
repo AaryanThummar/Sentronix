@@ -167,8 +167,8 @@ export default function ReportsPage() {
   }
 
   return (
-    <main className="p-4 md:p-8 flex-1 overflow-y-auto space-y-grid-gap">
-      <div className="max-w-7xl mx-auto space-y-grid-gap">
+    <main className="w-full max-w-full p-3 sm:p-5 md:p-6 lg:p-8 flex-1 overflow-y-auto overflow-x-hidden space-y-6">
+      <div className="w-full max-w-[98%] xl:max-w-[95%] 2xl:max-w-[92%] mx-auto space-y-6">
         
         {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
@@ -177,14 +177,14 @@ export default function ReportsPage() {
               <FileText className="text-primary" size={28} />
               Security Audit & Compliance Reports
             </h1>
-            <p className="font-body-md text-body-md text-text-muted mt-1">
+            <p className="font-body-md text-body-md text-text-muted mt-1 max-w-4xl">
               Generate, preview, print, and export executive vulnerability assessments and compliance audit trails.
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3 flex-shrink-0">
             <button 
               onClick={() => handleOpenAuditModal()}
-              className="px-4 py-2 bg-surface-container-high hover:bg-surface-hover text-on-surface rounded-lg font-label-md text-label-md flex items-center gap-2 border border-outline-variant transition-colors"
+              className="px-4 py-2 bg-surface-container-high hover:bg-surface-hover text-on-surface rounded-lg font-label-md text-label-md flex items-center gap-2 border border-outline-variant transition-colors whitespace-nowrap"
             >
               <Eye size={16} className="text-primary" />
               Executive PDF Preview
@@ -192,7 +192,7 @@ export default function ReportsPage() {
             <button 
               onClick={handleGenerateReport}
               disabled={isGenerating}
-              className="px-4 py-2 bg-primary hover:bg-surface-tint text-on-primary rounded-lg font-label-md text-label-md flex items-center gap-2 shadow-sm transition-all active:scale-[0.98]"
+              className="px-4 py-2 bg-primary hover:bg-surface-tint text-on-primary rounded-lg font-label-md text-label-md flex items-center gap-2 shadow-sm transition-all active:scale-[0.98] whitespace-nowrap"
             >
               <Sparkles size={16} />
               {isGenerating ? 'Compiling Report...' : 'Generate New Audit'}
@@ -201,7 +201,7 @@ export default function ReportsPage() {
         </div>
 
         {/* Top Summary Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-grid-gap">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full">
           <div className="bento-card bg-surface-container-low flex flex-col justify-center relative group">
             <div className="flex items-center justify-between">
               <span className="font-label-md text-label-md text-text-secondary">Security Posture</span>
@@ -263,7 +263,7 @@ export default function ReportsPage() {
             Custom Report Builder
           </h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4 w-full">
             <div>
               <label className="font-label-sm text-label-sm text-text-secondary block mb-1">Report Template</label>
               <select 

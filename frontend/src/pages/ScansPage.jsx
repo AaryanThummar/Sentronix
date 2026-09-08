@@ -79,16 +79,16 @@ export default function ScansPage() {
   }
 
   return (
-    <main className="p-4 md:p-8 flex-1 overflow-y-auto">
-      <div className="max-w-7xl mx-auto space-y-grid-gap">
+    <main className="w-full max-w-full p-3 sm:p-5 md:p-6 lg:p-8 flex-1 overflow-y-auto overflow-x-hidden space-y-6">
+      <div className="w-full max-w-[98%] xl:max-w-[95%] 2xl:max-w-[92%] mx-auto space-y-6">
         {/* Page Header */}
-        <div className="mb-6">
+        <div className="mb-2">
           <h1 className="font-headline-lg text-headline-lg text-on-surface">Scans & Workers</h1>
           <p className="font-body-md text-body-md text-text-muted mt-1">Manual execution of defensive scans.</p>
         </div>
 
         {/* 1. Steganography Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-grid-gap mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-8 w-full">
           {/* Steg Scanner widget */}
           <div className="bento-card flex flex-col justify-between">
             <div>
@@ -122,9 +122,9 @@ export default function ScansPage() {
             <button 
               onClick={handleStegUpload}
               disabled={!stegFile || isStegUploading}
-              className={`mt-4 w-full py-3 rounded-lg font-label-md text-label-md text-on-primary flex items-center justify-center gap-2 transition-colors ${!stegFile || isStegUploading ? 'bg-surface-variant text-text-muted cursor-not-allowed' : 'bg-success-defensive hover:opacity-90'}`}
+              className="mt-6 w-full bg-primary text-on-primary py-2.5 rounded-lg font-label-md text-label-md hover:bg-surface-tint transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              {isStegUploading ? 'Analyzing...' : 'Run Steg Analysis'}
+              {isStegUploading ? 'Extracting Payloads...' : 'Analyze Image for Payloads'}
             </button>
           </div>
 
@@ -166,7 +166,7 @@ export default function ScansPage() {
         </div>
 
         {/* 2. Malware Scanner Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-grid-gap">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           {/* Malware Scanner Card */}
           <div className="bento-card flex flex-col justify-between">
             <div>
