@@ -2,20 +2,28 @@ import React, { useState } from 'react'
 import { 
   Settings, Key, Bot, Shield, Check, Save, 
   ExternalLink, Trash2, Sliders, Bell, Database, 
-  Eye, EyeOff, CheckCircle2, AlertCircle, RefreshCw, Radio
+  Eye, EyeOff, CheckCircle2, AlertCircle, RefreshCw, Radio,
+  GitPullRequest
 } from 'lucide-react'
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('ai_general')
   const [showApiKey, setShowApiKey] = useState(false)
   const [showJiraToken, setShowJiraToken] = useState(false)
+  const [showGitHubToken, setShowGitHubToken] = useState(false)
   
   // Settings Form State
-  const [geminiApiKey, setGeminiApiKey] = useState('')
+  const [geminiApiKey, setGeminiApiKey] = useState(() => localStorage.getItem('sentronix_gemini_key') || '')
   const [geminiModel, setGeminiModel] = useState('gemini-1.5-flash')
   const [autoRemediation, setAutoRemediation] = useState(true)
   const [stegThreshold, setStegThreshold] = useState('deep')
   
+  // GitHub Integration State
+  const [githubOwner, setGithubOwner] = useState(() => localStorage.getItem('sentronix_github_owner') || 'Keval-Doshi')
+  const [githubRepo, setGithubRepo] = useState(() => localStorage.getItem('sentronix_github_repo') || 'SentroniX')
+  const [githubBase, setGithubBase] = useState(() => localStorage.getItem('sentronix_github_base') || 'main')
+  const [githubToken, setGithubToken] = useState(() => localStorage.getItem('sentronix_github_token') || '')
+
   // Jira & Webhooks State
   const [jiraHost, setJiraHost] = useState('https://sentronix.atlassian.net')
   const [jiraEmail, setJiraEmail] = useState('security-admin@sentronix.io')
@@ -35,10 +43,15 @@ export default function SettingsPage() {
 
   const handleSave = () => {
     setSaveStatus('saving')
+    if (geminiApiKey.trim()) localStorage.setItem('sentronix_gemini_key', geminiApiKey.trim())
+    if (githubOwner.trim()) localStorage.setItem('sentronix_github_owner', githubOwner.trim())
+    if (githubRepo.trim()) localStorage.setItem('sentronix_github_repo', githubRepo.trim())
+    if (githubBase.trim()) localStorage.setItem('sentronix_github_base', githubBase.trim())
+    if (githubToken.trim()) localStorage.setItem('sentronix_github_token', githubToken.trim())
     setTimeout(() => {
       setSaveStatus('saved')
       setTimeout(() => setSaveStatus(null), 3000)
-    }, 800)
+    }, 600)
   }
 
   const handleTestJira = () => {
@@ -277,6 +290,84 @@ export default function SettingsPage() {
                     <span className="font-body-sm text-body-sm text-text-muted text-[12px]">Automatically open high-priority backlog tickets with CVSS score & remediation payloads.</span>
                   </div>
                 </label>
+              </div>
+            </div>
+
+            {/* GitHub CI/CD & Auto-PR Integration */}
+            <div className="bento-card">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+                    <GitPullRequest size={20} className="text-primary" />
+                    GitHub Automated Remediation Pull Requests
+                  </h3>
+                  <p className="font-body-sm text-body-sm text-text-muted mt-1">
+                    Directly stage AI-synthesized patches into remote branches and open structured remediation PRs.
+                  </p>
+                </div>
+                <span className="px-2.5 py-1 rounded-full bg-accent-soft text-primary font-bold text-xs border border-primary/20">
+                  One-Click CI/CD
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl">
+                <div>
+                  <label className="font-label-sm text-label-sm text-text-secondary block mb-1">Repository Owner / Org</label>
+                  <input
+                    type="text"
+                    value={githubOwner}
+                    onChange={(e) => setGithubOwner(e.target.value)}
+                    placeholder="Keval-Doshi"
+                    className="w-full bg-surface-container-low border border-border-subtle rounded-lg px-3 py-2 font-label-md text-label-md text-on-surface focus:outline-none focus:border-primary"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-label-sm text-label-sm text-text-secondary block mb-1">Repository Name</label>
+                  <input
+                    type="text"
+                    value={githubRepo}
+                    onChange={(e) => setGithubRepo(e.target.value)}
+                    placeholder="SentroniX"
+                    className="w-full bg-surface-container-low border border-border-subtle rounded-lg px-3 py-2 font-label-md text-label-md text-on-surface focus:outline-none focus:border-primary"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-label-sm text-label-sm text-text-secondary block mb-1">Target Base Branch</label>
+                  <input
+                    type="text"
+                    value={githubBase}
+                    onChange={(e) => setGithubBase(e.target.value)}
+                    placeholder="main"
+                    className="w-full bg-surface-container-low border border-border-subtle rounded-lg px-3 py-2 font-label-md text-label-md text-on-surface focus:outline-none focus:border-primary"
+                  />
+                </div>
+              </div>
+
+              <div className="max-w-4xl mt-4">
+                <label className="font-label-sm text-label-sm text-text-secondary block mb-1">
+                  GitHub Personal Access Token (PAT)
+                </label>
+                <div className="relative">
+                  <input
+                    type={showGitHubToken ? "text" : "password"}
+                    value={githubToken}
+                    onChange={(e) => setGithubToken(e.target.value)}
+                    placeholder="ghp_xxxxxxxxxxxxxxxxxxxx (Optional for Live PR Creation)"
+                    className="w-full bg-surface-container-low border border-border-subtle rounded-lg px-3 py-2 font-mono text-xs text-on-surface pr-10 focus:outline-none focus:border-primary"
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => setShowGitHubToken(!showGitHubToken)}
+                    className="absolute right-3 top-2.5 text-text-muted hover:text-on-surface"
+                  >
+                    {showGitHubToken ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                <p className="font-body-sm text-[11px] text-text-muted mt-1">
+                  Leave empty to generate simulated PR branches with reproduction steps and diff packages.
+                </p>
               </div>
             </div>
 

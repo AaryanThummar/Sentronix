@@ -6,7 +6,6 @@ from app.core.database import get_db
 from sqlalchemy.orm import Session
 from app.models.vulnerability import UnifiedFinding
 import os
-import aiohttp
 import asyncio
 
 router = APIRouter()
@@ -16,15 +15,30 @@ class StrikeRequest(BaseModel):
     custom_payload: Optional[str] = Field(None, example="admin' OR '1'='1' --")
     target_override: Optional[str] = Field(None, example="/api/v1/auth/login")
     notify_discord: Optional[bool] = Field(True, description="Whether to dispatch alert to Discord mod channel")
+    waf_overrides: Optional[Dict[str, bool]] = Field(None, description="Dynamic WAF rule toggles")
 
 class CampaignRequest(BaseModel):
     campaign_id: str = Field(..., example="campaign-web-infiltrator")
     notify_discord: Optional[bool] = Field(True)
 
+class WAFToggleRequest(BaseModel):
+    rule_key: str = Field(..., example="AST_SQLI_GUARD")
+    enabled: bool = Field(..., example=True)
+
 @router.get("/scenarios")
 def get_scenarios():
     """Retrieve all available adversary strike simulation scenarios (PayloadsAllTheThings & Atomic Red Team)"""
     return RedTeamEngine.get_all_scenarios()
+
+@router.get("/waf-rules")
+def get_waf_rules():
+    """Retrieve all WAF defensive inspection rules and policy states"""
+    return RedTeamEngine.get_waf_rules()
+
+@router.post("/waf-rules/toggle")
+def toggle_waf_rule(req: WAFToggleRequest):
+    """Dynamically enable or disable a WAF rule in the sandbox"""
+    return RedTeamEngine.toggle_waf_rule(req.rule_key, req.enabled)
 
 @router.get("/campaigns")
 def get_campaigns():
@@ -51,6 +65,52 @@ def get_strike_history():
     """Retrieve history of recent simulated strikes and defense responses"""
     return STRIKE_HISTORY
 
+class LiveScanRequest(BaseModel):
+    target_url: str = Field(..., example="http://localhost:8000/api/v1/auth/login")
+    method: Optional[str] = Field("GET", example="POST")
+    vectors: Optional[List[str]] = Field(None, example=["sqli", "xss", "ssrf", "path_traversal", "seclists"])
+    custom_headers: Optional[Dict[str, str]] = None
+    custom_payload: Optional[str] = None
+
+@router.post("/live-scan")
+def run_live_scan(req: LiveScanRequest, db: Session = Depends(get_db)):
+    """
+    Executes a live adversary payload burst against a target URL or API endpoint,
+    analyzes HTTP response reflections, status codes, and WAF intercepts.
+    Automatically persists detected vulnerabilities to the database.
+    """
+    scan_result = RedTeamEngine.run_live_endpoint_scan(
+        target_url=req.target_url,
+        method=req.method or "GET",
+        vectors=req.vectors,
+        custom_headers=req.custom_headers,
+        custom_payload=req.custom_payload
+    )
+
+    # Persist detected vulnerabilities as UnifiedFindings
+    for vuln in scan_result.get("vulnerabilities", []):
+        try:
+            finding = UnifiedFinding(
+                scan_id=scan_result["scan_id"],
+                tenant_id="default-tenant",
+                pillar="Web & API Defense",
+                tool_used="SentroniX Live Fuzzer (SecLists & PayloadsAllTheThings)",
+                vulnerability_title=f"[Live Fuzzing] {vuln['vector']}",
+                severity=vuln["severity"],
+                cwe_id=vuln["cwe"],
+                location=vuln["endpoint"],
+                description=f"Active endpoint fuzzing identified vulnerability on {vuln['endpoint']}. Payload: `{vuln['payload']}`. Evidence: {vuln['evidence']}",
+                raw_payload=vuln["payload"]
+            )
+            db.add(finding)
+            db.commit()
+            db.refresh(finding)
+            vuln["db_finding_id"] = finding.id
+        except Exception:
+            db.rollback()
+
+    return scan_result
+
 @router.post("/strike")
 async def execute_strike(req: StrikeRequest, db: Session = Depends(get_db)):
     """
@@ -64,7 +124,8 @@ async def execute_strike(req: StrikeRequest, db: Session = Depends(get_db)):
     result = RedTeamEngine.execute_strike(
         scenario_id=req.scenario_id,
         custom_payload=req.custom_payload,
-        target_override=req.target_override
+        target_override=req.target_override,
+        waf_overrides=req.waf_overrides
     )
 
     # Automatically record finding into DB to link with AI Remediation pipeline
