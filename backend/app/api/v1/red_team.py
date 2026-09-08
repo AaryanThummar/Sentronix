@@ -6,7 +6,6 @@ from app.core.database import get_db
 from sqlalchemy.orm import Session
 from app.models.vulnerability import UnifiedFinding
 import os
-import aiohttp
 import asyncio
 
 router = APIRouter()
