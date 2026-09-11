@@ -1,47 +1,397 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>SentroniX Defense</title>
+  <meta charset="UTF-8">
+  <title>SentroniX Active Defense V3</title>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body {
-      width: 300px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      padding: 16px;
-      background-color: #f8fafc;
-      color: #0f172a;
+    * {
+      box-sizing: border-box;
       margin: 0;
+      padding: 0;
     }
-    h2 {
+
+    body {
+      width: 360px;
+      background-color: #f9f9f8;
+      color: #1a1c1c;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      padding: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Header matching SentroniX Web App Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #e2e2e2;
+    }
+
+    .brand-area {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-logo {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      object-fit: contain;
+    }
+
+    .brand-title {
+      font-family: 'Hanken Grotesk', sans-serif;
       font-size: 18px;
-      margin-top: 0;
-      color: #3b82f6;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #372d8a;
+      line-height: 1.1;
+    }
+
+    .brand-subtitle {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: #9B9AA0;
+      font-weight: 500;
+    }
+
+    .ver-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      background: #EEEDFE;
+      color: #372d8a;
+      padding: 3px 9px;
+      border-radius: 9999px;
+      border: 1px solid #c8c4d3;
+    }
+
+    /* Bento Cards matching platform style */
+    .bento-card {
+      background: #ffffff;
+      border: 1px solid #c8c4d3;
+      border-radius: 12px;
+      padding: 14px;
+      margin-top: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    .status-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: #6B6A72;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      color: #0F6E56;
+      background: rgba(15, 110, 86, 0.08);
+      padding: 2px 8px;
+      border-radius: 9999px;
+      border: 1px solid rgba(15, 110, 86, 0.2);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: #0F6E56;
+      box-shadow: 0 0 6px #0F6E56;
+      animation: pulse-dot 2s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.3); opacity: 0.6; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .shields-list {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .shield-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #1a1c1c;
+      font-weight: 500;
+    }
+
+    .shield-item-left {
       display: flex;
       align-items: center;
       gap: 8px;
     }
-    p {
+
+    .shield-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background-color: #e6f4ea;
+      color: #0F6E56;
+      border: 1px solid rgba(15, 110, 86, 0.25);
+    }
+
+    /* URL Inspector Card */
+    .analyzer-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Hanken Grotesk', sans-serif;
       font-size: 13px;
-      color: #64748b;
+      font-weight: 700;
+      color: #372d8a;
+      margin-bottom: 10px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .url-input {
+      flex: 1;
+      background-color: #ffffff;
+      border: 1px solid #c8c4d3;
+      color: #1a1c1c;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .url-input:focus {
+      border-color: #4f46a3;
+      box-shadow: 0 0 0 2px rgba(79, 70, 163, 0.15);
+    }
+
+    .btn-scan {
+      font-family: 'Hanken Grotesk', sans-serif;
+      background: #4f46a3;
+      color: #ffffff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(79, 70, 163, 0.25);
+      transition: all 0.2s;
+    }
+
+    .btn-scan:hover {
+      background: #372d8a;
+      transform: translateY(-1px);
+    }
+
+    .scan-result {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      display: none;
       line-height: 1.4;
     }
-    .status {
-      margin-top: 16px;
-      padding: 12px;
-      background: #e0e7ff;
-      border-radius: 8px;
-      font-weight: 500;
-      font-size: 14px;
+
+    .scan-result.clean {
+      display: block;
+      background-color: #e6f4ea;
+      border: 1px solid #0F6E56;
+      color: #0F6E56;
+    }
+
+    .scan-result.threat {
+      display: block;
+      background-color: #ffdad6;
+      border: 1px solid #ba1a1a;
+      color: #93000a;
+    }
+
+    /* Metric Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .stat-card {
+      background: #ffffff;
+      border: 1px solid #c8c4d3;
+      border-radius: 10px;
+      padding: 12px 6px;
       text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+
+    .stat-num {
+      font-family: 'Hanken Grotesk', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      color: #372d8a;
+      line-height: 1;
+    }
+
+    .stat-lbl {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9.5px;
+      color: #6B6A72;
+      margin-top: 5px;
+      font-weight: 500;
+      line-height: 1.2;
+    }
+
+    /* Footer Button */
+    .footer {
+      margin-top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn-dashboard {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: 'Hanken Grotesk', sans-serif;
+      background: #4f46a3;
+      color: #ffffff;
+      text-decoration: none;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      box-shadow: 0 4px 12px rgba(79, 70, 163, 0.25);
+      transition: all 0.2s;
+    }
+
+    .btn-dashboard:hover {
+      background: #372d8a;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(55, 45, 138, 0.35);
+    }
+
+    .backend-tag {
+      font-family: 'JetBrains Mono', monospace;
+      text-align: center;
+      font-size: 10px;
+      color: #9B9AA0;
+      font-weight: 500;
     }
   </style>
 </head>
 <body>
-  <h2>🛡️ SentroniX V2</h2>
-  <p>Active Defense is <strong>running</strong>.</p>
-  <p>SentroniX will automatically pause downloads and ask if you want to scan them for hidden malware or steganography payloads using your local engine.</p>
-  
-  <div class="status">
-    Endpoint: http://localhost:8000
+  <!-- Header matching SentroniX Web Platform UI -->
+  <div class="header">
+    <div class="brand-area">
+      <img src="icon.png" alt="SentroniX Logo" class="brand-logo" />
+      <div>
+        <div class="brand-title">SENTRONIX</div>
+        <div class="brand-subtitle">Purple Team AI</div>
+      </div>
+    </div>
+    <span class="ver-pill">v3.0.0 PRO</span>
   </div>
+
+  <!-- Active Protection Bento Card -->
+  <div class="bento-card">
+    <div class="status-header">
+      <span class="section-label">Active Protection</span>
+      <div class="status-indicator">
+        <div class="status-dot"></div>
+        <span>SHIELDS LIVE</span>
+      </div>
+    </div>
+    <div class="shields-list">
+      <div class="shield-item">
+        <div class="shield-item-left">
+          <span>🔗 Phishing Link Interceptor</span>
+        </div>
+        <span class="shield-tag">ACTIVE</span>
+      </div>
+      <div class="shield-item">
+        <div class="shield-item-left">
+          <span>✉️ Webmail Link Inspector</span>
+        </div>
+        <span class="shield-tag">ACTIVE</span>
+      </div>
+      <div class="shield-item">
+        <div class="shield-item-left">
+          <span>📥 Download & Stego Guard</span>
+        </div>
+        <span class="shield-tag">ACTIVE</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick URL Reputation Analyzer Card -->
+  <div class="bento-card">
+    <div class="analyzer-header">
+      <span>🔍 Quick URL Reputation Analyzer</span>
+    </div>
+    <div class="input-row">
+      <input type="text" id="urlInput" class="url-input" placeholder="Paste link (e.g. https://...)" />
+      <button id="btnScanUrl" class="btn-scan">Scan</button>
+    </div>
+    <div id="scanResult" class="scan-result"></div>
+  </div>
+
+  <!-- Metric Stats Grid -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div id="statScanned" class="stat-num">0</div>
+      <div class="stat-lbl">Links Audited</div>
+    </div>
+    <div class="stat-card">
+      <div id="statBlocked" class="stat-num" style="color:#ba1a1a;">0</div>
+      <div class="stat-lbl">Threats Intercepted</div>
+    </div>
+    <div class="stat-card">
+      <div id="statDownloads" class="stat-num" style="color:#0F6E56;">0</div>
+      <div class="stat-lbl">Downloads Guarded</div>
+    </div>
+  </div>
+
+  <!-- Footer Actions -->
+  <div class="footer">
+    <a href="http://localhost:5173/arena" target="_blank" class="btn-dashboard">
+      ⚔️ Open Purple Team Arena Dashboard
+    </a>
+    <div class="backend-tag">
+      Engine connected: http://localhost:8000
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
 </body>
 </html>
+
+

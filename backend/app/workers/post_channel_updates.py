@@ -13,103 +13,100 @@ client = discord.Client(intents=intents)
 CHANNELS_UPDATES = {
     # 1. MANAGEMENT
     'standups': {
-        'title': '📋 Daily Standup: SentroniX Platform (V2 Milestone)',
+        'title': '📋 Daily Standup: SentroniX Platform (V3 Milestone)',
         'color': 0x6366f1,
         'fields': [
-            ('✅ Completed (Past 24h)', '• Built AI Patch & Automated Remediation Engine with live Gemini 3.6 Flash.\n• Added interactive syntax-highlighted Git diff modal with one-click patch download.\n• Synchronized Security Posture Grade (A-D) across Dashboard and Reports pages.\n• Configured GitHub Actions CI/CD Discord webhooks for KAN-23.', False),
-            ('🔄 In Progress', '• Red Team Attack Lab (Atomic adversary simulations & MITRE ATT&CK mapping).\n• Closed-loop automated exploit re-testing post-patch.', False),
-            ('🛑 Blockers', '• None. All Docker services (Backend, DB, Redis, Worker, Frontend) healthy.', False)
+            ('✅ Completed (Past 24h)', '• Launched SentroniX Version 3 with Browser Extension V3 (Phishing Link Interceptor, Webmail Inspector, Download Scanner).\n• Standardized light design system matching SentroniX Web App UI.\n• Added zero-Docker 1-click standalone launchers (`run_sentronix_standalone.bat` & `.sh`).\n• Restored original purple pixel-art emoji logo across all assets.', False),
+            ('🔄 In Progress', '• Firefox / Edge Web Store packaging and automated CI/CD release builds.', False),
+            ('🛑 Blockers', '• None. All services and extension manifests passing verification.', False)
         ],
-        'footer': 'SentroniX Management Operations • Purple Team AI'
+        'footer': 'SentroniX Management Operations • Purple Team AI V3'
     },
     'sprint-planning': {
-        'title': '🎯 Sprint Planning: V2 Release Roadmap',
+        'title': '🎯 Sprint Planning: V3 Release Roadmap',
         'color': 0x3b82f6,
         'fields': [
-            ('Epic 1: Active Defense & Interception', '• Browser Extension download scanner (Chrome/Edge/Firefox MV3).\n• Steganography & binary payload triage.', False),
-            ('Epic 2: AI Remediation & DevSecOps', '• Bring-Your-Own-Key Gemini AI integration.\n• Jira Cloud issue generation with attached patches.\n• OWASP Top 10 compliance reporting & JSON export.', False),
-            ('Epic 3: Red Team Adversary Simulation', '• Automated exploit runner for SQLi, Command Injection, Path Traversal.\n• WAF-bypass payload mutator and verification engine.', False)
+            ('Epic 1: Active Defense Browser Extension V3', '• Real-Time Phishing Link Interceptor & Webmail Link Inspector.\n• Malicious Download & Steganography Interception.\n• Light Bento Card UI aligned with main SentroniX web app.', False),
+            ('Epic 2: Zero-Docker Standalone Ecosystem', '• Embedded SQLite & Single-Port SPA serving (`http://localhost:8000`).\n• Portable 1-click Windows & Linux launchers.', False),
+            ('Epic 3: AI Threat Intelligence & Remediation', '• Bring-Your-Own-Key Gemini AI integration & auto diff patch generator.', False)
         ],
-        'footer': 'Sprint Velocity: High • Target Release: V2.0-RC'
+        'footer': 'Sprint Velocity: High • Release Version: V3.0.0 PRO'
     },
     'retrospectives': {
-        'title': '🔍 Sprint Retrospective: V1 Delivery & V2 Progress',
+        'title': '🔍 Sprint Retrospective: V3 Platform Delivery',
         'color': 0x8b5cf6,
         'fields': [
-            ('🌟 What Went Well', '• Clean containerized isolation for Celery scanner workers.\n• Single-source-of-truth telemetry for risk scoring.\n• Zero secrets committed to Git repository.', False),
-            ('📈 Areas for Optimization', '• Implement automated re-attack validation to verify fixes in runtime.\n• Add live streaming terminal output for Red Team attack runs.', False)
+            ('🌟 What Went Well', '• Full synchronization between Chrome Extension V3 and SentroniX Web App UI.\n• Restored iconic purple pixel-art emoji logo.\n• Accurate delta-based link audit telemetry.', False),
+            ('📈 Areas for Optimization', '• Edge & Firefox manifest compatibility testing.', False)
         ],
         'footer': 'Continuous Improvement • DevSecOps Quality Metrics'
     },
 
     # 2. DEV - BACKEND
     'dev-backend': {
-        'title': '⚙️ Backend Architecture & Core Services Update',
+        'title': '⚙️ Backend Architecture & Core Services V3 Update',
         'color': 0x10b981,
         'fields': [
-            ('FastAPI Core (Port 8000)', '• `/api/v1/dashboard`: Live telemetry, stats, and merged findings.\n• `/api/v1/ai/patch`: Gemini 3.6 Flash prompt orchestration & rule fallback.\n• `/api/v1/ai/jira-ticket`: Atlassian Jira issue creation.\n• `/api/v1/defense/app`: SAST, DAST, and SCA scan job triggers.', False),
-            ('Worker Subsystem', '• Celery queue `celery` processing async scan jobs with Redis broker.', False),
-            ('Database Schema', '• PostgreSQL 15 `unified_findings`, `steg_results`, and `users` tables.', False)
+            ('FastAPI Core (Port 8000)', '• `/api/v1/defense/check-url`: Real-time typosquatting, TLD, and brand mismatch analysis.\n• `/api/v1/defense/check-email`: Email sender mismatch & urgency cue detector.\n• `/api/v1/dashboard`: Telemetry stats and findings.\n• `/api/v1/ai/patch`: Gemini 3.6 Flash automated remediation diffs.', False),
+            ('Database & Standalone Engine', '• Dual support for PostgreSQL 15 & Embedded SQLite (`sentronix.db`).', False)
         ],
-        'footer': 'Backend Core • FastAPI & Celery Engine'
+        'footer': 'Backend Core • FastAPI V3 & Celery Engine'
     },
     'ai-engine': {
-        'title': '🧠 Gemini AI Correlation & Patch Engine',
+        'title': '🧠 Gemini AI Correlation & Threat Intelligence V3',
         'color': 0x06b6d4,
         'fields': [
             ('Primary LLM', '`Google Gemini 3.6 Flash` (Live BYOK API Key support).', True),
-            ('Fallback Engine', 'Smart Purple-Team contextual security ruleset (Offline).', True),
-            ('Remediation Capabilities', '• Generates unified diffs (`--- a/`, `+++ b/`, `@@`).\n• Root cause analysis & adversary exploit vector simulation.\n• Step-by-step verification checklists & OWASP Top 10 mapping.', False)
+            ('Threat Intel Scanners', 'Typosquatting rules, homoglyph detector, suspicious TLD analyzer.', True),
+            ('Remediation Capabilities', '• Generates unified diffs (`--- a/`, `+++ b/`).\n• Root cause analysis & adversary exploit vector simulation.', False)
         ],
-        'footer': 'SentroniX AI Correlation Subsystem'
+        'footer': 'SentroniX AI Threat Subsystem'
     },
     'infra-devops': {
-        'title': '🐳 Infrastructure & DevOps Telemetry',
+        'title': '🐳 Infrastructure & DevOps Telemetry V3',
         'color': 0x14b8a6,
         'fields': [
-            ('Docker Compose Topology', '• `backend` (FastAPI / Port 8000)\n• `frontend` (Vite React / Port 5173)\n• `db` (PostgreSQL 15 Alpine / Port 5432)\n• `redis` (Redis 7 Alpine / Port 6379)\n• `worker` (Celery Scanners)', False),
-            ('CI/CD Pipeline', '• GitHub Actions `.github/workflows/ci.yml` running test suite on push/PR.\n• Discord webhook integration broadcasting build results to `#ci-cd-alerts`.', False)
+            ('Docker Compose Topology', '• `backend` (FastAPI / Port 8000)\n• `frontend` (Vite React / Port 5173)\n• `db` (PostgreSQL 15 / Port 5432)\n• `redis` (Redis 7 / Port 6379)\n• `worker` (Celery Scanners)', False),
+            ('Standalone Launchers', '`run_sentronix_standalone.bat` & `.sh` (Zero-Docker support).', False)
         ],
         'footer': 'DevOps & Cloud Infrastructure'
     },
 
     # 3. DEV - FRONTEND
     'dev-frontend': {
-        'title': '🎨 Frontend Design System & Component Status',
+        'title': '🎨 Frontend & Extension V3 Design System',
         'color': 0xf59e0b,
         'fields': [
-            ('Tech Stack', 'React 18 + Vite + Tailwind CSS + Lucide Icons.', False),
-            ('Architecture', '• Bento-Grid modular layout.\n• Custom glassmorphism dark theme tokens.\n• Multi-page routing (`/`, `/scans`, `/reports`, `/settings`).', False)
+            ('Tech Stack', 'React 18 + Vite + Tailwind CSS + Extension Manifest V3.', False),
+            ('Design System', '• Off-white `#f9f9f8` theme with white bento cards.\n• Primary indigo `#372d8a` and lavender `#EEEDFE` accents.\n• Iconic purple pixel-art emoji logo (`loooogo2.png`).', False)
         ],
-        'footer': 'SentroniX Frontend Engineering'
+        'footer': 'SentroniX Frontend & Extension V3'
     },
     'dashboard-ui': {
-        'title': '🖥️ Dashboard & Reports UI Enhancements',
+        'title': '🖥️ Extension V3 & Arena UI Synchronization',
         'color': 0xd97706,
         'fields': [
-            ('AIPatchModal Component', '• 3-Tab interface: Code Diff, Root Cause & Exploit, Verification QA.\n• Actions: Copy Diff, Download `.patch`, Create Jira Ticket, Apply Fix.\n• BYOK Gemini API key management stored in `localStorage`.', False),
-            ('Security Posture Grade Sync', '• Synchronized Risk Score (`Grade D (High Risk)`) across Overview and Reports.\n• Dynamic `(i)` Information Roadmap popup explaining exact steps to reach Grade A.', False)
+            ('Extension Popup V3', '• Light bento card design aligned with web app UI.\n• Active Protection status & live telemetry counts.\n• Quick URL Inspector & Arena dashboard button.', False)
         ],
         'footer': 'UI/UX & Interactive Telemetry'
     },
 
     # 4. SECURITY TOOLS
     'app-code-defense': {
-        'title': '🛡️ Application & Code Defense Telemetry',
+        'title': '🛡️ Application, Code & Browser Defense Telemetry V3',
         'color': 0xef4444,
         'fields': [
-            ('Active SAST Engine', '`Semgrep` scanning repository AST for SQLi, Command Injection, and secrets.', False),
-            ('Active DAST Engine', '`Nuclei` & `OWASP ZAP` scanning runtime HTTP endpoints for CVEs & misconfigurations.', False),
-            ('Active SCA Engine', '`Trivy` scanning third-party dependency vulnerabilities and license compliance.', False)
+            ('Active Extension V3', 'Phishing Link Interceptor & Webmail Inspector.', False),
+            ('Active SAST/DAST Engine', 'Semgrep, Nuclei, ZAP, and Trivy SCA.', False)
         ],
-        'footer': 'Pillar 1: Application Security & SAST/DAST'
+        'footer': 'Pillar 1: Application & Browser Defense'
     },
     'file-data-defense': {
-        'title': '📦 File & Data Defense Telemetry',
+        'title': '📦 File & Steganography Defense Telemetry',
         'color': 0xec4899,
         'fields': [
-            ('Steganography Analyzer', 'Extracts hidden binary payloads, trailing EOF byte chunks, and polyglots from JPG, PNG, GIF.', False),
-            ('Malware Signature Engine', 'YARA rule scanning for reverse shell strings, webshells, and command injection hooks.', False)
+            ('Steganography Analyzer', 'Extracts hidden binary payloads from image carriers.', False),
+            ('Malware Signature Engine', 'YARA rule scanning for reverse shell strings and malware containers.', False)
         ],
         'footer': 'Pillar 2: Data & Binary Integrity'
     },
@@ -118,7 +115,7 @@ CHANNELS_UPDATES = {
         'color': 0x8b5cf6,
         'fields': [
             ('Authentication', 'JWT Bearer token authentication with password hashing (bcrypt).', False),
-            ('RBAC Gates', 'Strict admin dependency checks on sensitive operational endpoints.', False)
+            ('RBAC Gates', 'Strict admin dependency checks on operational endpoints.', False)
         ],
         'footer': 'Pillar 3: Identity & Access Management'
     },
@@ -126,8 +123,8 @@ CHANNELS_UPDATES = {
         'title': '⚔️ Red Team & Offensive Operations Lab',
         'color': 0xdc2626,
         'fields': [
-            ('Adversary Emulation Suite', 'Atomic test runners for MITRE ATT&CK tactics (T1190, T1059, T1595).', False),
-            ('Exploit Re-Testing Engine', 'Automated closed-loop re-attack dispatcher to verify remediated code.', False)
+            ('Adversary Emulation Suite', 'Atomic test runners for MITRE ATT&CK tactics.', False),
+            ('Exploit Re-Testing Engine', 'Automated closed-loop re-attack dispatcher.', False)
         ],
         'footer': 'Pillar 4: Offensive Ops & Purple Emulation'
     }
