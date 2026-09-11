@@ -1,6 +1,10 @@
 import os
 import asyncio
 import discord
+from dotenv import load_dotenv
+
+load_dotenv()
+load_dotenv(os.path.join(os.path.dirname(__file__), '../../.env'))
 
 TOKEN = os.getenv("DISCORD_BOT_TOKEN")
 
@@ -147,12 +151,13 @@ async def on_ready():
                 embed.set_footer(text=data['footer'])
                 try:
                     await channel.send(embed=embed)
-                    print(f"  [✓] Posted update to #{ch_name}")
+                    print(f"  [OK] Posted update to #{ch_name}")
                 except Exception as e:
-                    print(f"  [✗] Failed #{ch_name}: {e}")
+                    print(f"  [ERR] Failed #{ch_name}: {e}")
             else:
                 print(f"  [-] Channel #{ch_name} not found.")
     await client.close()
 
 if __name__ == "__main__":
     client.run(TOKEN)
+
