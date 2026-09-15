@@ -57,42 +57,42 @@ export default function DashboardPage() {
   };
 
   return (
-    <main className="p-4 md:p-8 flex-1 overflow-y-auto">
-      <div className="max-w-7xl mx-auto space-y-grid-gap">
+    <main className="w-full max-w-full p-3 sm:p-5 md:p-6 lg:p-8 flex-1 overflow-y-auto overflow-x-hidden space-y-6">
+      <div className="w-full max-w-[98%] xl:max-w-[95%] 2xl:max-w-[92%] mx-auto space-y-6">
         {/* Page Header */}
-        <div className="flex justify-between items-end mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-2">
           <div>
             <h1 className="font-headline-lg text-headline-lg text-on-surface">Overview</h1>
             <p className="font-body-md text-body-md text-text-muted mt-1">System status and recent telemetry.</p>
           </div>
-          <div className="text-right">
-            <span className="font-label-md text-label-md text-text-secondary bg-surface-container-high px-2 py-1 rounded">
+          <div className="text-left sm:text-right">
+            <span className="font-label-md text-label-md text-text-secondary bg-surface-container-high px-2.5 py-1 rounded inline-block">
               Last updated: {lastUpdated}
             </span>
           </div>
         </div>
 
         {/* Tab Selection */}
-        <div className="flex gap-6 border-b border-border-strong mb-6">
+        <div className="flex gap-4 sm:gap-6 border-b border-border-strong mb-6 overflow-x-auto scrollbar-none">
           <button 
             onClick={() => setActiveTab('overview')}
-            className={`pb-2 px-1 font-label-md text-label-md transition-all ${activeTab === 'overview' ? 'text-primary border-b-2 border-primary font-bold' : 'text-text-secondary hover:text-on-surface'}`}
+            className={`pb-2 px-1 font-label-md text-label-md transition-all whitespace-nowrap ${activeTab === 'overview' ? 'text-primary border-b-2 border-primary font-bold' : 'text-text-secondary hover:text-on-surface'}`}
           >
             Overview
           </button>
           <button 
             onClick={() => setActiveTab('app_defense')}
-            className={`pb-2 px-1 font-label-md text-label-md transition-all ${activeTab === 'app_defense' ? 'text-primary border-b-2 border-primary font-bold' : 'text-text-secondary hover:text-on-surface'}`}
+            className={`pb-2 px-1 font-label-md text-label-md transition-all whitespace-nowrap ${activeTab === 'app_defense' ? 'text-primary border-b-2 border-primary font-bold' : 'text-text-secondary hover:text-on-surface'}`}
           >
             App & Code Defense
           </button>
         </div>
 
         {activeTab === 'overview' ? (
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-grid-gap auto-rows-min">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-12 gap-4 lg:gap-6 auto-rows-min w-full">
           
           {/* 1. Security Posture */}
-          <div className="bento-card col-span-1 md:col-span-4 flex flex-col justify-between">
+          <div className="bento-card col-span-1 sm:col-span-1 xl:col-span-4 flex flex-col justify-between">
             <div>
               <h3 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 mb-4">
                 <PieChart className="text-primary" size={24} />
@@ -112,7 +112,7 @@ export default function DashboardPage() {
           </div>
 
           {/* 2. Offensive Operations */}
-          <div className="bento-card col-span-1 md:col-span-4 flex flex-col justify-between">
+          <div className="bento-card col-span-1 sm:col-span-1 xl:col-span-4 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
@@ -162,7 +162,7 @@ export default function DashboardPage() {
           </div>
 
           {/* 3. Defensive Operations */}
-          <div className="bento-card col-span-1 md:col-span-4 flex flex-col">
+          <div className="bento-card col-span-1 sm:col-span-2 xl:col-span-4 flex flex-col">
             <h3 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 mb-4">
               <Shield className="text-success-defensive" size={24} />
               Defensive Ops
@@ -196,7 +196,7 @@ export default function DashboardPage() {
           </div>
 
           {/* 4. Recent Findings Table */}
-          <div className="bento-card col-span-1 md:col-span-8 overflow-hidden flex flex-col">
+          <div className="bento-card col-span-1 sm:col-span-2 xl:col-span-8 overflow-hidden flex flex-col">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-headline-sm text-headline-sm text-on-surface">Recent AI-Correlated Findings</h3>
               <button className="font-label-sm text-label-sm text-primary hover:underline">View All</button>
@@ -250,7 +250,7 @@ export default function DashboardPage() {
           </div>
 
           {/* 5. Active Scanners */}
-          <div className="bento-card col-span-1 md:col-span-4">
+          <div className="bento-card col-span-1 sm:col-span-2 xl:col-span-4">
             <h3 className="font-headline-sm text-headline-sm text-on-surface mb-4">Active Scanners</h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between p-2 rounded hover:bg-surface-hover transition-colors">

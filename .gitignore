@@ -1,8 +1,9 @@
-# Python
+# Python Cache & Bytecode
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
+*.pyo
 .Python
 env/
 venv/
@@ -11,33 +12,47 @@ build/
 dist/
 *.egg-info/
 *.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
-# Database & Local Testing DBs
+# Databases & SQLite Runtime Files
 *.db
 *.sqlite
 *.sqlite3
 sentronix.db
+sentronix_test.db
 
-# Node.js & Vite
+# Node.js, Frontend Build & Vite
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 .npm
 frontend/dist/
+frontend/.vite/
 
-# Environment Configurations
+# Environment Variables & Secrets
 .env
 .env.local
 .env.*.local
+*.pem
+*.key
 
-# IDEs & System
+# Operating System & IDE Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 .vscode/
 .idea/
 *.swp
 *.swo
-.DS_Store
-Thumbs.db
+*~
 
-# Docker
+# Docker Artifacts
 .docker/

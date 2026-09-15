@@ -205,8 +205,8 @@ export default function AIPatchModal({ finding, onClose, onRemediated }) {
   if (!finding) return null
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in overflow-y-auto">
-      <div className="bg-surface border border-border-strong rounded-2xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col my-8 max-h-[90vh]">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-4 bg-black/75 backdrop-blur-md animate-fade-in overflow-y-auto">
+      <div className="bg-surface border border-border-strong rounded-2xl w-[96%] sm:w-[92%] md:w-[88%] lg:w-[82%] xl:w-[75%] max-w-5xl shadow-2xl overflow-hidden flex flex-col my-4 sm:my-8 max-h-[92vh]">
         
         {/* Modal Header */}
         <div className="p-6 border-b border-border-strong bg-surface-container-low flex items-start justify-between">

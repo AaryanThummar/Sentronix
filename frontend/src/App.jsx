@@ -35,10 +35,42 @@ function NavLink({ to, icon: Icon, label }) {
   )
 }
 
+// Mobile Bottom Navigation Bar for touchscreens & mobile viewports
+function MobileNavBar() {
+  return (
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-surface/95 backdrop-blur-lg border-t border-outline-variant flex items-center justify-around py-2 px-1 shadow-xl">
+      <MobileNavLink to="/" icon={LayoutDashboard} label="Dashboard" />
+      <MobileNavLink to="/arena" icon={Swords} label="Arena" />
+      <MobileNavLink to="/scans" icon={Shield} label="Scans" />
+      <MobileNavLink to="/reports" icon={FileText} label="Reports" />
+      <MobileNavLink to="/settings" icon={Settings} label="Settings" />
+    </nav>
+  )
+}
+
+function MobileNavLink({ to, icon: Icon, label }) {
+  const location = useLocation()
+  const isActive = location.pathname === to
+
+  return (
+    <Link 
+      to={to} 
+      className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-lg text-xs transition-colors duration-150 active:scale-95 ${
+        isActive 
+          ? 'text-primary font-bold bg-accent-soft' 
+          : 'text-on-surface-variant hover:text-primary'
+      }`}
+    >
+      <Icon size={18} />
+      <span className="text-[10px] tracking-tight">{label}</span>
+    </Link>
+  )
+}
+
 function AppLayout() {
   return (
-    <div className="bg-background text-on-background font-body-md min-h-screen flex antialiased">
-      {/* SideNavBar */}
+    <div className="bg-background text-on-background font-body-md min-h-screen flex antialiased w-full max-w-full overflow-x-hidden">
+      {/* SideNavBar (Desktop & Large Tablets) */}
       <nav className="hidden md:flex flex-col h-full py-6 px-4 bg-surface fixed left-0 top-0 h-screen w-64 border-r-[0.5px] border-outline-variant z-50">
         <div className="mb-8 px-2 flex items-center gap-3">
           <img alt="Sentronix Shield Logo" className="w-12 h-12 rounded-lg object-contain" src="/loooogo2.png" />
@@ -62,18 +94,18 @@ function AppLayout() {
         </ul>
       </nav>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col md:ml-64 w-full">
+      {/* Main Content Area: Fluid percentage width on all screen sizes */}
+      <div className="flex-1 flex flex-col md:ml-64 min-w-0 w-full md:w-[calc(100%-16rem)] max-w-full overflow-x-hidden pb-16 md:pb-0">
         {/* TopAppBar */}
-        <header className="sticky top-0 z-40 w-full bg-surface/80 backdrop-blur-md border-b-[0.5px] border-outline-variant flex items-center justify-between px-8 h-16">
-          <div className="flex items-center gap-4 w-1/3">
-            <h2 className="font-headline-sm text-headline-sm font-bold text-primary md:hidden">Sentronix</h2>
-            <div className="hidden md:flex items-center border-[0.5px] border-outline-variant rounded-full px-3 py-1.5 bg-surface-bright focus-within:ring-2 focus-within:ring-primary/20 transition-all w-full max-w-sm">
-              <Search className="text-text-muted" size={18} />
-              <input className="bg-transparent border-none focus:outline-none ml-2 text-body-md text-on-surface w-full" placeholder="Search telemetry..." type="text"/>
+        <header className="sticky top-0 z-40 w-full bg-surface/80 backdrop-blur-md border-b-[0.5px] border-outline-variant flex items-center justify-between px-3 sm:px-6 md:px-8 h-16 gap-3 sm:gap-4">
+          <div className="flex items-center gap-3 flex-1 min-w-0 max-w-md">
+            <h2 className="font-headline-sm text-headline-sm font-bold text-primary md:hidden flex-shrink-0">Sentronix</h2>
+            <div className="hidden sm:flex items-center border-[0.5px] border-outline-variant rounded-full px-3 py-1.5 bg-surface-bright focus-within:ring-2 focus-within:ring-primary/20 transition-all w-full">
+              <Search className="text-text-muted flex-shrink-0" size={18} />
+              <input className="bg-transparent border-none focus:outline-none ml-2 text-body-md text-on-surface w-full min-w-0" placeholder="Search telemetry..." type="text"/>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
             <NotificationCenter />
             <UserProfileDropdown />
           </div>
@@ -87,6 +119,9 @@ function AppLayout() {
           <Route path="/settings" element={<SettingsPage />} />
         </Routes>
       </div>
+
+      {/* Mobile Bottom Navigation for screens < 768px */}
+      <MobileNavBar />
     </div>
   )
 }

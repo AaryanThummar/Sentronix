@@ -1,28 +1,46 @@
 {
   "manifest_version": 3,
-  "name": "SentroniX Active Defense",
-  "version": "1.0",
-  "description": "Intercepts and scans downloads for malware and steganography using the local SentroniX platform.",
+  "name": "SentroniX Active Defense V3",
+  "version": "3.0.0",
+  "description": "Real-time AI-powered phishing link detection, webmail security auditor, and download malware/steganography shield.",
   "permissions": [
     "downloads",
     "notifications",
     "activeTab",
-    "scripting"
+    "scripting",
+    "storage",
+    "contextMenus",
+    "webNavigation"
   ],
   "host_permissions": [
-    "http://localhost:8000/*"
+    "http://localhost:8000/*",
+    "<all_urls>"
   ],
   "browser_specific_settings": {
     "gecko": {
-      "id": "defense@sentronix.app",
+      "id": "defense-v3@sentronix.app",
       "strict_min_version": "109.0"
     }
   },
   "background": {
     "service_worker": "background.js"
   },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "SentroniX"
+    "default_title": "SentroniX Defense V3",
+    "default_icon": "icon.png"
+  },
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
   }
 }

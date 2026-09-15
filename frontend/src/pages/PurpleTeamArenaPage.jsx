@@ -356,8 +356,8 @@ export default function PurpleTeamArenaPage() {
   }
 
   return (
-    <main className="p-4 md:p-8 flex-1 overflow-y-auto space-y-grid-gap">
-      <div className="max-w-7xl mx-auto space-y-grid-gap">
+    <main className="w-full max-w-full p-3 sm:p-5 md:p-6 lg:p-8 flex-1 overflow-y-auto overflow-x-hidden space-y-6">
+      <div className="w-full max-w-[98%] xl:max-w-[95%] 2xl:max-w-[92%] mx-auto space-y-6">
         
         {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -385,15 +385,15 @@ export default function PurpleTeamArenaPage() {
               <Swords className="text-primary" size={28} />
               Purple Team Arena & Defense Sandbox
             </h1>
-            <p className="font-body-md text-body-md text-text-muted mt-1">
+            <p className="font-body-md text-body-md text-text-muted mt-1 max-w-4xl">
               Safely launch adversary vectors, inspect raw HTTP packet streams, configure live WAF defense policies, and deploy automated AI remediation diffs.
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-shrink-0">
             <button 
               onClick={() => { fetchScenarios(); fetchWafRules(); fetchCampaigns(); fetchMetrics(); fetchHistory(); }}
-              className="px-3 py-2 bg-surface-container hover:bg-surface-container-high text-text-secondary hover:text-on-surface font-label-md text-label-md rounded-lg border border-outline-variant flex items-center gap-1.5 transition-colors"
+              className="px-3.5 py-2 bg-surface-container hover:bg-surface-container-high text-text-secondary hover:text-on-surface font-label-md text-label-md rounded-lg border border-outline-variant flex items-center gap-1.5 transition-colors whitespace-nowrap"
             >
               <RefreshCw size={14} />
               Refresh Arena
@@ -401,8 +401,8 @@ export default function PurpleTeamArenaPage() {
           </div>
         </div>
 
-        {/* Purple Team Resilience Scorecard */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-grid-gap">
+        {/* Purple Team Resilience Scorecard (Fluid Percentage Columns) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full">
           <div className="bento-card bg-surface-container-low flex flex-col justify-between">
             <span className="font-label-md text-label-md text-text-secondary">Simulated Strikes Executed</span>
             <div className="flex items-baseline gap-2 mt-2">
@@ -437,7 +437,7 @@ export default function PurpleTeamArenaPage() {
         </div>
 
         {/* Operation Mode Tabs */}
-        <div className="flex gap-6 border-b border-border-strong overflow-x-auto">
+        <div className="flex gap-2 sm:gap-4 md:gap-6 border-b border-border-strong overflow-x-auto scrollbar-none w-full pb-1">
           <button 
             onClick={() => setActiveMode('atomic')}
             className={`pb-2.5 px-1 font-label-md text-label-md transition-all flex items-center gap-2 whitespace-nowrap ${
@@ -501,7 +501,7 @@ export default function PurpleTeamArenaPage() {
 
         {/* ================= MODE 1: ATOMIC STRIKES ================= */}
         {activeMode === 'atomic' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-grid-gap">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6 w-full">
             
             {/* 🔴 LEFT PANE: Red Team Adversary Launchpad */}
             <div className="bento-card flex flex-col justify-between">
@@ -791,7 +791,7 @@ export default function PurpleTeamArenaPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 w-full">
               {Object.keys(wafRules).map((key) => {
                 const rule = wafRules[key]
                 return (
@@ -1070,7 +1070,7 @@ export default function PurpleTeamArenaPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6 w-full">
                 {/* Target URL & Method */}
                 <div className="lg:col-span-2 space-y-4">
                   <div>
@@ -1332,8 +1332,8 @@ export default function PurpleTeamArenaPage() {
 
       {/* ================= DEEP HTTP PACKET INSPECTOR MODAL ================= */}
       {isPacketModalOpen && strikeResult && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-          <div className="bg-surface border border-outline-variant rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden animate-fadeIn">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-surface border border-outline-variant rounded-2xl shadow-2xl w-[95%] sm:w-[90%] md:w-[85%] lg:w-[75%] max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-fadeIn">
             
             {/* Header */}
             <div className="p-4 bg-surface-container-low border-b border-outline-variant flex items-center justify-between">

@@ -131,7 +131,7 @@ export default function AppDefenseTab({ onOpenPatch }) {
   return (
     <div className="space-y-grid-gap relative">
       {/* 0. Live Statistics Row */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-grid-gap">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full">
         <div className="bento-card bg-surface-container-low flex flex-col justify-center">
           <span className="font-label-md text-label-md text-text-secondary">Total Scans Run</span>
           <span className="font-headline-lg text-headline-lg text-on-surface">{stats.total_scans}</span>
@@ -151,7 +151,7 @@ export default function AppDefenseTab({ onOpenPatch }) {
       </div>
 
       {/* 1. Controllers Row (Bento Style) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-grid-gap">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 w-full">
         
         {/* SAST Card */}
         <div className="bento-card flex flex-col justify-between">
@@ -315,7 +315,7 @@ export default function AppDefenseTab({ onOpenPatch }) {
 
       {/* 3. Sliding Findings Detail Drawer */}
       {drawerOpen && selectedFinding && (
-        <div className="fixed inset-y-0 right-0 w-full md:w-96 bg-surface shadow-2xl z-[100] flex flex-col border-l border-border-strong animate-slide-in">
+        <div className="fixed inset-y-0 right-0 w-full sm:w-[85%] md:w-[420px] max-w-full bg-surface shadow-2xl z-[100] flex flex-col border-l border-border-strong animate-slide-in">
           <div className="p-4 border-b border-border-strong flex justify-between items-center bg-surface-container-high">
             <div>
               <h4 className="font-headline-sm text-headline-sm text-on-surface">Vulnerability Details</h4>
