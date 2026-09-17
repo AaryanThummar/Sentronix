@@ -80,10 +80,13 @@ function AppLayout() {
           </div>
         </div>
         
-        <button className="mb-8 w-full bg-primary-container text-on-primary py-2 px-4 rounded-lg font-label-md text-label-md flex items-center justify-center gap-2 hover:bg-surface-tint transition-colors">
+        <Link 
+          to="/scans"
+          className="mb-8 w-full bg-primary text-on-primary py-2 px-4 rounded-lg font-label-md text-label-md flex items-center justify-center gap-2 hover:bg-primary-container transition-colors shadow-sm active:scale-[0.98]"
+        >
           <Plus size={18} />
           New Scan
-        </button>
+        </Link>
         
         <ul className="flex flex-col gap-1 w-full flex-grow">
           <li><NavLink to="/" icon={LayoutDashboard} label="Dashboard" /></li>
