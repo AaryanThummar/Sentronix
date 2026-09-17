@@ -12,6 +12,7 @@ import PurpleTeamArenaPage from './pages/PurpleTeamArenaPage'
 
 import NotificationCenter from './components/NotificationCenter'
 import UserProfileDropdown from './components/UserProfileDropdown'
+import GlobalSearchBar from './components/GlobalSearchBar'
 
 // A small wrapper for the nav links to handle active state styling
 function NavLink({ to, icon: Icon, label }) {
@@ -103,10 +104,7 @@ function AppLayout() {
         <header className="sticky top-0 z-40 w-full bg-surface/80 backdrop-blur-md border-b-[0.5px] border-outline-variant flex items-center justify-between px-3 sm:px-6 md:px-8 h-16 gap-3 sm:gap-4">
           <div className="flex items-center gap-3 flex-1 min-w-0 max-w-md">
             <h2 className="font-headline-sm text-headline-sm font-bold text-primary md:hidden flex-shrink-0">Sentronix</h2>
-            <div className="hidden sm:flex items-center border-[0.5px] border-outline-variant rounded-full px-3 py-1.5 bg-surface-bright focus-within:ring-2 focus-within:ring-primary/20 transition-all w-full">
-              <Search className="text-text-muted flex-shrink-0" size={18} />
-              <input className="bg-transparent border-none focus:outline-none ml-2 text-body-md text-on-surface w-full min-w-0" placeholder="Search telemetry..." type="text"/>
-            </div>
+            <GlobalSearchBar />
           </div>
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
             <NotificationCenter />
