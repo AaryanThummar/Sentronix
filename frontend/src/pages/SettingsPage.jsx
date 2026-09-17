@@ -25,10 +25,10 @@ export default function SettingsPage() {
   const [githubToken, setGithubToken] = useState(() => localStorage.getItem('sentronix_github_token') || '')
 
   // Jira & Webhooks State
-  const [jiraHost, setJiraHost] = useState('https://sentronix.atlassian.net')
-  const [jiraEmail, setJiraEmail] = useState('security-admin@sentronix.io')
-  const [jiraToken, setJiraToken] = useState('')
-  const [jiraProjectKey, setJiraProjectKey] = useState('SEC')
+  const [jiraHost, setJiraHost] = useState(() => localStorage.getItem('sentronix_jira_host') || 'https://kevaldoshi.atlassian.net')
+  const [jiraEmail, setJiraEmail] = useState(() => localStorage.getItem('sentronix_jira_email') || 'kevaldoshi15@gmail.com')
+  const [jiraToken, setJiraToken] = useState(() => localStorage.getItem('sentronix_jira_token') || '')
+  const [jiraProjectKey, setJiraProjectKey] = useState(() => localStorage.getItem('sentronix_jira_key') || 'KAN')
   const [autoJiraTickets, setAutoJiraTickets] = useState(true)
   const [webhookUrl, setWebhookUrl] = useState('')
 

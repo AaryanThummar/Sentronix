@@ -89,13 +89,13 @@ def create_jira_ticket(payload: JiraTicketRequest):
     """
     import random
     ticket_num = random.randint(100, 999)
-    ticket_key = f"SEC-{ticket_num}"
+    ticket_key = f"KAN-{ticket_num}"
     
     return {
         "status": "success",
         "ticket_key": ticket_key,
-        "ticket_url": f"https://your-domain.atlassian.net/browse/{ticket_key}",
-        "message": f"Jira issue [{ticket_key}] successfully created with AI Remediation Patch attached."
+        "ticket_url": f"https://kevaldoshi.atlassian.net/browse/{ticket_key}",
+        "message": f"Jira issue [{ticket_key}] successfully created on kevaldoshi.atlassian.net with AI Remediation Patch attached."
     }
 
 @router.post("/github-pr")
