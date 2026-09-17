@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { 
   Sparkles, CheckCircle2, AlertTriangle, Copy, Check, ExternalLink, 
   RefreshCw, ShieldCheck, Terminal, FileCode, CheckSquare, X, GitPullRequest, ArrowRight,
-  Send, Key, ChevronDown, ChevronUp, Clock, Info, Wand2, Download
+  Send, Key, ChevronDown, ChevronUp, Clock, Info, Wand2, Download, Shield, ArrowUpRight
 } from 'lucide-react'
 import { API_BASE_URL } from '../apiConfig'
 
