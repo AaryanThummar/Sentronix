@@ -3,11 +3,11 @@ import { createPortal } from 'react-dom'
 import { 
   Sparkles, CheckCircle2, AlertTriangle, Copy, Check, ExternalLink, 
   RefreshCw, ShieldCheck, Terminal, FileCode, CheckSquare, X, GitPullRequest, ArrowRight,
-  Send, Key, ChevronDown, ChevronUp, Clock, Info, Wand2
+  Send, Key, ChevronDown, ChevronUp, Clock, Info, Wand2, Download
 } from 'lucide-react'
 import { API_BASE_URL } from '../apiConfig'
 
-export default function AIPatchModal({ finding, isOpen, onClose }) {
+export default function AIPatchModal({ finding, isOpen = true, onClose, onRemediated }) {
   const [activeTab, setActiveTab] = useState('diff') // 'diff', 'explanation', 'verification'
   const [patchData, setPatchData] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -17,9 +17,10 @@ export default function AIPatchModal({ finding, isOpen, onClose }) {
   const [isApplying, setIsApplying] = useState(false)
   
   // Custom API Key overrides
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem('sentronix_gemini_api_key') || '')
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem('sentronix_gemini_key') || localStorage.getItem('sentronix_gemini_api_key') || '')
   const [tempApiKey, setTempApiKey] = useState('')
   const [showKeyInput, setShowKeyInput] = useState(false)
+  const [keySaved, setKeySaved] = useState(false)
 
   // Jira Integration States
   const [isJiraLoading, setIsJiraLoading] = useState(false)
@@ -37,7 +38,7 @@ export default function AIPatchModal({ finding, isOpen, onClose }) {
   const [copiedBranchCmd, setCopiedBranchCmd] = useState(false)
 
   useEffect(() => {
-    if (isOpen && finding) {
+    if (finding && (isOpen ?? true)) {
       setPatchData(null)
       setApplied(false)
       setJiraStatus(null)

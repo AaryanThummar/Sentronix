@@ -295,6 +295,7 @@ export default function DashboardPage() {
       {/* AI Patch Modal */}
       {isPatchModalOpen && selectedPatchFinding && (
         <AIPatchModal 
+          isOpen={isPatchModalOpen}
           finding={selectedPatchFinding}
           onClose={() => setIsPatchModalOpen(false)}
           onRemediated={() => {
