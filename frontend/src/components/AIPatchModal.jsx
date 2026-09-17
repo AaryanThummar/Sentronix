@@ -1,45 +1,50 @@
 import React, { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { 
-  X, Wand2, Shield, CheckCircle2, Copy, Download, 
-  ExternalLink, Key, Sparkles, AlertTriangle, FileCode, Check, RefreshCw,
-  GitPullRequest, GitBranch, GitFork, ArrowUpRight
+  Sparkles, CheckCircle2, AlertTriangle, Copy, Check, ExternalLink, 
+  RefreshCw, ShieldCheck, Terminal, FileCode, CheckSquare, X, GitPullRequest, ArrowRight,
+  Send, Key, ChevronDown, ChevronUp, Clock, Info, Wand2
 } from 'lucide-react'
+import { API_BASE_URL } from '../apiConfig'
 
-export default function AIPatchModal({ finding, onClose, onRemediated }) {
-  const [loading, setLoading] = useState(true)
+export default function AIPatchModal({ finding, isOpen, onClose }) {
+  const [activeTab, setActiveTab] = useState('diff') // 'diff', 'explanation', 'verification'
   const [patchData, setPatchData] = useState(null)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-  
-  // Bring Your Own Key state
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem('sentronix_gemini_key') || '')
-  const [showKeyInput, setShowKeyInput] = useState(false)
-  const [keySaved, setKeySaved] = useState(false)
-
-  // Actions state
   const [copied, setCopied] = useState(false)
-  const [jiraStatus, setJiraStatus] = useState(null)
-  const [isJiraLoading, setIsJiraLoading] = useState(false)
-  const [isApplying, setIsApplying] = useState(false)
   const [applied, setApplied] = useState(false)
-  const [activeTab, setActiveTab] = useState('diff') // 'diff' | 'analysis' | 'verification'
+  const [isApplying, setIsApplying] = useState(false)
+  
+  // Custom API Key overrides
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem('sentronix_gemini_api_key') || '')
+  const [tempApiKey, setTempApiKey] = useState('')
+  const [showKeyInput, setShowKeyInput] = useState(false)
 
-  // GitHub PR State
-  const [showGitHubDrawer, setShowGitHubDrawer] = useState(false)
+  // Jira Integration States
+  const [isJiraLoading, setIsJiraLoading] = useState(false)
+  const [jiraStatus, setJiraStatus] = useState(null)
+
+  // GitHub PR Integration States
   const [isGitHubLoading, setIsGitHubLoading] = useState(false)
   const [githubStatus, setGithubStatus] = useState(null)
-  const [repoOwner, setRepoOwner] = useState(() => localStorage.getItem('sentronix_github_owner') || 'Keval-Doshi')
-  const [repoName, setRepoName] = useState(() => localStorage.getItem('sentronix_github_repo') || 'SentroniX')
-  const [baseBranch, setBaseBranch] = useState(() => localStorage.getItem('sentronix_github_base') || 'main')
-  const [customBranch, setCustomBranch] = useState('')
+  const [showGitHubDrawer, setShowGitHubDrawer] = useState(false)
   const [githubToken, setGithubToken] = useState(() => localStorage.getItem('sentronix_github_token') || '')
+  const [repoOwner, setRepoOwner] = useState('AaryanThummar')
+  const [repoName, setRepoName] = useState('Sentronix')
+  const [baseBranch, setBaseBranch] = useState('main')
+  const [customBranch, setCustomBranch] = useState('')
   const [copiedBranchCmd, setCopiedBranchCmd] = useState(false)
 
   useEffect(() => {
-    if (finding) {
+    if (isOpen && finding) {
+      setPatchData(null)
+      setApplied(false)
+      setJiraStatus(null)
+      setGithubStatus(null)
       fetchPatch()
     }
-  }, [finding])
+  }, [finding, isOpen])
 
   const fetchPatch = async (overrideKey) => {
     setLoading(true)
@@ -49,7 +54,7 @@ export default function AIPatchModal({ finding, onClose, onRemediated }) {
     const keyToUse = overrideKey !== undefined ? overrideKey : apiKey
 
     try {
-      const res = await fetch('http://localhost:8000/api/v1/ai/patch', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/ai/patch`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -116,7 +121,7 @@ export default function AIPatchModal({ finding, onClose, onRemediated }) {
     if (!patchData) return
     setIsJiraLoading(true)
     try {
-      const res = await fetch('http://localhost:8000/api/v1/ai/jira-ticket', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/ai/jira-ticket`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -141,7 +146,7 @@ export default function AIPatchModal({ finding, onClose, onRemediated }) {
     if (!patchData) return
     setIsGitHubLoading(true)
     try {
-      const res = await fetch('http://localhost:8000/api/v1/ai/github-pr', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/ai/github-pr`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -183,7 +188,7 @@ export default function AIPatchModal({ finding, onClose, onRemediated }) {
   const handleApplyRemediation = async () => {
     setIsApplying(true)
     try {
-      const res = await fetch('http://localhost:8000/api/v1/ai/remediate', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/ai/remediate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

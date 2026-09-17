@@ -7,6 +7,7 @@ import {
   Copy, Eye, Lock, ShieldX
 } from 'lucide-react'
 import AIPatchModal from '../components/AIPatchModal'
+import { API_BASE_URL } from '../apiConfig'
 
 export default function PurpleTeamArenaPage() {
   const [activeMode, setActiveMode] = useState('atomic') // 'atomic' | 'caldera' | 'seclists' | 'waf_sandbox'
@@ -69,7 +70,7 @@ export default function PurpleTeamArenaPage() {
 
   const fetchScenarios = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/v1/red-team/scenarios')
+      const res = await fetch(`${API_BASE_URL}/api/v1/red-team/scenarios`)
       if (res.ok) {
         const data = await res.json()
         setScenarios(data)
@@ -86,7 +87,7 @@ export default function PurpleTeamArenaPage() {
 
   const fetchWafRules = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/v1/red-team/waf-rules')
+      const res = await fetch(`${API_BASE_URL}/api/v1/red-team/waf-rules`)
       if (res.ok) {
         const data = await res.json()
         setWafRules(data)
@@ -104,7 +105,7 @@ export default function PurpleTeamArenaPage() {
     }))
 
     try {
-      await fetch('http://localhost:8000/api/v1/red-team/waf-rules/toggle', {
+      await fetch(`${API_BASE_URL}/api/v1/red-team/waf-rules/toggle`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rule_key: ruleKey, enabled: newVal })
@@ -116,7 +117,7 @@ export default function PurpleTeamArenaPage() {
 
   const fetchCampaigns = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/v1/red-team/campaigns')
+      const res = await fetch(`${API_BASE_URL}/api/v1/red-team/campaigns`)
       if (res.ok) {
         const data = await res.json()
         setCampaigns(data)
@@ -129,7 +130,7 @@ export default function PurpleTeamArenaPage() {
 
   const fetchMetrics = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/v1/red-team/metrics')
+      const res = await fetch(`${API_BASE_URL}/api/v1/red-team/metrics`)
       if (res.ok) setMetrics(await res.json())
     } catch (e) {
       // ignore
@@ -138,7 +139,7 @@ export default function PurpleTeamArenaPage() {
 
   const fetchHistory = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/v1/red-team/history')
+      const res = await fetch(`${API_BASE_URL}/api/v1/red-team/history`)
       if (res.ok) setHistory(await res.json())
     } catch (e) {
       // ignore
@@ -174,7 +175,7 @@ export default function PurpleTeamArenaPage() {
         wafOverrides[k] = wafRules[k].enabled
       })
 
-      const res = await fetch('http://localhost:8000/api/v1/red-team/strike', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/red-team/strike`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -218,7 +219,7 @@ export default function PurpleTeamArenaPage() {
     ])
 
     try {
-      const res = await fetch('http://localhost:8000/api/v1/red-team/campaigns/run', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/red-team/campaigns/run`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ campaign_id: selectedCampaignId, notify_discord: notifyDiscord })
@@ -249,7 +250,7 @@ export default function PurpleTeamArenaPage() {
     ])
 
     try {
-      const res = await fetch('http://localhost:8000/api/v1/red-team/fuzzing/run', { method: 'POST' })
+      const res = await fetch(`${API_BASE_URL}/api/v1/red-team/fuzzing/run`, { method: 'POST' })
       if (res.ok) {
         const data = await res.json()
         setSeclistsResults(data)
@@ -292,7 +293,7 @@ export default function PurpleTeamArenaPage() {
     }
 
     try {
-      const res = await fetch('http://localhost:8000/api/v1/red-team/live-scan', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/red-team/live-scan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

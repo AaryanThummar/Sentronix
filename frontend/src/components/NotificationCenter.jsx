@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import AIPatchModal from './AIPatchModal'
+import { API_BASE_URL } from '../apiConfig'
 
 export default function NotificationCenter() {
   const [isOpen, setIsOpen] = useState(false)
@@ -23,7 +24,7 @@ export default function NotificationCenter() {
 
       // 1. Fetch live findings
       try {
-        const res = await fetch('http://localhost:8000/api/v1/dashboard/findings')
+        const res = await fetch(`${API_BASE_URL}/api/v1/dashboard/findings`)
         if (res.ok) {
           const findings = await res.json()
           findings.forEach((f, idx) => {
@@ -47,7 +48,7 @@ export default function NotificationCenter() {
 
       // 2. Fetch Red Team simulated strikes
       try {
-        const resStrikes = await fetch('http://localhost:8000/api/v1/red-team/history')
+        const resStrikes = await fetch(`${API_BASE_URL}/api/v1/red-team/history`)
         if (resStrikes.ok) {
           const strikes = await resStrikes.json()
           strikes.slice(0, 5).forEach((s, idx) => {

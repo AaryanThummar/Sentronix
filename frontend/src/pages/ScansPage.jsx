@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Upload, FileSearch, ShieldAlert, CheckCircle2, AlertTriangle } from 'lucide-react'
+import { API_BASE_URL } from '../apiConfig'
 
 export default function ScansPage() {
   // Steganography States
@@ -32,7 +33,7 @@ export default function ScansPage() {
     formData.append('file', stegFile)
 
     try {
-      const response = await fetch('http://localhost:8000/api/v1/steg/analyze', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/steg/analyze`, {
         method: 'POST',
         body: formData,
       })
@@ -59,12 +60,13 @@ export default function ScansPage() {
     if (!threatFile) return
     setIsThreatUploading(true)
     setThreatError(null)
+    setThreatResult(null)
 
     const formData = new FormData()
     formData.append('file', threatFile)
 
     try {
-      const response = await fetch('http://localhost:8000/api/v1/defense/scan', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/defense/scan`, {
         method: 'POST',
         body: formData,
       })

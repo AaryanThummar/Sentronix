@@ -4,6 +4,7 @@ import {
   CheckCircle2, Printer, Sparkles, Filter, Calendar, FileCode, Check,
   Info, X, Wrench, ArrowRight, Shield, Eye, Table, Layers, ExternalLink
 } from 'lucide-react'
+import { API_BASE_URL } from '../apiConfig'
 
 export default function ReportsPage() {
   const [stats, setStats] = useState({
@@ -67,13 +68,13 @@ export default function ReportsPage() {
   useEffect(() => {
     const fetchTelemetry = async () => {
       try {
-        const statsRes = await fetch('http://localhost:8000/api/v1/defense/app/stats')
+        const statsRes = await fetch(`${API_BASE_URL}/api/v1/defense/app/stats`)
         if (statsRes.ok) setStats(await statsRes.json())
         
-        const findingsRes = await fetch('http://localhost:8000/api/v1/defense/app/findings')
+        const findingsRes = await fetch(`${API_BASE_URL}/api/v1/defense/app/findings`)
         if (findingsRes.ok) setFindings(await findingsRes.json())
         
-        const dashRes = await fetch('http://localhost:8000/api/v1/dashboard/stats')
+        const dashRes = await fetch(`${API_BASE_URL}/api/v1/dashboard/stats`)
         if (dashRes.ok) setDashboardStats(await dashRes.json())
       } catch (err) {
         console.error('Error fetching report data:', err)
