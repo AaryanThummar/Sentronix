@@ -114,7 +114,7 @@ SCENARIOS: List[Dict[str, Any]] = [
         "default_payload": "PNG [LSB-Embedded Shellcode: 0x4831c050682f2f7368682f62696e89e3]",
         "payload_variants": [
             "PNG [LSB-Embedded Shellcode: 0x4831c050682f2f7368682f62696e89e3]",
-            "JPEG [EXIF-Comment-Injected PHP Eval: <?php system($_GET['cmd']); ?>]",
+            "JPEG [EXIF-Comment-Injected PHP Eval: (simulated_exif_eval_payload)]",
             "BMP [Steghide AES-128 Encrypted Reverse Shell Archive]"
         ],
         "description": "Adversary conceals an executable reverse shell payload inside image pixel bitplanes to bypass perimeter file filters.",
