@@ -17,6 +17,25 @@ export default function NotificationCenter() {
   const [isPatchOpen, setIsPatchOpen] = useState(false)
   const dropdownRef = useRef(null)
 
+  // LocalStorage persistence helpers
+  const getPersistedDismissed = () => {
+    try {
+      const saved = localStorage.getItem('sentronix_dismissed_notifications')
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  }
+
+  const getPersistedRead = () => {
+    try {
+      const saved = localStorage.getItem('sentronix_read_notifications')
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  }
+
   // Fetch telemetry and build notifications stream
   const fetchTelemetryAlerts = async () => {
     try {
@@ -133,8 +152,17 @@ export default function NotificationCenter() {
         ]
       }
 
-      setNotifications(combined)
-      setUnreadCount(combined.filter(n => !n.read).length)
+      // Read persisted dismissed and read state
+      const dismissed = getPersistedDismissed()
+      const readList = getPersistedRead()
+
+      // Exclude any alert that has been closed by the user
+      const filtered = combined
+        .filter(n => !dismissed.includes(n.id))
+        .map(n => readList.includes(n.id) ? { ...n, read: true } : n)
+
+      setNotifications(filtered)
+      setUnreadCount(filtered.filter(n => !n.read).length)
     } catch (e) {
       console.error("Failed to fetch notification telemetry:", e)
     }
@@ -158,23 +186,50 @@ export default function NotificationCenter() {
   }, [])
 
   const markAllAsRead = () => {
+    const currentRead = getPersistedRead()
+    const allIds = notifications.map(n => n.id)
+    const updated = Array.from(new Set([...currentRead, ...allIds]))
+    try {
+      localStorage.setItem('sentronix_read_notifications', JSON.stringify(updated))
+    } catch {}
     setNotifications(prev => prev.map(n => ({ ...n, read: true })))
     setUnreadCount(0)
   }
 
   const markItemAsRead = (id) => {
+    const currentRead = getPersistedRead()
+    const updated = Array.from(new Set([...currentRead, id]))
+    try {
+      localStorage.setItem('sentronix_read_notifications', JSON.stringify(updated))
+    } catch {}
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))
     setUnreadCount(prev => Math.max(0, prev - 1))
   }
 
   const deleteNotification = (id, e) => {
-    e.stopPropagation()
+    if (e) e.stopPropagation()
+    const currentDismissed = getPersistedDismissed()
+    const updated = Array.from(new Set([...currentDismissed, id]))
+    try {
+      localStorage.setItem('sentronix_dismissed_notifications', JSON.stringify(updated))
+    } catch {}
     setNotifications(prev => prev.filter(n => n.id !== id))
-    setUnreadCount(prev => prev > 0 ? prev - 1 : 0)
+    setUnreadCount(prev => Math.max(0, prev - 1))
+  }
+
+  const clearAllNotifications = () => {
+    const currentDismissed = getPersistedDismissed()
+    const allIds = notifications.map(n => n.id)
+    const updated = Array.from(new Set([...currentDismissed, ...allIds]))
+    try {
+      localStorage.setItem('sentronix_dismissed_notifications', JSON.stringify(updated))
+    } catch {}
+    setNotifications([])
+    setUnreadCount(0)
   }
 
   const handleLaunchAIPatch = (rawFinding, e) => {
-    e.stopPropagation()
+    if (e) e.stopPropagation()
     if (rawFinding) {
       setPatchFinding(rawFinding)
       setIsPatchOpen(true)
@@ -193,6 +248,7 @@ export default function NotificationCenter() {
     <div className="relative" ref={dropdownRef}>
       {/* Bell Trigger Button */}
       <button 
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="relative text-on-surface-variant hover:text-primary transition-colors focus:ring-2 focus:ring-primary/20 rounded-full p-2 hover:bg-surface-hover"
         aria-label="Security Notifications"
@@ -222,15 +278,29 @@ export default function NotificationCenter() {
               )}
             </div>
 
-            {unreadCount > 0 && (
-              <button 
-                onClick={markAllAsRead}
-                className="text-[11px] font-label-md text-text-secondary hover:text-primary flex items-center gap-1 transition-colors"
-              >
-                <Check size={12} />
-                Mark all read
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {unreadCount > 0 && (
+                <button 
+                  type="button"
+                  onClick={markAllAsRead}
+                  className="text-[11px] font-label-md text-text-secondary hover:text-primary flex items-center gap-1 transition-colors"
+                >
+                  <Check size={12} />
+                  Mark read
+                </button>
+              )}
+              {notifications.length > 0 && (
+                <button 
+                  type="button"
+                  onClick={clearAllNotifications}
+                  className="text-[11px] font-label-md text-text-muted hover:text-danger-offensive flex items-center gap-1 transition-colors"
+                  title="Clear all alerts"
+                >
+                  <Trash2 size={12} />
+                  Clear all
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Filter Tabs */}
@@ -312,8 +382,9 @@ export default function NotificationCenter() {
                         {item.title}
                       </p>
                       <button 
+                        type="button"
                         onClick={(e) => deleteNotification(item.id, e)}
-                        className="text-text-muted hover:text-danger-offensive p-0.5"
+                        className="text-text-muted hover:text-danger-offensive p-0.5 transition-colors"
                         title="Dismiss"
                       >
                         <X size={12} />
