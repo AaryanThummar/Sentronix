@@ -2,6 +2,7 @@ import subprocess
 import json
 import re
 import os
+from typing import Optional, List
 from pathlib import Path
 from app.workers.celery_app import celery_app
 from app.core.database import SessionLocal
@@ -186,7 +187,7 @@ def run_dast_zap_scan(scan_id: str, target_url: str, tenant_id: str = "default-t
 
 
 @celery_app.task(name="app.workers.tasks_app_defense.run_dast_nuclei_scan")
-def run_dast_nuclei_scan(scan_id: str, target_url: str, tags: list[str] = None, tenant_id: str = "default-tenant"):
+def run_dast_nuclei_scan(scan_id: str, target_url: str, tags: Optional[List[str]] = None, tenant_id: str = "default-tenant"):
     db = SessionLocal()
     try:
         # Try running Nuclei via subprocess
