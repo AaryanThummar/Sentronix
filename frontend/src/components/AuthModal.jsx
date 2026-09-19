@@ -30,8 +30,15 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
         })
 
         if (!regRes.ok) {
-          const errData = await regRes.json()
-          throw new Error(errData.detail || 'Registration failed')
+          let errMsg = 'Registration failed'
+          try {
+            const errData = await regRes.json()
+            errMsg = errData.detail || errMsg
+          } catch {
+            const text = await regRes.text()
+            errMsg = text || `Server error (${regRes.status})`
+          }
+          throw new Error(errMsg)
         }
       }
 
@@ -47,8 +54,15 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
       })
 
       if (!loginRes.ok) {
-        const errData = await loginRes.json()
-        throw new Error(errData.detail || 'Invalid email or password')
+        let errMsg = 'Invalid email or password'
+        try {
+          const errData = await loginRes.json()
+          errMsg = errData.detail || errMsg
+        } catch {
+          const text = await loginRes.text()
+          errMsg = text || `Server error (${loginRes.status})`
+        }
+        throw new Error(errMsg)
       }
 
       const loginData = await loginRes.json()

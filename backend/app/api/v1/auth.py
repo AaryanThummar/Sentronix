@@ -14,20 +14,29 @@ router = APIRouter()
 
 @router.post("/register", response_model=UserResponse)
 def register_user(user_in: UserCreate, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == user_in.email).first()
-    if user:
-        raise HTTPException(
-            status_code=400,
-            detail="The user with this email already exists in the system.",
+    try:
+        user = db.query(User).filter(User.email == user_in.email).first()
+        if user:
+            raise HTTPException(
+                status_code=400,
+                detail="The user with this email already exists in the system.",
+            )
+        user = User(
+            email=user_in.email,
+            hashed_password=get_password_hash(user_in.password),
         )
-    user = User(
-        email=user_in.email,
-        hashed_password=get_password_hash(user_in.password),
-    )
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-    return user
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        return user
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Registration failed: {str(e)}",
+        )
 
 @router.post("/login", response_model=Token)
 def login_access_token(

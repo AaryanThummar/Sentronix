@@ -1,10 +1,15 @@
+import hashlib
+import secrets
 from datetime import datetime, timedelta
 from typing import Any, Union
-from passlib.context import CryptContext
 from jose import jwt
 from app.core.config import settings
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+try:
+    from passlib.context import CryptContext
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+except Exception:
+    pwd_context = None
 
 def create_access_token(
     subject: Union[str, Any], expires_delta: timedelta = None
@@ -22,7 +27,33 @@ def create_access_token(
     return encoded_jwt
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    if not hashed_password:
+        return False
+    if hashed_password.startswith("pbkdf2_sha256$"):
+        try:
+            parts = hashed_password.split("$")
+            if len(parts) == 3:
+                salt = parts[1]
+                expected = parts[2]
+                computed = hashlib.pbkdf2_hmac("sha256", plain_password.encode("utf-8"), salt.encode("utf-8"), 100000).hex()
+                return secrets.compare_digest(computed, expected)
+        except Exception:
+            return False
+    if pwd_context:
+        try:
+            return pwd_context.verify(plain_password, hashed_password)
+        except Exception:
+            pass
+    return False
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    if pwd_context:
+        try:
+            return pwd_context.hash(password)
+        except Exception:
+            pass
+    # Resilient fallback: PBKDF2 with SHA-256 and unique salt
+    salt = secrets.token_hex(16)
+    hashed = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt.encode("utf-8"), 100000).hex()
+    return f"pbkdf2_sha256${salt}${hashed}"
+
