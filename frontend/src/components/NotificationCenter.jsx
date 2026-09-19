@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { 
   Bell, ShieldAlert, Swords, Sparkles, Check, Trash2, 
   ExternalLink, ArrowRight, ShieldCheck, X, AlertTriangle, 
-  Layers, Code, Bug, Terminal
+  Layers, Code, Bug, Terminal, CheckCircle2
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import AIPatchModal from './AIPatchModal'

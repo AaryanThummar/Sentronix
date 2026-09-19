@@ -4,7 +4,7 @@ import {
   CheckCircle2, Clock, Send, RefreshCw, Layers, ShieldCheck, 
   ChevronRight, ArrowRight, Crosshair, Code, FileText, Globe, 
   Database, Search, Play, Check, Shield, Sliders, ToggleLeft, ToggleRight,
-  Copy, Eye, Lock, ShieldX
+  Copy, Eye, Lock, ShieldX, AlertTriangle, X
 } from 'lucide-react'
 import AIPatchModal from '../components/AIPatchModal'
 import { apiFetch } from '../apiConfig'
