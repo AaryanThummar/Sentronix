@@ -119,6 +119,7 @@ export default function AppDefenseTab({ onOpenPatch }) {
             })
             setScanStatus(prev => ({ ...prev, [key]: { ...prev[key], state: 'Completed' } }))
             clearInterval(interval)
+            fetchAppData()
             return
           }
         }
@@ -129,9 +130,20 @@ export default function AppDefenseTab({ onOpenPatch }) {
       if (attempts >= maxAttempts) {
         setScanStatus(prev => ({ ...prev, [key]: { ...prev[key], state: 'Completed' } }))
         clearInterval(interval)
+        fetchAppData()
       }
     }, 1500)
   }
+
+  // Real-time dynamic stats synchronized between backend telemetry and active scan findings
+  const uniqueScansCount = new Set(findings.map(f => f.scan_id).filter(Boolean)).size;
+  const criticalHighCount = findings.filter(f => f.severity === 'CRITICAL' || f.severity === 'HIGH').length;
+  const mediumLowCount = findings.filter(f => f.severity === 'MEDIUM' || f.severity === 'LOW' || f.severity === 'INFO' || f.severity === 'WARNING').length;
+
+  const displayTotalScans = Math.max(stats.total_scans || 0, uniqueScansCount);
+  const displayCritHigh = Math.max(stats.critical_high_count || 0, criticalHighCount);
+  const displayMedLow = Math.max(stats.medium_low_count || 0, mediumLowCount);
+  const displayTotalFindings = Math.max(stats.total_findings || 0, findings.length);
 
   return (
     <div className="space-y-grid-gap relative">
@@ -139,19 +151,19 @@ export default function AppDefenseTab({ onOpenPatch }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full">
         <div className="bento-card bg-surface-container-low flex flex-col justify-center">
           <span className="font-label-md text-label-md text-text-secondary">Total Scans Run</span>
-          <span className="font-headline-lg text-headline-lg text-on-surface">{stats.total_scans}</span>
+          <span className="font-headline-lg text-headline-lg text-on-surface">{displayTotalScans}</span>
         </div>
         <div className="bento-card bg-error-container/10 border border-error-container/20 flex flex-col justify-center">
           <span className="font-label-md text-label-md text-danger-offensive flex items-center gap-2"><ShieldAlert size={16}/> Critical & High Threats</span>
-          <span className="font-headline-lg text-headline-lg text-danger-offensive">{stats.critical_high_count}</span>
+          <span className="font-headline-lg text-headline-lg text-danger-offensive">{displayCritHigh}</span>
         </div>
         <div className="bento-card bg-surface-container-low border border-border-subtle flex flex-col justify-center">
           <span className="font-label-md text-label-md text-text-secondary flex items-center gap-2">Medium & Low Threats</span>
-          <span className="font-headline-lg text-headline-lg text-text-secondary">{stats.medium_low_count}</span>
+          <span className="font-headline-lg text-headline-lg text-text-secondary">{displayMedLow}</span>
         </div>
         <div className="bento-card bg-surface-container-low flex flex-col justify-center">
           <span className="font-label-md text-label-md text-text-secondary">Total Active Findings</span>
-          <span className="font-headline-lg text-headline-lg text-on-surface">{stats.total_findings}</span>
+          <span className="font-headline-lg text-headline-lg text-on-surface">{displayTotalFindings}</span>
         </div>
       </div>
 

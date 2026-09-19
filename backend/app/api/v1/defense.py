@@ -39,7 +39,8 @@ THREAT_SIGNATURES = [
 ]
 
 @router.post("/scan")
-async def scan_file(file: UploadFile = File(...), db: Session = Depends(get_db)):
+async def scan_file(file: UploadFile = File(...), db: Session = Depends(get_db), x_tenant_id: Optional[str] = Header(None)):
+    tenant = x_tenant_id or "default-tenant"
     try:
         content_bytes = await file.read()
         # Decode as text (ignoring bad bytes for binary analysis)
@@ -56,7 +57,7 @@ async def scan_file(file: UploadFile = File(...), db: Session = Depends(get_db))
             # Create standard Unified Finding
             finding = UnifiedFinding(
                 scan_id="file-defense-scan",
-                tenant_id="default-tenant",
+                tenant_id=tenant,
                 pillar="File & Data Defense",
                 tool_used="Malware Scanner",
                 vulnerability_title=sig["name"],
@@ -113,11 +114,12 @@ PHISHING_KEYWORDS = [
 ]
 
 @router.post("/check-url")
-async def check_url(payload: dict, db: Session = Depends(get_db)):
+async def check_url(payload: dict, db: Session = Depends(get_db), x_tenant_id: Optional[str] = Header(None)):
     """
     Analyzes a URL for phishing, typosquatting, deceptive brand spoofing,
     and malware distribution vectors.
     """
+    tenant = x_tenant_id or "default-tenant"
     url = payload.get("url", "").strip()
     if not url:
         raise HTTPException(status_code=400, detail="URL is required")
@@ -212,7 +214,7 @@ async def check_url(payload: dict, db: Session = Depends(get_db)):
         try:
             finding = UnifiedFinding(
                 scan_id="v3-phishing-url-scan",
-                tenant_id="default-tenant",
+                tenant_id=tenant,
                 pillar="File & Data Defense",
                 tool_used="Phishing Intelligence Engine",
                 vulnerability_title=f"Phishing Link Intercepted: {url[:80]}",

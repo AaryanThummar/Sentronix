@@ -7,10 +7,10 @@ from app.workers.celery_app import celery_app
 from app.core.database import SessionLocal
 from app.models.vulnerability import UnifiedFinding
 
-def log_finding(db, scan_id, pillar, tool_used, title, severity, location, description, cwe_id=None, raw_payload=None):
+def log_finding(db, scan_id, pillar, tool_used, title, severity, location, description, cwe_id=None, raw_payload=None, tenant_id="default-tenant"):
     finding = UnifiedFinding(
         scan_id=scan_id,
-        tenant_id="default-tenant",
+        tenant_id=tenant_id or "default-tenant",
         pillar=pillar,
         tool_used=tool_used,
         vulnerability_title=title,
@@ -23,7 +23,7 @@ def log_finding(db, scan_id, pillar, tool_used, title, severity, location, descr
     db.add(finding)
 
 @celery_app.task(name="app.workers.tasks_app_defense.run_sast_semgrep_scan")
-def run_sast_semgrep_scan(scan_id: str, repo_path: str):
+def run_sast_semgrep_scan(scan_id: str, repo_path: str, tenant_id: str = "default-tenant"):
     db = SessionLocal()
     try:
         # 1. Try running Semgrep via subprocess
@@ -49,7 +49,8 @@ def run_sast_semgrep_scan(scan_id: str, repo_path: str):
                         cwe_id=cwe_id,
                         location=f"{item.get('path')}:{item.get('start', {}).get('line', 1)}",
                         description=item.get("extra", {}).get("message"),
-                        raw_payload=item.get("extra", {}).get("lines")
+                        raw_payload=item.get("extra", {}).get("lines"),
+                        tenant_id=tenant_id
                     )
                 db.commit()
                 return {"status": "success", "scan_id": scan_id}
@@ -115,6 +116,7 @@ def run_sast_semgrep_scan(scan_id: str, repo_path: str):
                 scan_id=scan_id,
                 pillar="Application & Code-Level Defense",
                 tool_used="Semgrep",
+                tenant_id=tenant_id,
                 **item
             )
         db.commit()
@@ -124,7 +126,7 @@ def run_sast_semgrep_scan(scan_id: str, repo_path: str):
 
 
 @celery_app.task(name="app.workers.tasks_app_defense.run_dast_zap_scan")
-def run_dast_zap_scan(scan_id: str, target_url: str):
+def run_dast_zap_scan(scan_id: str, target_url: str, tenant_id: str = "default-tenant"):
     db = SessionLocal()
     try:
         # ZAP tool trigger (Attempts Docker execution or direct client wrapper)
@@ -174,6 +176,7 @@ def run_dast_zap_scan(scan_id: str, target_url: str):
                 scan_id=scan_id,
                 pillar="Application & Code-Level Defense",
                 tool_used="OWASP ZAP",
+                tenant_id=tenant_id,
                 **item
             )
         db.commit()
@@ -183,7 +186,7 @@ def run_dast_zap_scan(scan_id: str, target_url: str):
 
 
 @celery_app.task(name="app.workers.tasks_app_defense.run_dast_nuclei_scan")
-def run_dast_nuclei_scan(scan_id: str, target_url: str, tags: list[str] = None):
+def run_dast_nuclei_scan(scan_id: str, target_url: str, tags: list[str] = None, tenant_id: str = "default-tenant"):
     db = SessionLocal()
     try:
         # Try running Nuclei via subprocess
@@ -208,7 +211,8 @@ def run_dast_nuclei_scan(scan_id: str, target_url: str, tags: list[str] = None):
                         cwe_id=item.get("info", {}).get("classification", {}).get("cwe-id", ["CWE-Unknown"])[0],
                         location=item.get("matched-at", target_url),
                         description=item.get("info", {}).get("description", "Vulnerability found."),
-                        raw_payload=item.get("request", "")
+                        raw_payload=item.get("request", ""),
+                        tenant_id=tenant_id
                     )
                 db.commit()
                 return {"status": "success", "scan_id": scan_id}
@@ -241,6 +245,7 @@ def run_dast_nuclei_scan(scan_id: str, target_url: str, tags: list[str] = None):
                 scan_id=scan_id,
                 pillar="Application & Code-Level Defense",
                 tool_used="Nuclei",
+                tenant_id=tenant_id,
                 **item
             )
         db.commit()
@@ -250,7 +255,7 @@ def run_dast_nuclei_scan(scan_id: str, target_url: str, tags: list[str] = None):
 
 
 @celery_app.task(name="app.workers.tasks_app_defense.run_sca_trivy_scan")
-def run_sca_trivy_scan(scan_id: str, target_path_or_image: str):
+def run_sca_trivy_scan(scan_id: str, target_path_or_image: str, tenant_id: str = "default-tenant"):
     db = SessionLocal()
     try:
         # Try running Trivy
@@ -276,7 +281,8 @@ def run_sca_trivy_scan(scan_id: str, target_path_or_image: str):
                             cwe_id="CWE-1395", # Outdated Dependency
                             location=target_pkg,
                             description=f"Installed Version: {vuln.get('InstalledVersion')} | Fixed Version: {vuln.get('FixedVersion', 'N/A')}\n{vuln.get('Title', 'No description.')}",
-                            raw_payload=f"CVSS score: {vuln.get('CVSS', {}).get('nvd', {}).get('V3Score', 'N/A')}"
+                            raw_payload=f"CVSS score: {vuln.get('CVSS', {}).get('nvd', {}).get('V3Score', 'N/A')}",
+                            tenant_id=tenant_id
                         )
                 db.commit()
                 return {"status": "success", "scan_id": scan_id}
@@ -324,6 +330,7 @@ def run_sca_trivy_scan(scan_id: str, target_path_or_image: str):
                 scan_id=scan_id,
                 pillar="Application & Code-Level Defense",
                 tool_used="Trivy",
+                tenant_id=tenant_id,
                 **item
             )
         db.commit()

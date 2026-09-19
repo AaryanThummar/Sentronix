@@ -77,12 +77,14 @@ export default function DashboardPage() {
         {/* Tab Selection */}
         <div className="flex gap-4 sm:gap-6 border-b border-border-strong mb-6 overflow-x-auto scrollbar-none">
           <button 
+            type="button"
             onClick={() => setActiveTab('overview')}
             className={`pb-2 px-1 font-label-md text-label-md transition-all whitespace-nowrap ${activeTab === 'overview' ? 'text-primary border-b-2 border-primary font-bold' : 'text-text-secondary hover:text-on-surface'}`}
           >
             Overview
           </button>
           <button 
+            type="button"
             onClick={() => setActiveTab('app_defense')}
             className={`pb-2 px-1 font-label-md text-label-md transition-all whitespace-nowrap ${activeTab === 'app_defense' ? 'text-primary border-b-2 border-primary font-bold' : 'text-text-secondary hover:text-on-surface'}`}
           >
@@ -90,7 +92,7 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        {activeTab === 'overview' ? (
+        <div className={activeTab === 'overview' ? 'block' : 'hidden'}>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-12 gap-4 lg:gap-6 auto-rows-min w-full">
           
           {/* 1. Security Posture */}
@@ -305,9 +307,11 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-        ) : (
+        </div>
+
+        <div className={activeTab === 'app_defense' ? 'block' : 'hidden'}>
           <AppDefenseTab onOpenPatch={(finding) => handleOpenPatch(finding)} />
-        )}
+        </div>
       </div>
 
       {/* AI Patch Modal */}
