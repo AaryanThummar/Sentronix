@@ -11,11 +11,12 @@ import { apiFetch } from '../apiConfig'
 export default function DashboardPage() {
   const [findings, setFindings] = useState([]);
   const [stats, setStats] = useState({
-    risk_grade: 'A',
-    risk_label: 'Low Risk',
+    risk_grade: '—',
+    risk_label: 'Unassessed',
     critical_findings: 0,
     blocked_threats: 0,
     files_analyzed: 0,
+    active_vectors: 0,
     severity_stats: { CRITICAL: 0, HIGH: 0, MEDIUM: 0, LOW: 0 }
   });
   const [lastUpdated, setLastUpdated] = useState(new Date().toLocaleTimeString());
@@ -101,14 +102,31 @@ export default function DashboardPage() {
               </h3>
               <p className="font-body-sm text-body-sm text-text-muted mb-4">Overall organizational risk score based on active findings and configuration.</p>
             </div>
-            <div className="flex items-center justify-center py-4">
-              <div className="relative w-32 h-32 flex items-center justify-center rounded-full border-8 border-surface-container">
-                <div className="absolute inset-0 rounded-full border-8 border-primary border-t-transparent border-r-transparent transform -rotate-45"></div>
-                <div className="text-center">
-                  <span className="font-headline-lg text-headline-lg text-primary block leading-none">{stats.risk_grade}</span>
-                  <span className="font-label-sm text-label-sm text-text-secondary">{stats.risk_label}</span>
+            <div className="flex flex-col items-center justify-center py-3">
+              <div className="relative w-36 h-36 flex items-center justify-center rounded-full border-8 border-surface-container">
+                <div className={`absolute inset-0 rounded-full border-8 border-t-transparent border-r-transparent transform -rotate-45 transition-colors ${
+                  stats.risk_grade === '—' ? 'border-outline-variant/40' :
+                  stats.risk_grade === 'A' ? 'border-success-defensive' :
+                  stats.risk_grade === 'B' ? 'border-primary' :
+                  stats.risk_grade === 'C' ? 'border-warning-mid' : 'border-danger-offensive'
+                }`}></div>
+                <div className="text-center px-1">
+                  <span className={`font-headline-lg text-3xl font-black block leading-none ${
+                    stats.risk_grade === '—' ? 'text-text-muted' :
+                    stats.risk_grade === 'A' ? 'text-success-defensive' :
+                    stats.risk_grade === 'B' ? 'text-primary' :
+                    stats.risk_grade === 'C' ? 'text-warning-mid' : 'text-danger-offensive'
+                  }`}>
+                    {stats.risk_grade}
+                  </span>
+                  <span className="font-label-sm text-[11px] font-bold uppercase tracking-wider block mt-1 text-text-secondary truncate max-w-[95px]" title={stats.risk_label}>
+                    {stats.risk_label}
+                  </span>
                 </div>
               </div>
+              <p className="text-[11px] text-text-muted text-center mt-3 font-medium">
+                {stats.files_analyzed === 0 ? 'Awaiting first security scan' : `${stats.files_analyzed} assets & endpoints triaged`}
+              </p>
             </div>
           </div>
 
@@ -147,7 +165,7 @@ export default function DashboardPage() {
                       <p className="font-body-sm text-body-sm text-text-muted">Adversary simulation</p>
                     </div>
                   </div>
-                  <span className="font-headline-md text-headline-md text-on-surface">6</span>
+                  <span className="font-headline-md text-headline-md text-on-surface">{stats.active_vectors || 0}</span>
                 </div>
               </div>
             </div>

@@ -34,9 +34,13 @@ def get_dashboard_stats(db: Session = Depends(get_db), x_tenant_id: Optional[str
     # 3. Calculate defensive ops metrics
     files_analyzed = total_steg_scans + len(findings)  # Every scan or finding represents an analysis
     blocked_threats = critical_count + high_count + steg_threats
+    active_vectors_count = len(set(f.vulnerability_title for f in findings if f.vulnerability_title))
 
-    # 4. Calculate Risk Grade
-    if critical_count > 0:
+    # 4. Calculate True Risk Grade (Not fake placeholder)
+    if files_analyzed == 0:
+        risk_grade = "—"
+        risk_label = "Unassessed"
+    elif critical_count > 0:
         risk_grade = "D"
         risk_label = "High Risk"
     elif high_count > 0 or steg_threats > 0:
@@ -47,7 +51,7 @@ def get_dashboard_stats(db: Session = Depends(get_db), x_tenant_id: Optional[str
         risk_label = "Low Risk"
     else:
         risk_grade = "A"
-        risk_label = "Hardened (Secure)"
+        risk_label = "Hardened"
 
     return {
         "risk_grade": risk_grade,
@@ -55,6 +59,7 @@ def get_dashboard_stats(db: Session = Depends(get_db), x_tenant_id: Optional[str
         "critical_findings": critical_count,
         "blocked_threats": blocked_threats,
         "files_analyzed": files_analyzed,
+        "active_vectors": active_vectors_count,
         "severity_stats": {
             "CRITICAL": critical_count,
             "HIGH": high_count + steg_threats,

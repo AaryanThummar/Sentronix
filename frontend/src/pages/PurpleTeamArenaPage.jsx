@@ -52,9 +52,10 @@ export default function PurpleTeamArenaPage() {
   const [metrics, setMetrics] = useState({
     total_simulated_strikes: 0,
     intercepted_threats: 0,
-    interception_success_rate: 100.0,
+    interception_success_rate: 0.0,
     average_detection_latency_ms: 0.0,
-    resilience_grade: 'A+'
+    resilience_grade: '—',
+    resilience_label: 'Unassessed'
   })
   const [history, setHistory] = useState([])
   const [isPacketModalOpen, setIsPacketModalOpen] = useState(false)
@@ -419,9 +420,11 @@ export default function PurpleTeamArenaPage() {
           <div className="bento-card bg-surface-container-low flex flex-col justify-between">
             <span className="font-label-md text-label-md text-text-secondary">Interception Rate</span>
             <div className="flex items-baseline gap-2 mt-2">
-              <span className="font-headline-lg text-headline-lg text-success-defensive font-bold">{metrics.interception_success_rate}%</span>
+              <span className="font-headline-lg text-headline-lg text-success-defensive font-bold">
+                {metrics.total_simulated_strikes > 0 ? `${metrics.interception_success_rate}%` : '—'}
+              </span>
               <span className="font-label-sm text-label-sm text-success-defensive">
-                {metrics.total_simulated_strikes > 0 ? 'Neutralized' : 'Ready'}
+                {metrics.total_simulated_strikes > 0 ? 'Neutralized' : 'Standby'}
               </span>
             </div>
           </div>
@@ -441,8 +444,12 @@ export default function PurpleTeamArenaPage() {
           <div className="bento-card bg-surface-container-low flex flex-col justify-between">
             <span className="font-label-md text-label-md text-text-secondary">Defensive Resilience</span>
             <div className="flex items-baseline gap-2 mt-2">
-              <span className="font-headline-lg text-headline-lg text-primary font-bold">{metrics.resilience_grade}</span>
-              <span className="font-label-sm text-label-sm text-text-muted">Hardened</span>
+              <span className="font-headline-lg text-headline-lg text-primary font-bold">
+                {metrics.total_simulated_strikes > 0 ? metrics.resilience_grade : '—'}
+              </span>
+              <span className="font-label-sm text-label-sm text-text-muted">
+                {metrics.total_simulated_strikes > 0 ? (metrics.resilience_label || 'Hardened') : 'Unassessed'}
+              </span>
             </div>
           </div>
         </div>

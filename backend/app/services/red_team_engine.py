@@ -682,12 +682,24 @@ class RedTeamEngine:
             latencies = [s["blue_team"]["latency_ms"] for s in strikes]
             avg_latency = round(sum(latencies) / len(latencies), 1)
             success_rate = round((blocked_count / total_strikes) * 100.0, 1)
-            grade = "A+" if success_rate >= 90 else ("A" if success_rate >= 75 else "B")
+            if success_rate == 100.0:
+                grade = "A+"
+                resilience_label = "Hardened"
+            elif success_rate >= 80.0:
+                grade = "A"
+                resilience_label = "Resilient"
+            elif success_rate >= 60.0:
+                grade = "B"
+                resilience_label = "Partially Filtered"
+            else:
+                grade = "D"
+                resilience_label = "Vulnerable"
         else:
             blocked_count = 0
             avg_latency = 0.0
-            success_rate = 100.0
-            grade = "A+"
+            success_rate = 0.0
+            grade = "—"
+            resilience_label = "Unassessed"
 
         return {
             "total_simulated_strikes": total_strikes,
@@ -695,6 +707,7 @@ class RedTeamEngine:
             "interception_success_rate": success_rate,
             "average_detection_latency_ms": avg_latency,
             "resilience_grade": grade,
+            "resilience_label": resilience_label,
             "active_scenarios_count": len(SCENARIOS),
             "caldera_campaigns_count": len(CALDERA_CAMPAIGNS),
             "seclists_probes_count": len(SECLISTS_PROBES),
