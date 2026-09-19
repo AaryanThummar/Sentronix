@@ -50,10 +50,10 @@ export default function PurpleTeamArenaPage() {
   const [strikeResult, setStrikeResult] = useState(null)
   const [terminalLogs, setTerminalLogs] = useState([])
   const [metrics, setMetrics] = useState({
-    total_simulated_strikes: 18,
-    intercepted_threats: 18,
+    total_simulated_strikes: 0,
+    intercepted_threats: 0,
     interception_success_rate: 100.0,
-    average_detection_latency_ms: 48.2,
+    average_detection_latency_ms: 0.0,
     resilience_grade: 'A+'
   })
   const [history, setHistory] = useState([])
@@ -420,15 +420,21 @@ export default function PurpleTeamArenaPage() {
             <span className="font-label-md text-label-md text-text-secondary">Interception Rate</span>
             <div className="flex items-baseline gap-2 mt-2">
               <span className="font-headline-lg text-headline-lg text-success-defensive font-bold">{metrics.interception_success_rate}%</span>
-              <span className="font-label-sm text-label-sm text-success-defensive">Neutralized</span>
+              <span className="font-label-sm text-label-sm text-success-defensive">
+                {metrics.total_simulated_strikes > 0 ? 'Neutralized' : 'Ready'}
+              </span>
             </div>
           </div>
 
           <div className="bento-card bg-surface-container-low flex flex-col justify-between">
             <span className="font-label-md text-label-md text-text-secondary">Avg Detection Latency</span>
             <div className="flex items-baseline gap-2 mt-2">
-              <span className="font-headline-lg text-headline-lg text-primary font-bold">{metrics.average_detection_latency_ms}</span>
-              <span className="font-label-sm text-label-sm text-text-muted">ms</span>
+              <span className="font-headline-lg text-headline-lg text-primary font-bold">
+                {metrics.total_simulated_strikes > 0 ? metrics.average_detection_latency_ms : '—'}
+              </span>
+              <span className="font-label-sm text-label-sm text-text-muted">
+                {metrics.total_simulated_strikes > 0 ? 'ms' : 'Standby'}
+              </span>
             </div>
           </div>
 

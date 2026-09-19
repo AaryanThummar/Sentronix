@@ -674,21 +674,27 @@ class RedTeamEngine:
 
     @staticmethod
     def get_metrics(tenant_id: str = "default-tenant") -> Dict[str, Any]:
-        strikes = STRIKE_HISTORY_BY_TENANT.get(tenant_id, STRIKE_HISTORY)
-        total_strikes = max(len(strikes), 18)
-        blocked_count = len([s for s in strikes if "BLOCKED" in s["blue_team"]["defense_status"]]) if strikes else total_strikes
-        avg_latency = 48.2
+        strikes = STRIKE_HISTORY_BY_TENANT.get(tenant_id, [])
+        total_strikes = len(strikes)
 
-        if strikes:
+        if total_strikes > 0:
+            blocked_count = len([s for s in strikes if "BLOCKED" in s["blue_team"]["defense_status"] or "INTERCEPTED" in s["blue_team"]["defense_status"]])
             latencies = [s["blue_team"]["latency_ms"] for s in strikes]
-            avg_latency = round(sum(latencies) / len(latencies), 2)
+            avg_latency = round(sum(latencies) / len(latencies), 1)
+            success_rate = round((blocked_count / total_strikes) * 100.0, 1)
+            grade = "A+" if success_rate >= 90 else ("A" if success_rate >= 75 else "B")
+        else:
+            blocked_count = 0
+            avg_latency = 0.0
+            success_rate = 100.0
+            grade = "A+"
 
         return {
             "total_simulated_strikes": total_strikes,
             "intercepted_threats": blocked_count,
-            "interception_success_rate": round((blocked_count / max(total_strikes, 1)) * 100.0, 1),
+            "interception_success_rate": success_rate,
             "average_detection_latency_ms": avg_latency,
-            "resilience_grade": "A+",
+            "resilience_grade": grade,
             "active_scenarios_count": len(SCENARIOS),
             "caldera_campaigns_count": len(CALDERA_CAMPAIGNS),
             "seclists_probes_count": len(SECLISTS_PROBES),
