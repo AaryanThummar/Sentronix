@@ -1,6 +1,7 @@
 import uuid
 import redis
-from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException
+from typing import Optional
+from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException, Header
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from app.core.database import get_db
@@ -110,10 +111,18 @@ def get_results(scan_id: str, db: Session = Depends(get_db)):
     }
 
 @router.get("/findings")
-def get_all_app_defense_findings(db: Session = Depends(get_db)):
-    findings = db.query(UnifiedFinding).filter(
-        UnifiedFinding.pillar == "Application & Code-Level Defense"
-    ).order_by(UnifiedFinding.id.desc()).limit(50).all()
+def get_all_app_defense_findings(db: Session = Depends(get_db), x_tenant_id: Optional[str] = Header(None)):
+    tenant = x_tenant_id or "default-tenant"
+    if tenant == "default-tenant":
+        findings = db.query(UnifiedFinding).filter(
+            UnifiedFinding.pillar == "Application & Code-Level Defense",
+            (UnifiedFinding.tenant_id == "default-tenant") | (UnifiedFinding.tenant_id == None)
+        ).order_by(UnifiedFinding.id.desc()).limit(50).all()
+    else:
+        findings = db.query(UnifiedFinding).filter(
+            UnifiedFinding.pillar == "Application & Code-Level Defense",
+            UnifiedFinding.tenant_id == tenant
+        ).order_by(UnifiedFinding.id.desc()).limit(50).all()
     
     return [
         {
@@ -130,10 +139,18 @@ def get_all_app_defense_findings(db: Session = Depends(get_db)):
     ]
 
 @router.get("/stats")
-def get_app_defense_stats(db: Session = Depends(get_db)):
-    findings = db.query(UnifiedFinding).filter(
-        UnifiedFinding.pillar == "Application & Code-Level Defense"
-    ).all()
+def get_app_defense_stats(db: Session = Depends(get_db), x_tenant_id: Optional[str] = Header(None)):
+    tenant = x_tenant_id or "default-tenant"
+    if tenant == "default-tenant":
+        findings = db.query(UnifiedFinding).filter(
+            UnifiedFinding.pillar == "Application & Code-Level Defense",
+            (UnifiedFinding.tenant_id == "default-tenant") | (UnifiedFinding.tenant_id == None)
+        ).all()
+    else:
+        findings = db.query(UnifiedFinding).filter(
+            UnifiedFinding.pillar == "Application & Code-Level Defense",
+            UnifiedFinding.tenant_id == tenant
+        ).all()
     
     critical = sum(1 for f in findings if f.severity == "CRITICAL")
     high = sum(1 for f in findings if f.severity == "HIGH")

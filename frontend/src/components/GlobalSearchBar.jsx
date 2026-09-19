@@ -4,7 +4,7 @@ import {
   Search, X, LayoutDashboard, Swords, Shield, FileText, 
   Settings, AlertTriangle, Wand2, ChevronRight, CornerDownLeft, Sparkles
 } from 'lucide-react'
-import { API_BASE_URL } from '../apiConfig'
+import { apiFetch } from '../apiConfig'
 import AIPatchModal from './AIPatchModal'
 
 export default function GlobalSearchBar() {
@@ -39,7 +39,7 @@ export default function GlobalSearchBar() {
   useEffect(() => {
     const fetchFindings = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/v1/dashboard/findings`)
+        const res = await apiFetch('/api/v1/dashboard/findings')
         if (res.ok) {
           const data = await res.json()
           setFindings(data)

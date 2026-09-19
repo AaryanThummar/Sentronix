@@ -1,16 +1,24 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Header
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.vulnerability import UnifiedFinding
 from app.models.steg import StegAnalysisResult
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 router = APIRouter()
 
 @router.get("/stats")
-def get_dashboard_stats(db: Session = Depends(get_db)):
-    # 1. Fetch live findings
-    findings = db.query(UnifiedFinding).all()
+def get_dashboard_stats(db: Session = Depends(get_db), x_tenant_id: Optional[str] = Header(None)):
+    tenant = x_tenant_id or "default-tenant"
+    
+    # 1. Fetch live findings scoped to this workspace
+    if tenant == "default-tenant":
+        findings = db.query(UnifiedFinding).filter(
+            (UnifiedFinding.tenant_id == "default-tenant") | (UnifiedFinding.tenant_id == None)
+        ).all()
+    else:
+        findings = db.query(UnifiedFinding).filter(UnifiedFinding.tenant_id == tenant).all()
+
     steg_results = db.query(StegAnalysisResult).all()
 
     # 2. Compute counts
@@ -19,9 +27,9 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
     medium_count = sum(1 for f in findings if f.severity == "MEDIUM")
     low_count = sum(1 for f in findings if f.severity == "LOW")
 
-    # Flag steg findings containing '[!] ALERT' as HIGH threat
-    steg_threats = sum(1 for s in steg_results if s.findings and "[!] ALERT" in s.findings)
-    total_steg_scans = len(steg_results)
+    # Flag steg findings containing '[!] ALERT' as HIGH threat (only for default tenant or global)
+    steg_threats = sum(1 for s in steg_results if s.findings and "[!] ALERT" in s.findings) if tenant == "default-tenant" else 0
+    total_steg_scans = len(steg_results) if tenant == "default-tenant" else 0
 
     # 3. Calculate defensive ops metrics
     files_analyzed = total_steg_scans + len(findings)  # Every scan or finding represents an analysis
@@ -39,7 +47,7 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
         risk_label = "Low Risk"
     else:
         risk_grade = "A"
-        risk_label = "Low Risk"
+        risk_label = "Hardened (Secure)"
 
     return {
         "risk_grade": risk_grade,
@@ -56,10 +64,20 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
     }
 
 @router.get("/findings")
-def get_dashboard_findings(db: Session = Depends(get_db)) -> List[Dict[str, Any]]:
-    # Fetch latest findings and steg scans
-    findings = db.query(UnifiedFinding).order_by(UnifiedFinding.id.desc()).limit(10).all()
-    steg_results = db.query(StegAnalysisResult).order_by(StegAnalysisResult.id.desc()).limit(10).all()
+def get_dashboard_findings(db: Session = Depends(get_db), x_tenant_id: Optional[str] = Header(None)) -> List[Dict[str, Any]]:
+    tenant = x_tenant_id or "default-tenant"
+    
+    # Fetch latest findings scoped to tenant
+    if tenant == "default-tenant":
+        findings = db.query(UnifiedFinding).filter(
+            (UnifiedFinding.tenant_id == "default-tenant") | (UnifiedFinding.tenant_id == None)
+        ).order_by(UnifiedFinding.id.desc()).limit(15).all()
+        steg_results = db.query(StegAnalysisResult).order_by(StegAnalysisResult.id.desc()).limit(5).all()
+    else:
+        findings = db.query(UnifiedFinding).filter(
+            UnifiedFinding.tenant_id == tenant
+        ).order_by(UnifiedFinding.id.desc()).limit(15).all()
+        steg_results = []
 
     merged_findings = []
 

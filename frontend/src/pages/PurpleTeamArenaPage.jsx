@@ -7,9 +7,13 @@ import {
   Copy, Eye, Lock, ShieldX
 } from 'lucide-react'
 import AIPatchModal from '../components/AIPatchModal'
-import { API_BASE_URL } from '../apiConfig'
+import { apiFetch } from '../apiConfig'
 
 export default function PurpleTeamArenaPage() {
+  const defaultOrigin = typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+    ? window.location.origin 
+    : 'http://localhost:8000'
+
   const [activeMode, setActiveMode] = useState('atomic') // 'atomic' | 'caldera' | 'seclists' | 'waf_sandbox'
   
   // Scenarios State
@@ -33,7 +37,7 @@ export default function PurpleTeamArenaPage() {
   const [isFuzzing, setIsFuzzing] = useState(false)
 
   // Live Target Endpoint Fuzzer State
-  const [liveTargetUrl, setLiveTargetUrl] = useState('http://localhost:8000/api/v1/auth/login')
+  const [liveTargetUrl, setLiveTargetUrl] = useState(`${defaultOrigin}/api/v1/auth/login`)
   const [liveMethod, setLiveMethod] = useState('POST')
   const [liveVectors, setLiveVectors] = useState(['sqli', 'xss', 'ssrf', 'path_traversal', 'seclists'])
   const [liveCustomPayload, setLiveCustomPayload] = useState('')
@@ -70,7 +74,7 @@ export default function PurpleTeamArenaPage() {
 
   const fetchScenarios = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/red-team/scenarios`)
+      const res = await apiFetch('/api/v1/red-team/scenarios')
       if (res.ok) {
         const data = await res.json()
         setScenarios(data)
@@ -87,7 +91,7 @@ export default function PurpleTeamArenaPage() {
 
   const fetchWafRules = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/red-team/waf-rules`)
+      const res = await apiFetch('/api/v1/red-team/waf-rules')
       if (res.ok) {
         const data = await res.json()
         setWafRules(data)
@@ -105,7 +109,7 @@ export default function PurpleTeamArenaPage() {
     }))
 
     try {
-      await fetch(`${API_BASE_URL}/api/v1/red-team/waf-rules/toggle`, {
+      await apiFetch('/api/v1/red-team/waf-rules/toggle', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rule_key: ruleKey, enabled: newVal })
@@ -117,7 +121,7 @@ export default function PurpleTeamArenaPage() {
 
   const fetchCampaigns = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/red-team/campaigns`)
+      const res = await apiFetch('/api/v1/red-team/campaigns')
       if (res.ok) {
         const data = await res.json()
         setCampaigns(data)
@@ -130,7 +134,7 @@ export default function PurpleTeamArenaPage() {
 
   const fetchMetrics = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/red-team/metrics`)
+      const res = await apiFetch('/api/v1/red-team/metrics')
       if (res.ok) setMetrics(await res.json())
     } catch (e) {
       // ignore
@@ -139,7 +143,7 @@ export default function PurpleTeamArenaPage() {
 
   const fetchHistory = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/red-team/history`)
+      const res = await apiFetch('/api/v1/red-team/history')
       if (res.ok) setHistory(await res.json())
     } catch (e) {
       // ignore
@@ -175,7 +179,7 @@ export default function PurpleTeamArenaPage() {
         wafOverrides[k] = wafRules[k].enabled
       })
 
-      const res = await fetch(`${API_BASE_URL}/api/v1/red-team/strike`, {
+      const res = await apiFetch('/api/v1/red-team/strike', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -219,7 +223,7 @@ export default function PurpleTeamArenaPage() {
     ])
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/red-team/campaigns/run`, {
+      const res = await apiFetch('/api/v1/red-team/campaigns/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ campaign_id: selectedCampaignId, notify_discord: notifyDiscord })
@@ -250,7 +254,7 @@ export default function PurpleTeamArenaPage() {
     ])
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/red-team/fuzzing/run`, { method: 'POST' })
+      const res = await apiFetch('/api/v1/red-team/fuzzing/run', { method: 'POST' })
       if (res.ok) {
         const data = await res.json()
         setSeclistsResults(data)
@@ -293,7 +297,7 @@ export default function PurpleTeamArenaPage() {
     }
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/red-team/live-scan`, {
+      const res = await apiFetch('/api/v1/red-team/live-scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1093,7 +1097,7 @@ export default function PurpleTeamArenaPage() {
                         type="text"
                         value={liveTargetUrl}
                         onChange={(e) => setLiveTargetUrl(e.target.value)}
-                        placeholder="http://localhost:8000/api/v1/auth/login"
+                        placeholder={`${defaultOrigin}/api/v1/auth/login`}
                         className="flex-1 px-3 py-2 rounded-lg bg-surface border border-outline-variant text-on-surface font-mono text-xs focus:outline-none focus:border-primary"
                       />
                     </div>
@@ -1102,19 +1106,19 @@ export default function PurpleTeamArenaPage() {
                     <div className="flex flex-wrap items-center gap-1.5 mt-2">
                       <span className="text-[11px] text-text-muted">Presets:</span>
                       <button
-                        onClick={() => { setLiveTargetUrl('http://localhost:8000/api/v1/auth/login'); setLiveMethod('POST'); }}
+                        onClick={() => { setLiveTargetUrl(`${defaultOrigin}/api/v1/auth/login`); setLiveMethod('POST'); }}
                         className="text-[11px] px-2 py-0.5 rounded bg-surface-container hover:bg-surface-container-high text-primary font-mono transition-colors"
                       >
                         /auth/login (POST)
                       </button>
                       <button
-                        onClick={() => { setLiveTargetUrl('http://localhost:8000/api/v1/health'); setLiveMethod('GET'); }}
+                        onClick={() => { setLiveTargetUrl(`${defaultOrigin}/api/v1/health`); setLiveMethod('GET'); }}
                         className="text-[11px] px-2 py-0.5 rounded bg-surface-container hover:bg-surface-container-high text-primary font-mono transition-colors"
                       >
                         /health (GET)
                       </button>
                       <button
-                        onClick={() => { setLiveTargetUrl('http://localhost:8000/docs'); setLiveMethod('GET'); }}
+                        onClick={() => { setLiveTargetUrl(`${defaultOrigin}/docs`); setLiveMethod('GET'); }}
                         className="text-[11px] px-2 py-0.5 rounded bg-surface-container hover:bg-surface-container-high text-primary font-mono transition-colors"
                       >
                         /docs (Swagger)

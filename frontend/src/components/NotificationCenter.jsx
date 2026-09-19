@@ -6,7 +6,7 @@ import {
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import AIPatchModal from './AIPatchModal'
-import { API_BASE_URL } from '../apiConfig'
+import { apiFetch } from '../apiConfig'
 
 export default function NotificationCenter() {
   const [isOpen, setIsOpen] = useState(false)
@@ -22,9 +22,9 @@ export default function NotificationCenter() {
     try {
       let combined = []
 
-      // 1. Fetch live findings
+      // 1. Fetch live findings scoped to this workspace
       try {
-        const res = await fetch(`${API_BASE_URL}/api/v1/dashboard/findings`)
+        const res = await apiFetch('/api/v1/dashboard/findings')
         if (res.ok) {
           const findings = await res.json()
           findings.forEach((f, idx) => {
@@ -46,9 +46,9 @@ export default function NotificationCenter() {
         // ignore
       }
 
-      // 2. Fetch Red Team simulated strikes
+      // 2. Fetch Red Team simulated strikes scoped to this workspace
       try {
-        const resStrikes = await fetch(`${API_BASE_URL}/api/v1/red-team/history`)
+        const resStrikes = await apiFetch('/api/v1/red-team/history')
         if (resStrikes.ok) {
           const strikes = await resStrikes.json()
           strikes.slice(0, 5).forEach((s, idx) => {
@@ -79,6 +79,7 @@ export default function NotificationCenter() {
 
       // Fallback default notifications if backend findings are empty
       if (combined.length === 0) {
+        const currentOrigin = typeof window !== 'undefined' ? window.location.origin : 'https://sentronix.internal'
         combined = [
           {
             id: 'default-1',
@@ -86,7 +87,7 @@ export default function NotificationCenter() {
             title: 'Outdated Apache Web Server (CVE-2021-41773)',
             severity: 'CRITICAL',
             tool: 'Nuclei DAST',
-            location: 'http://localhost:8000',
+            location: `${currentOrigin}/server-status`,
             description: 'Vulnerable instance of Apache 2.4.49 detected, prone to path traversal.',
             timestamp: '5m ago',
             read: false,
@@ -95,7 +96,7 @@ export default function NotificationCenter() {
               title: 'Outdated Apache Web Server (CVE-2021-41773)',
               severity: 'CRITICAL',
               tool: 'Nuclei',
-              location: 'http://localhost:8000',
+              location: `${currentOrigin}/server-status`,
               description: 'Vulnerable Apache HTTP server instance.'
             }
           },

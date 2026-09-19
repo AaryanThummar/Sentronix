@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Header
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from app.services.red_team_engine import RedTeamEngine, STRIKE_HISTORY
@@ -56,14 +56,16 @@ def run_fuzzing():
     return RedTeamEngine.run_seclists_fuzzing()
 
 @router.get("/metrics")
-def get_metrics():
+def get_metrics(x_tenant_id: Optional[str] = Header(None)):
     """Retrieve Purple Team resilience metrics, interception rates, and detection latency"""
-    return RedTeamEngine.get_metrics()
+    tenant = x_tenant_id or "default-tenant"
+    return RedTeamEngine.get_metrics(tenant)
 
 @router.get("/history")
-def get_strike_history():
-    """Retrieve history of recent simulated strikes and defense responses"""
-    return STRIKE_HISTORY
+def get_strike_history(x_tenant_id: Optional[str] = Header(None)):
+    """Retrieve history of recent simulated strikes and defense responses for this workspace session"""
+    tenant = x_tenant_id or "default-tenant"
+    return RedTeamEngine.get_strike_history(tenant)
 
 class LiveScanRequest(BaseModel):
     target_url: str = Field(..., example="http://localhost:8000/api/v1/auth/login")
@@ -73,12 +75,13 @@ class LiveScanRequest(BaseModel):
     custom_payload: Optional[str] = None
 
 @router.post("/live-scan")
-def run_live_scan(req: LiveScanRequest, db: Session = Depends(get_db)):
+def run_live_scan(req: LiveScanRequest, db: Session = Depends(get_db), x_tenant_id: Optional[str] = Header(None)):
     """
     Executes a live adversary payload burst against a target URL or API endpoint,
     analyzes HTTP response reflections, status codes, and WAF intercepts.
-    Automatically persists detected vulnerabilities to the database.
+    Automatically persists detected vulnerabilities to the database scoped to the tenant workspace.
     """
+    tenant = x_tenant_id or "default-tenant"
     scan_result = RedTeamEngine.run_live_endpoint_scan(
         target_url=req.target_url,
         method=req.method or "GET",
@@ -87,12 +90,12 @@ def run_live_scan(req: LiveScanRequest, db: Session = Depends(get_db)):
         custom_payload=req.custom_payload
     )
 
-    # Persist detected vulnerabilities as UnifiedFindings
+    # Persist detected vulnerabilities as UnifiedFindings scoped to this tenant/session
     for vuln in scan_result.get("vulnerabilities", []):
         try:
             finding = UnifiedFinding(
                 scan_id=scan_result["scan_id"],
-                tenant_id="default-tenant",
+                tenant_id=tenant,
                 pillar="Web & API Defense",
                 tool_used="SentroniX Live Fuzzer (SecLists & PayloadsAllTheThings)",
                 vulnerability_title=f"[Live Fuzzing] {vuln['vector']}",
@@ -112,11 +115,12 @@ def run_live_scan(req: LiveScanRequest, db: Session = Depends(get_db)):
     return scan_result
 
 @router.post("/strike")
-async def execute_strike(req: StrikeRequest, db: Session = Depends(get_db)):
+async def execute_strike(req: StrikeRequest, db: Session = Depends(get_db), x_tenant_id: Optional[str] = Header(None)):
     """
     Executes a simulated Red Team attack strike against the designated vector,
     triggers real-time Blue Team interception, logs the telemetry, and updates resilience records.
     """
+    tenant = x_tenant_id or "default-tenant"
     scenario = RedTeamEngine.get_scenario_by_id(req.scenario_id)
     if not scenario:
         raise HTTPException(status_code=404, detail="Scenario not found")
@@ -125,14 +129,15 @@ async def execute_strike(req: StrikeRequest, db: Session = Depends(get_db)):
         scenario_id=req.scenario_id,
         custom_payload=req.custom_payload,
         target_override=req.target_override,
-        waf_overrides=req.waf_overrides
+        waf_overrides=req.waf_overrides,
+        tenant_id=tenant
     )
 
     # Automatically record finding into DB to link with AI Remediation pipeline
     try:
         new_vuln = UnifiedFinding(
             scan_id=f"SCAN-{result['strike_id']}",
-            tenant_id="default-tenant",
+            tenant_id=tenant,
             pillar=scenario.get("category", "App & Code Defense"),
             tool_used=f"SentroniX Red Team ({scenario.get('source_repo', 'Adversary Simulator')})",
             vulnerability_title=f"[Simulated Strike] {scenario['title']}",

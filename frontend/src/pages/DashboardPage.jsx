@@ -6,7 +6,7 @@ import {
 } from 'lucide-react'
 import AppDefenseTab from '../components/Dashboard/AppDefenseTab'
 import AIPatchModal from '../components/AIPatchModal'
-import { API_BASE_URL } from '../apiConfig'
+import { apiFetch } from '../apiConfig'
 
 export default function DashboardPage() {
   const [findings, setFindings] = useState([]);
@@ -27,13 +27,13 @@ export default function DashboardPage() {
 
   const fetchDashboardData = async () => {
     try {
-      const statsRes = await fetch(`${API_BASE_URL}/api/v1/dashboard/stats`);
+      const statsRes = await apiFetch('/api/v1/dashboard/stats');
       if (statsRes.ok) {
         const statsData = await statsRes.json();
         setStats(statsData);
       }
       
-      const findingsRes = await fetch(`${API_BASE_URL}/api/v1/dashboard/findings`);
+      const findingsRes = await apiFetch('/api/v1/dashboard/findings');
       if (findingsRes.ok) {
         const findingsData = await findingsRes.json();
         setFindings(findingsData);

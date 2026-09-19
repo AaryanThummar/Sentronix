@@ -283,8 +283,11 @@ WAF_RULES: Dict[str, Dict[str, Any]] = {
     "PATH_TRAVERSAL_GUARD": {"name": "Canonical Path Normalizer", "enabled": True, "description": "Prevents directory traversal escapes (../, %2e%2e)"}
 }
 
-# Historical execution in-memory cache for live sessions
+# Historical execution in-memory cache partitioned by tenant/workspace
+STRIKE_HISTORY_BY_TENANT: Dict[str, List[Dict[str, Any]]] = {}
+# Global historical execution in-memory cache for backwards compatibility
 STRIKE_HISTORY: List[Dict[str, Any]] = []
+
 
 class RedTeamEngine:
     """Core Purple-Team Adversary Emulation & Blue-Team Interception Engine (Top 4 Repos + Deep Packet Sandbox)"""
@@ -320,11 +323,18 @@ class RedTeamEngine:
         return {"error": "Rule key not found"}
 
     @staticmethod
+    def get_strike_history(tenant_id: str = "default-tenant") -> List[Dict[str, Any]]:
+        if tenant_id in STRIKE_HISTORY_BY_TENANT:
+            return STRIKE_HISTORY_BY_TENANT[tenant_id]
+        return STRIKE_HISTORY
+
+    @staticmethod
     def execute_strike(
         scenario_id: str, 
         custom_payload: str = None, 
         target_override: str = None,
-        waf_overrides: Dict[str, bool] = None
+        waf_overrides: Dict[str, bool] = None,
+        tenant_id: str = "default-tenant"
     ) -> Dict[str, Any]:
         scenario = RedTeamEngine.get_scenario_by_id(scenario_id)
         if not scenario:
@@ -361,22 +371,21 @@ class RedTeamEngine:
         )
 
         if rule_enabled:
-            defense_status = "INTERCEPTED & BLOCKED"
             status_code = 403
+            defense_status = "BLOCKED & INTERCEPTED (WAF Rule Active)"
             raw_http_response = (
                 f"HTTP/1.1 403 Forbidden\r\n"
                 f"Server: SentroniX-WAF/2.1\r\n"
                 f"Date: {timestamp}\r\n"
                 f"Content-Type: application/json\r\n"
-                f"X-Threat-Intercept: Blocked-By-Rule\r\n"
-                f"X-Rule-Fired: {scenario['detection_rule']}\r\n"
-                f"Connection: close\r\n\r\n"
-                f'{{"status": "blocked", "strike_id": "{strike_id}", "rule": "{scenario["detection_rule"]}", "reason": "Adversary Payload Neutralized"}}\n'
+                f"X-Threat-Intercept: Active-AST-Filter\r\n"
+                f"X-Mitre-Vector: {scenario['mitre_technique']}\r\n\r\n"
+                f'{{"error": "Forbidden: Adversary Attack Vector Intercepted", "rule": "{scenario["detection_rule"]}", "strike_id": "{strike_id}"}}\n'
             )
-            verdict = "ATTACK NEUTRALIZED"
+            verdict = "INTERCEPTED & CONVERGED (AST WAF Active)"
         else:
-            defense_status = "VULNERABILITY TRIPPED (WAF DISABLED)"
             status_code = 200
+            defense_status = "EXPLOITED (WAF Rule Bypassed - Rule Disabled)"
             raw_http_response = (
                 f"HTTP/1.1 200 OK\r\n"
                 f"Server: SentroniX-App/2.1\r\n"
@@ -423,6 +432,14 @@ class RedTeamEngine:
             }
         }
 
+        # Store in tenant-isolated in-memory cache
+        if tenant_id not in STRIKE_HISTORY_BY_TENANT:
+            STRIKE_HISTORY_BY_TENANT[tenant_id] = []
+        STRIKE_HISTORY_BY_TENANT[tenant_id].insert(0, interception_result)
+        if len(STRIKE_HISTORY_BY_TENANT[tenant_id]) > 50:
+            STRIKE_HISTORY_BY_TENANT[tenant_id].pop()
+
+        # Also store in global history for backwards compatibility
         STRIKE_HISTORY.insert(0, interception_result)
         if len(STRIKE_HISTORY) > 50:
             STRIKE_HISTORY.pop()
@@ -656,13 +673,14 @@ class RedTeamEngine:
         }
 
     @staticmethod
-    def get_metrics() -> Dict[str, Any]:
-        total_strikes = max(len(STRIKE_HISTORY), 18)
-        blocked_count = len([s for s in STRIKE_HISTORY if "BLOCKED" in s["blue_team"]["defense_status"]]) if STRIKE_HISTORY else total_strikes
+    def get_metrics(tenant_id: str = "default-tenant") -> Dict[str, Any]:
+        strikes = STRIKE_HISTORY_BY_TENANT.get(tenant_id, STRIKE_HISTORY)
+        total_strikes = max(len(strikes), 18)
+        blocked_count = len([s for s in strikes if "BLOCKED" in s["blue_team"]["defense_status"]]) if strikes else total_strikes
         avg_latency = 48.2
 
-        if STRIKE_HISTORY:
-            latencies = [s["blue_team"]["latency_ms"] for s in STRIKE_HISTORY]
+        if strikes:
+            latencies = [s["blue_team"]["latency_ms"] for s in strikes]
             avg_latency = round(sum(latencies) / len(latencies), 2)
 
         return {

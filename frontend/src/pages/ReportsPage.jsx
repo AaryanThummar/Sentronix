@@ -4,7 +4,7 @@ import {
   CheckCircle2, Printer, Sparkles, Filter, Calendar, FileCode, Check,
   Info, X, Wrench, ArrowRight, Shield, Eye, Table, Layers, ExternalLink
 } from 'lucide-react'
-import { API_BASE_URL } from '../apiConfig'
+import { apiFetch } from '../apiConfig'
 
 export default function ReportsPage() {
   const [stats, setStats] = useState({
@@ -28,25 +28,25 @@ export default function ReportsPage() {
       id: 'REP-2026-003',
       name: 'Executive Security Assessment & Compliance Audit',
       type: 'Executive Audit',
-      date: 'Today, 23:35',
-      author: 'SentroniX AI Engine',
+      date: '10 Sep 2026',
+      author: 'Automated Pipeline',
       findingsCount: 4,
       status: 'Ready',
       format: 'PDF / CSV / JSON'
     },
     {
       id: 'REP-2026-002',
-      name: 'Steganography & Malware Payload Triage',
-      type: 'Threat Analysis',
-      date: 'Yesterday, 18:20',
-      author: 'Security Operations',
-      findingsCount: 1,
+      name: 'OWASP Top 10 Application Security Audit',
+      type: 'OWASP Compliance',
+      date: '03 Sep 2026',
+      author: 'Automated Pipeline',
+      findingsCount: 3,
       status: 'Ready',
       format: 'PDF / CSV'
     },
     {
       id: 'REP-2026-001',
-      name: 'OWASP Top 10 Application Assessment',
+      name: 'SOC 2 Type II Gap Analysis & Readiness Assessment',
       type: 'Compliance Audit',
       date: '28 Aug 2026',
       author: 'Automated Pipeline',
@@ -68,13 +68,13 @@ export default function ReportsPage() {
   useEffect(() => {
     const fetchTelemetry = async () => {
       try {
-        const statsRes = await fetch(`${API_BASE_URL}/api/v1/defense/app/stats`)
+        const statsRes = await apiFetch('/api/v1/defense/app/stats')
         if (statsRes.ok) setStats(await statsRes.json())
         
-        const findingsRes = await fetch(`${API_BASE_URL}/api/v1/defense/app/findings`)
+        const findingsRes = await apiFetch('/api/v1/defense/app/findings')
         if (findingsRes.ok) setFindings(await findingsRes.json())
         
-        const dashRes = await fetch(`${API_BASE_URL}/api/v1/dashboard/stats`)
+        const dashRes = await apiFetch('/api/v1/dashboard/stats')
         if (dashRes.ok) setDashboardStats(await dashRes.json())
       } catch (err) {
         console.error('Error fetching report data:', err)
@@ -102,7 +102,7 @@ export default function ReportsPage() {
         type: reportType.toUpperCase(),
         date: 'Just now',
         author: 'SentroniX Engine',
-        findingsCount: findings.length || stats.total_findings || 4,
+        findingsCount: findings.length || stats.total_findings || 0,
         status: 'Ready',
         format: 'PDF / CSV / JSON'
       }
@@ -112,18 +112,19 @@ export default function ReportsPage() {
   }
 
   const exportCSV = () => {
+    const currentOrigin = typeof window !== 'undefined' ? window.location.origin : 'https://sentronix.internal'
     const items = findings.length > 0 ? findings : [
-      { id: 1, tool: "Semgrep SAST", title: "SQL Injection in dynamic query", severity: "CRITICAL", cwe: "CWE-89", location: "auth.py:34", description: "Direct string formatting in SQL query" },
-      { id: 2, tool: "Nuclei DAST", title: "Outdated Apache Server (CVE-2021-41773)", severity: "CRITICAL", cwe: "CWE-22", location: "http://localhost:8000", description: "Path traversal in Apache 2.4.49" },
+      { id: 1, tool: "Semgrep SAST", title: "SQL Injection in dynamic query", severity: "CRITICAL", cwe: "CWE-89", location: "/api/v1/auth/login", description: "Direct string formatting in SQL query" },
+      { id: 2, tool: "Nuclei DAST", title: "Outdated Server (CVE-2021-41773)", severity: "CRITICAL", cwe: "CWE-22", location: `${currentOrigin}/server-status`, description: "Path traversal in Apache 2.4.49" },
       { id: 3, tool: "Steg Defense", title: "LSB Shellcode Payload in PNG", severity: "HIGH", cwe: "CWE-509", location: "uploads/avatar.png", description: "High entropy payload hidden in pixel planes" }
     ]
 
     const headers = ["ID", "Vulnerability Title", "Severity", "Tool", "CWE", "Location", "Description"]
     const rows = items.map(f => [
       f.id || "",
-      `"${(f.title || '').replace(/"/g, '""')}"`,
+      `"${(f.title || f.vulnerability_title || '').replace(/"/g, '""')}"`,
       f.severity || "HIGH",
-      `"${f.tool || ''}"`,
+      `"${f.tool || f.tool_used || ''}"`,
       f.cwe || f.cwe_id || "CWE-Security",
       `"${f.location || ''}"`,
       `"${(f.description || '').replace(/"/g, '""')}"`
@@ -522,34 +523,36 @@ export default function ReportsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-200 text-[11px]">
-                    <tr className="bg-red-50/50">
-                      <td className="p-2 font-bold text-red-700 border-r border-zinc-200">CRITICAL</td>
-                      <td className="p-2 font-medium border-r border-zinc-200">SQL Injection in dynamic authentication query</td>
-                      <td className="p-2 font-mono border-r border-zinc-200">CWE-89 • A03:2021</td>
-                      <td className="p-2 font-mono border-r border-zinc-200">/api/v1/auth/login</td>
-                      <td className="p-2 font-mono">Semgrep AST</td>
-                    </tr>
-                    <tr className="bg-red-50/50">
-                      <td className="p-2 font-bold text-red-700 border-r border-zinc-200">CRITICAL</td>
-                      <td className="p-2 font-medium border-r border-zinc-200">Outdated Apache HTTP Server (Path Traversal)</td>
-                      <td className="p-2 font-mono border-r border-zinc-200">CWE-22 • CVE-2021-41773</td>
-                      <td className="p-2 font-mono border-r border-zinc-200">http://localhost:8000</td>
-                      <td className="p-2 font-mono">Nuclei DAST</td>
-                    </tr>
-                    <tr className="bg-amber-50/50">
-                      <td className="p-2 font-bold text-amber-700 border-r border-zinc-200">HIGH</td>
-                      <td className="p-2 font-medium border-r border-zinc-200">Steganographic Reverse Shell Payload in PNG</td>
-                      <td className="p-2 font-mono border-r border-zinc-200">CWE-509 • T1027.003</td>
-                      <td className="p-2 font-mono border-r border-zinc-200">uploads/avatar.png</td>
-                      <td className="p-2 font-mono">Steg Analyzer</td>
-                    </tr>
-                    <tr>
-                      <td className="p-2 font-bold text-blue-700 border-r border-zinc-200">MEDIUM</td>
-                      <td className="p-2 font-medium border-r border-zinc-200">Permissive CORS Allow-Origin Wildcard</td>
-                      <td className="p-2 font-mono border-r border-zinc-200">CWE-942</td>
-                      <td className="p-2 font-mono border-r border-zinc-200">app/main.py:16</td>
-                      <td className="p-2 font-mono">Semgrep AST</td>
-                    </tr>
+                    {findings && findings.length > 0 ? (
+                      findings.map((f, idx) => (
+                        <tr key={idx} className={f.severity === 'CRITICAL' ? 'bg-red-50/50' : f.severity === 'HIGH' ? 'bg-amber-50/50' : ''}>
+                          <td className={`p-2 font-bold border-r border-zinc-200 ${
+                            f.severity === 'CRITICAL' ? 'text-red-700' :
+                            f.severity === 'HIGH' ? 'text-amber-700' : 'text-blue-700'
+                          }`}>
+                            {f.severity || 'INFO'}
+                          </td>
+                          <td className="p-2 font-medium border-r border-zinc-200">
+                            {f.title || f.vulnerability_title}
+                          </td>
+                          <td className="p-2 font-mono border-r border-zinc-200">
+                            {f.cwe || f.cwe_id || 'CWE-Security'}
+                          </td>
+                          <td className="p-2 font-mono border-r border-zinc-200">
+                            {f.location}
+                          </td>
+                          <td className="p-2 font-mono">
+                            {f.tool || f.tool_used || 'SentroniX Engine'}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={5} className="p-4 text-center text-zinc-500 font-sans">
+                          No active vulnerabilities detected in this workspace session. Security baseline verified.
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>

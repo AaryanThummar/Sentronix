@@ -150,6 +150,7 @@ The extension popup features a light design system aligned with the main Sentron
 | **NEG-V3-03** | Download Guard | Download Server Timeout | Times out gracefully; notifies user & resumes safely | Caught network error and resumed download with notification | **PASSED** |
 | **NEG-V3-04** | Content Script | Heavy DOM Mutations (10,000+ nodes) | Observer processes only new unscanned links; 60 FPS maintained | Page remained responsive at 60 FPS without memory leaks | **PASSED** |
 | **NEG-V3-05** | Standalone | Port 8000 Conflict | Detects conflict; displays clear error message to user | Displayed port conflict error message cleanly | **PASSED** |
+| **NEG-V3-06** | Multi-Tenancy & Concurrency | Simultaneous Multi-Client Fuzzer Execution | Two concurrent client devices execute live strikes against different target endpoints without session bleed | Telemetry, strike histories, and findings isolated strictly by workspace token; zero cross-session leakage | **PASSED** |
 
 ---
 
@@ -209,6 +210,24 @@ This section documents the major defects encountered during platform development
 - **Symptom:** Running `python post_channel_updates.py` crashed with `UnicodeEncodeError: 'charmap' codec can't encode character '\u2717'`.
 - **Technical Root Cause:** Windows CMD/PowerShell default encoding (`cp1252`) cannot print unicode checkmark symbols (`[✓]` and `[✗]`).
 - **Step-by-Step Resolution:** Replaced unicode symbols with ASCII status tags `[OK]` and `[ERR]`, and added `python-dotenv` loader to automatically load `.env` environment variables.
+
+### 9.6 BUG-V3-05: Multi-User Telemetry Collision & Hardcoded Localhost Report Bleed on Cloud Deployments
+- **Symptom:** When deployed on Render and tested concurrently across two separate devices, Operator A observed live target fuzzer strikes executed by Operator B appearing on Operator A's active dashboard and terminal feed in real-time. Additionally, when Operator B clicked "Generate Report" or viewed the compliance audit modal, the preview displayed a hardcoded `http://localhost:8000` target URL rather than Operator B's live target endpoint.
+- **Technical Root Cause:**
+  1. *Global In-Memory Cache:* In `red_team_engine.py`, strike events were stored in a single flat Python list `STRIKE_HISTORY = []` in server memory without tenant segregation.
+  2. *Un-scoped SQL Queries & Inserts:* Endpoints `/api/v1/red-team/live-scan` and `/strike` inserted findings into PostgreSQL/SQLite using hardcoded `tenant_id="default-tenant"`, and `/api/v1/dashboard/findings` returned all global database records.
+  3. *Client-Side Polling Concurrency:* Active polling intervals (`setInterval` every 10–15s in `DashboardPage` and `NotificationCenter`) continuously pulled Operator B's records onto Operator A's screen.
+  4. *Static Audit Modal HTML Template:* In `ReportsPage.jsx`, lines 525–553 rendered static mock HTML rows authored during local prototyping that hardcoded `http://localhost:8000`, completely ignoring live session findings.
+  5. *Static Target Presets:* In `PurpleTeamArenaPage.jsx`, the Live Target Fuzzer state and quick-presets (`/auth/login`, `/health`, `/docs`) defaulted to `http://localhost:8000`.
+- **Step-by-Step Resolution:**
+  1. Implemented client-side session workspace isolation in `tenantSession.js`: generates and persists a unique `sentronix_workspace_id` (`ws-<uuid>`) in `localStorage` for anonymous visitors, and automatically binds the user's email upon login.
+  2. Created `apiFetch` in `apiConfig.js` to automatically inject `X-Tenant-ID: <workspace_id>` and `Authorization: Bearer <token>` on all outgoing REST requests.
+  3. Refactored `red_team_engine.py` to partition in-memory strike history by workspace ID: `STRIKE_HISTORY_BY_TENANT: Dict[str, List[Dict]]`.
+  4. Updated `/api/v1/dashboard/findings`, `/stats`, `/api/v1/red-team/history`, `/metrics`, and `/api/v1/defense/app/findings` to filter database queries strictly where `UnifiedFinding.tenant_id == x_tenant_id`.
+  5. Converted `ReportsPage.jsx` audit modal table into a dynamic React iterator over live `findings` state, replacing static `http://localhost:8000` rows with real findings and adding an empty-state baseline verifier.
+  6. Added dynamic origin resolution in `PurpleTeamArenaPage.jsx` and `AppDefenseTab.jsx`, defaulting to `window.location.origin` on cloud deployments and automatically adjusting preset quick-buttons.
+  7. Built `AuthModal.jsx` and updated `UserProfileDropdown.jsx` to support full JWT registration/login, workspace switching, and personalized session badges.
+- **Verification & Post-Resolution Behavior:** Concurrent testing across two separate browser sessions confirmed that fuzzer actions triggered in Session 1 remain completely isolated from Session 2, and compliance audit reports render only the active session's scanned endpoints with zero `localhost` leakage.
 
 ---
 

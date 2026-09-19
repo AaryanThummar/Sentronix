@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import { Play, ShieldAlert, Code, Link, Archive, RefreshCw, X, FileText, ChevronRight, Wand2 } from 'lucide-react'
-import { API_BASE_URL } from '../../apiConfig'
+import { apiFetch } from '../../apiConfig'
 
 export default function AppDefenseTab({ onOpenPatch }) {
   const [sastPath, setSastPath] = useState('./backend')
-  const [dastUrl, setDastUrl] = useState('http://localhost:8000')
+  const [dastUrl, setDastUrl] = useState(() => 
+    typeof window !== 'undefined' && window.location.hostname !== 'localhost' 
+      ? window.location.origin 
+      : 'http://localhost:8000'
+  )
   const [dastType, setDastType] = useState('nuclei')
   const [scaPath, setScaPath] = useState('.')
 
@@ -21,9 +25,9 @@ export default function AppDefenseTab({ onOpenPatch }) {
 
   const fetchAppData = async () => {
     try {
-      const statsRes = await fetch(`${API_BASE_URL}/api/v1/defense/app/stats`)
+      const statsRes = await apiFetch('/api/v1/defense/app/stats')
       if (statsRes.ok) setStats(await statsRes.json())
-      const findingsRes = await fetch(`${API_BASE_URL}/api/v1/defense/app/findings`)
+      const findingsRes = await apiFetch('/api/v1/defense/app/findings')
       if (findingsRes.ok) setFindings(await findingsRes.json())
     } catch (e) {
       console.error(e)
@@ -40,7 +44,7 @@ export default function AppDefenseTab({ onOpenPatch }) {
   const startSast = async () => {
     setScanStatus(prev => ({ ...prev, sast: { state: 'Queued', scanId: null, error: null } }))
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/defense/app/sast`, {
+      const res = await apiFetch('/api/v1/defense/app/sast', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ repo_path: sastPath })
@@ -60,7 +64,7 @@ export default function AppDefenseTab({ onOpenPatch }) {
   const startDast = async () => {
     setScanStatus(prev => ({ ...prev, dast: { state: 'Queued', scanId: null, error: null } }))
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/defense/app/dast`, {
+      const res = await apiFetch('/api/v1/defense/app/dast', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ target_url: dastUrl, scan_type: dastType })
@@ -80,7 +84,7 @@ export default function AppDefenseTab({ onOpenPatch }) {
   const startSca = async () => {
     setScanStatus(prev => ({ ...prev, sca: { state: 'Queued', scanId: null, error: null } }))
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/defense/app/sca`, {
+      const res = await apiFetch('/api/v1/defense/app/sca', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ target_path: scaPath })
@@ -104,7 +108,7 @@ export default function AppDefenseTab({ onOpenPatch }) {
     const interval = setInterval(async () => {
       attempts++
       try {
-        const res = await fetch(`${API_BASE_URL}/api/v1/defense/app/results/${scanId}`)
+        const res = await apiFetch(`/api/v1/defense/app/results/${scanId}`)
         if (res.ok) {
           const data = await res.json()
           if (data.findings && data.findings.length > 0) {
