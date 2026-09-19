@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { 
   PieChart, Swords, Bug, Zap, Shield, ShieldCheck, FolderOpen, 
-  Wand2, Eye, Code, Scan, Radar, ArrowRight, Crosshair
+  Wand2, Eye, Code, Scan, Radar, ArrowRight, Crosshair, ChevronLeft, ChevronRight
 } from 'lucide-react'
 import AppDefenseTab from '../components/Dashboard/AppDefenseTab'
 import AIPatchModal from '../components/AIPatchModal'
 import { apiFetch } from '../apiConfig'
+import { useHorizontalScroll } from '../hooks/useHorizontalScroll'
 
 export default function DashboardPage() {
+  const { elRef: tabsRef, canScrollLeft, canScrollRight, isDragging, scroll: scrollTabs } = useHorizontalScroll();
   const [findings, setFindings] = useState([]);
   const [stats, setStats] = useState({
     risk_grade: '—',
@@ -75,21 +77,48 @@ export default function DashboardPage() {
         </div>
 
         {/* Tab Selection */}
-        <div className="flex gap-4 sm:gap-6 border-b border-border-strong mb-6 overflow-x-auto scrollbar-none">
-          <button 
-            type="button"
-            onClick={() => setActiveTab('overview')}
-            className={`pb-2 px-1 font-label-md text-label-md transition-all whitespace-nowrap ${activeTab === 'overview' ? 'text-primary border-b-2 border-primary font-bold' : 'text-text-secondary hover:text-on-surface'}`}
+        <div className="relative w-full mb-6">
+          {canScrollLeft && (
+            <button 
+              type="button"
+              onClick={() => scrollTabs('left')}
+              className="absolute -left-2 sm:-left-3 top-1/2 -translate-y-1/2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-surface border border-border-strong shadow-md text-text-secondary hover:text-primary transition-all hover:scale-110"
+              title="Scroll left"
+            >
+              <ChevronLeft size={16} />
+            </button>
+          )}
+
+          <div 
+            ref={tabsRef}
+            className={`flex gap-4 sm:gap-6 border-b border-border-strong overflow-x-auto scrollbar-none select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
           >
-            Overview
-          </button>
-          <button 
-            type="button"
-            onClick={() => setActiveTab('app_defense')}
-            className={`pb-2 px-1 font-label-md text-label-md transition-all whitespace-nowrap ${activeTab === 'app_defense' ? 'text-primary border-b-2 border-primary font-bold' : 'text-text-secondary hover:text-on-surface'}`}
-          >
-            App & Code Defense
-          </button>
+            <button 
+              type="button"
+              onClick={() => setActiveTab('overview')}
+              className={`pb-2 px-1 font-label-md text-label-md transition-all whitespace-nowrap ${activeTab === 'overview' ? 'text-primary border-b-2 border-primary font-bold' : 'text-text-secondary hover:text-on-surface'}`}
+            >
+              Overview
+            </button>
+            <button 
+              type="button"
+              onClick={() => setActiveTab('app_defense')}
+              className={`pb-2 px-1 font-label-md text-label-md transition-all whitespace-nowrap ${activeTab === 'app_defense' ? 'text-primary border-b-2 border-primary font-bold' : 'text-text-secondary hover:text-on-surface'}`}
+            >
+              App & Code Defense
+            </button>
+          </div>
+
+          {canScrollRight && (
+            <button 
+              type="button"
+              onClick={() => scrollTabs('right')}
+              className="absolute -right-2 sm:-right-3 top-1/2 -translate-y-1/2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-surface border border-border-strong shadow-md text-text-secondary hover:text-primary transition-all hover:scale-110"
+              title="Scroll right"
+            >
+              <ChevronRight size={16} />
+            </button>
+          )}
         </div>
 
         <div className={activeTab === 'overview' ? 'block' : 'hidden'}>

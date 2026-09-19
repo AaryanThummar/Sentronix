@@ -3,10 +3,12 @@ import {
   Settings, Key, Bot, Shield, Check, Save, 
   ExternalLink, Trash2, Sliders, Bell, Database, 
   Eye, EyeOff, CheckCircle2, AlertCircle, RefreshCw, Radio,
-  GitPullRequest
+  GitPullRequest, ChevronLeft, ChevronRight
 } from 'lucide-react'
+import { useHorizontalScroll } from '../hooks/useHorizontalScroll'
 
 export default function SettingsPage() {
+  const { elRef: tabsRef, canScrollLeft, canScrollRight, isDragging, scroll: scrollTabs } = useHorizontalScroll()
   const [activeTab, setActiveTab] = useState('ai_general')
   const [showApiKey, setShowApiKey] = useState(false)
   const [showJiraToken, setShowJiraToken] = useState(false)
@@ -94,35 +96,62 @@ export default function SettingsPage() {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex gap-2 border-b border-border-strong pb-2 overflow-x-auto scrollbar-none w-full">
-          <button
-            onClick={() => setActiveTab('ai_general')}
-            className={`px-4 py-2 rounded-lg font-label-md text-label-md transition-colors flex items-center gap-2 ${activeTab === 'ai_general' ? 'bg-primary-container text-on-primary font-bold' : 'text-text-secondary hover:bg-surface-container-low hover:text-on-surface'}`}
+        <div className="relative w-full">
+          {canScrollLeft && (
+            <button 
+              type="button"
+              onClick={() => scrollTabs('left')}
+              className="absolute -left-2 sm:-left-3 top-1/2 -translate-y-1/2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-surface border border-border-strong shadow-md text-text-secondary hover:text-primary transition-all hover:scale-110"
+              title="Scroll left"
+            >
+              <ChevronLeft size={16} />
+            </button>
+          )}
+
+          <div 
+            ref={tabsRef}
+            className={`flex gap-2 border-b border-border-strong pb-2 overflow-x-auto scrollbar-none w-full select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
           >
-            <Bot size={16} />
-            AI & Correlation Engine
-          </button>
-          <button
-            onClick={() => setActiveTab('jira_integrations')}
-            className={`px-4 py-2 rounded-lg font-label-md text-label-md transition-colors flex items-center gap-2 ${activeTab === 'jira_integrations' ? 'bg-primary-container text-on-primary font-bold' : 'text-text-secondary hover:bg-surface-container-low hover:text-on-surface'}`}
-          >
-            <ExternalLink size={16} />
-            Jira & Webhooks
-          </button>
-          <button
-            onClick={() => setActiveTab('scanners')}
-            className={`px-4 py-2 rounded-lg font-label-md text-label-md transition-colors flex items-center gap-2 ${activeTab === 'scanners' ? 'bg-primary-container text-on-primary font-bold' : 'text-text-secondary hover:bg-surface-container-low hover:text-on-surface'}`}
-          >
-            <Shield size={16} />
-            Scanners & Rulesets
-          </button>
-          <button
-            onClick={() => setActiveTab('database')}
-            className={`px-4 py-2 rounded-lg font-label-md text-label-md transition-colors flex items-center gap-2 ${activeTab === 'database' ? 'bg-primary-container text-on-primary font-bold' : 'text-text-secondary hover:bg-surface-container-low hover:text-on-surface'}`}
-          >
-            <Database size={16} />
-            Telemetry & Retention
-          </button>
+            <button
+              onClick={() => setActiveTab('ai_general')}
+              className={`px-4 py-2 rounded-lg font-label-md text-label-md transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'ai_general' ? 'bg-primary-container text-on-primary font-bold' : 'text-text-secondary hover:bg-surface-container-low hover:text-on-surface'}`}
+            >
+              <Bot size={16} />
+              AI & Correlation Engine
+            </button>
+            <button
+              onClick={() => setActiveTab('jira_integrations')}
+              className={`px-4 py-2 rounded-lg font-label-md text-label-md transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'jira_integrations' ? 'bg-primary-container text-on-primary font-bold' : 'text-text-secondary hover:bg-surface-container-low hover:text-on-surface'}`}
+            >
+              <ExternalLink size={16} />
+              Jira & Webhooks
+            </button>
+            <button
+              onClick={() => setActiveTab('scanners')}
+              className={`px-4 py-2 rounded-lg font-label-md text-label-md transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'scanners' ? 'bg-primary-container text-on-primary font-bold' : 'text-text-secondary hover:bg-surface-container-low hover:text-on-surface'}`}
+            >
+              <Shield size={16} />
+              Scanners & Rulesets
+            </button>
+            <button
+              onClick={() => setActiveTab('database')}
+              className={`px-4 py-2 rounded-lg font-label-md text-label-md transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'database' ? 'bg-primary-container text-on-primary font-bold' : 'text-text-secondary hover:bg-surface-container-low hover:text-on-surface'}`}
+            >
+              <Database size={16} />
+              Telemetry & Retention
+            </button>
+          </div>
+
+          {canScrollRight && (
+            <button 
+              type="button"
+              onClick={() => scrollTabs('right')}
+              className="absolute -right-2 sm:-right-3 top-1/2 -translate-y-1/2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-surface border border-border-strong shadow-md text-text-secondary hover:text-primary transition-all hover:scale-110"
+              title="Scroll right"
+            >
+              <ChevronRight size={16} />
+            </button>
+          )}
         </div>
 
         {/* 1. AI & General Settings */}

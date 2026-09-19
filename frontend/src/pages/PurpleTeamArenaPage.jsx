@@ -2,18 +2,20 @@ import React, { useState, useEffect } from 'react'
 import { 
   Swords, ShieldAlert, Zap, Terminal, Sparkles, AlertCircle, 
   CheckCircle2, Clock, Send, RefreshCw, Layers, ShieldCheck, 
-  ChevronRight, ArrowRight, Crosshair, Code, FileText, Globe, 
+  ChevronRight, ChevronLeft, ArrowRight, Crosshair, Code, FileText, Globe, 
   Database, Search, Play, Check, Shield, Sliders, ToggleLeft, ToggleRight,
   Copy, Eye, Lock, ShieldX, AlertTriangle, X
 } from 'lucide-react'
 import AIPatchModal from '../components/AIPatchModal'
 import { apiFetch } from '../apiConfig'
+import { useHorizontalScroll } from '../hooks/useHorizontalScroll'
 
 export default function PurpleTeamArenaPage() {
   const defaultOrigin = typeof window !== 'undefined' && window.location.hostname !== 'localhost'
     ? window.location.origin 
     : 'http://localhost:8000'
 
+  const { elRef: tabsRef, canScrollLeft, canScrollRight, isDragging, scroll: scrollTabs } = useHorizontalScroll()
   const [activeMode, setActiveMode] = useState('atomic') // 'atomic' | 'caldera' | 'seclists' | 'waf_sandbox'
   
   // Scenarios State
@@ -455,66 +457,93 @@ export default function PurpleTeamArenaPage() {
         </div>
 
         {/* Operation Mode Tabs */}
-        <div className="flex gap-2 sm:gap-4 md:gap-6 border-b border-border-strong overflow-x-auto scrollbar-none w-full pb-1">
-          <button 
-            onClick={() => setActiveMode('atomic')}
-            className={`pb-2.5 px-1 font-label-md text-label-md transition-all flex items-center gap-2 whitespace-nowrap ${
-              activeMode === 'atomic' 
-                ? 'text-primary border-b-2 border-primary font-bold' 
-                : 'text-text-secondary hover:text-on-surface'
-            }`}
-          >
-            <Crosshair size={16} />
-            Atomic Strikes & Payloads
-          </button>
-          
-          <button 
-            onClick={() => setActiveMode('waf_sandbox')}
-            className={`pb-2.5 px-1 font-label-md text-label-md transition-all flex items-center gap-2 whitespace-nowrap ${
-              activeMode === 'waf_sandbox' 
-                ? 'text-primary border-b-2 border-primary font-bold' 
-                : 'text-text-secondary hover:text-on-surface'
-            }`}
-          >
-            <Sliders size={16} />
-            WAF Defense Policy Switchboard
-          </button>
+        <div className="relative w-full">
+          {canScrollLeft && (
+            <button 
+              type="button"
+              onClick={() => scrollTabs('left')}
+              className="absolute -left-2 sm:-left-3 top-1/2 -translate-y-1/2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-surface border border-border-strong shadow-md text-text-secondary hover:text-primary transition-all hover:scale-110"
+              title="Scroll left"
+            >
+              <ChevronLeft size={16} />
+            </button>
+          )}
 
-          <button 
-            onClick={() => setActiveMode('live_fuzzer')}
-            className={`pb-2.5 px-1 font-label-md text-label-md transition-all flex items-center gap-2 whitespace-nowrap ${
-              activeMode === 'live_fuzzer' 
-                ? 'text-primary border-b-2 border-primary font-bold' 
-                : 'text-text-secondary hover:text-on-surface'
-            }`}
+          <div 
+            ref={tabsRef}
+            className={`flex gap-2 sm:gap-4 md:gap-6 border-b border-border-strong overflow-x-auto scrollbar-none w-full pb-1 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
           >
-            <Globe size={16} />
-            Live Target Fuzzer
-          </button>
+            <button 
+              onClick={() => setActiveMode('atomic')}
+              className={`pb-2.5 px-1 font-label-md text-label-md transition-all flex items-center gap-2 whitespace-nowrap ${
+                activeMode === 'atomic' 
+                  ? 'text-primary border-b-2 border-primary font-bold' 
+                  : 'text-text-secondary hover:text-on-surface'
+              }`}
+            >
+              <Crosshair size={16} />
+              Atomic Strikes & Payloads
+            </button>
+            
+            <button 
+              onClick={() => setActiveMode('waf_sandbox')}
+              className={`pb-2.5 px-1 font-label-md text-label-md transition-all flex items-center gap-2 whitespace-nowrap ${
+                activeMode === 'waf_sandbox' 
+                  ? 'text-primary border-b-2 border-primary font-bold' 
+                  : 'text-text-secondary hover:text-on-surface'
+              }`}
+            >
+              <Sliders size={16} />
+              WAF Defense Policy Switchboard
+            </button>
 
-          <button 
-            onClick={() => setActiveMode('caldera')}
-            className={`pb-2.5 px-1 font-label-md text-label-md transition-all flex items-center gap-2 whitespace-nowrap ${
-              activeMode === 'caldera' 
-                ? 'text-primary border-b-2 border-primary font-bold' 
-                : 'text-text-secondary hover:text-on-surface'
-            }`}
-          >
-            <Swords size={16} />
-            Adversary Campaigns (MITRE Caldera)
-          </button>
+            <button 
+              onClick={() => setActiveMode('live_fuzzer')}
+              className={`pb-2.5 px-1 font-label-md text-label-md transition-all flex items-center gap-2 whitespace-nowrap ${
+                activeMode === 'live_fuzzer' 
+                  ? 'text-primary border-b-2 border-primary font-bold' 
+                  : 'text-text-secondary hover:text-on-surface'
+              }`}
+            >
+              <Globe size={16} />
+              Live Target Fuzzer
+            </button>
 
-          <button 
-            onClick={() => setActiveMode('seclists')}
-            className={`pb-2.5 px-1 font-label-md text-label-md transition-all flex items-center gap-2 whitespace-nowrap ${
-              activeMode === 'seclists' 
-                ? 'text-primary border-b-2 border-primary font-bold' 
-                : 'text-text-secondary hover:text-on-surface'
-            }`}
-          >
-            <Database size={16} />
-            Sensitive Path Fuzzer (SecLists)
-          </button>
+            <button 
+              onClick={() => setActiveMode('caldera')}
+              className={`pb-2.5 px-1 font-label-md text-label-md transition-all flex items-center gap-2 whitespace-nowrap ${
+                activeMode === 'caldera' 
+                  ? 'text-primary border-b-2 border-primary font-bold' 
+                  : 'text-text-secondary hover:text-on-surface'
+              }`}
+            >
+              <Swords size={16} />
+              Adversary Campaigns (MITRE Caldera)
+            </button>
+
+            <button 
+              onClick={() => setActiveMode('seclists')}
+              className={`pb-2.5 px-1 font-label-md text-label-md transition-all flex items-center gap-2 whitespace-nowrap ${
+                activeMode === 'seclists' 
+                  ? 'text-primary border-b-2 border-primary font-bold' 
+                  : 'text-text-secondary hover:text-on-surface'
+              }`}
+            >
+              <Database size={16} />
+              Sensitive Path Fuzzer (SecLists)
+            </button>
+          </div>
+
+          {canScrollRight && (
+            <button 
+              type="button"
+              onClick={() => scrollTabs('right')}
+              className="absolute -right-2 sm:-right-3 top-1/2 -translate-y-1/2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-surface border border-border-strong shadow-md text-text-secondary hover:text-primary transition-all hover:scale-110"
+              title="Scroll right"
+            >
+              <ChevronRight size={16} />
+            </button>
+          )}
         </div>
 
         {/* ================= MODE 1: ATOMIC STRIKES ================= */}
