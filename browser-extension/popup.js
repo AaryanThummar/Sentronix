@@ -1,6 +1,15 @@
 // SentroniX Active Defense V3 - Popup Logic
 
-const BACKEND_URL = "http://localhost:8000";
+const DEFAULT_BACKEND = "http://localhost:8000";
+const CLOUD_BACKEND = "https://sentronix.onrender.com";
+
+async function getActiveBackendUrl() {
+  try {
+    const res = await fetch(`${DEFAULT_BACKEND}/`, { signal: AbortSignal.timeout(1200) });
+    if (res.ok) return DEFAULT_BACKEND;
+  } catch (e) {}
+  return CLOUD_BACKEND;
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   const urlInput = document.getElementById("urlInput");
@@ -31,7 +40,8 @@ document.addEventListener("DOMContentLoaded", () => {
     scanResult.style.display = "none";
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/v1/defense/check-url`, {
+      const backend = await getActiveBackendUrl();
+      const res = await fetch(`${backend}/api/v1/defense/check-url`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: url })

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SentroniX Active Defense V3 - Live Download Shield Test Workbench</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 40px 20px;
+      display: flex;
+      justify-content: center;
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 16px;
+      padding: 32px;
+      max-width: 580px;
+      width: 100%;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+      border: 1px solid #334155;
+    }
+    .badge {
+      display: inline-block;
+      background: #4338ca;
+      color: #c7d2fe;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+    h2 {
+      margin: 0 0 10px 0;
+      color: #ffffff;
+      font-size: 22px;
+    }
+    p {
+      color: #94a3b8;
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+    .test-box {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .test-box h3 {
+      margin: 0 0 6px 0;
+      font-size: 15px;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .test-box p {
+      font-size: 12px;
+      color: #64748b;
+      margin: 0 0 12px 0;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s ease;
+    }
+    .btn-threat {
+      background: #ef4444;
+      color: #ffffff;
+    }
+    .btn-threat:hover {
+      background: #dc2626;
+    }
+    .btn-clean {
+      background: #10b981;
+      color: #ffffff;
+    }
+    .btn-clean:hover {
+      background: #059669;
+    }
+    .btn-script {
+      background: #f59e0b;
+      color: #ffffff;
+    }
+    .btn-script:hover {
+      background: #d97706;
+    }
+    .instructions {
+      margin-top: 24px;
+      padding: 14px;
+      background: #1e1b4b;
+      border: 1px solid #4338ca;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #c7d2fe;
+    }
+    .instructions strong {
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <span class="badge">Active Defense Demonstration</span>
+    <h2>🛡️ Download Shield & Steganography Interceptor Test</h2>
+    <p>
+      Click any button below to initiate a file download. SentroniX Active Defense V3 intercepts the download in real-time, displays the <strong>"Scan File / Download As-Is"</strong> notification on your screen, and scans for hidden reverse shells or steganographic payloads before writing to disk.
+    </p>
+
+    <!-- Test 1: Malicious Steg Carrier -->
+    <div class="test-box">
+      <h3>🚨 Steganography Payload Carrier (Shannon Entropy: 7.989)</h3>
+      <p>Image containing embedded C2 reverse shell payload in LSB bitplanes.</p>
+      <a class="btn btn-threat" href="test_samples/steg_sample_MALICIOUS_PAYLOAD.png" download="steg_sample_MALICIOUS_PAYLOAD.png">
+        ⬇️ Download Malicious Steganography Image
+      </a>
+    </div>
+
+    <!-- Test 2: Malicious Reverse Shell Script -->
+    <div class="test-box">
+      <h3>⚠️ Reverse Shell Script (Netcat /dev/tcp syntax)</h3>
+      <p>Python script with active command injection and socket web shell hooks.</p>
+      <a class="btn btn-script" href="test_samples/test_reverse_shell_malware.py" download="test_reverse_shell_malware.py">
+        ⬇️ Download Reverse Shell Script
+      </a>
+    </div>
+
+    <!-- Test 3: Clean Reference Image -->
+    <div class="test-box">
+      <h3>✓ Clean Baseline Image (Entropy: 7.12)</h3>
+      <p>Standard benign PNG image without hidden data or anomalous LSB pairings.</p>
+      <a class="btn btn-clean" href="test_samples/steg_sample_CLEAN.png" download="steg_sample_CLEAN.png">
+        ⬇️ Download Clean Image
+      </a>
+    </div>
+
+    <div class="instructions">
+      <strong>💡 How to Verify:</strong>
+      <ol style="margin: 6px 0 0 16px; padding: 0;">
+        <li>Make sure the <strong>SentroniX Active Defense V3</strong> extension is reloaded in <code>chrome://extensions</code>.</li>
+        <li>Click any download button above.</li>
+        <li>Notice the <strong>SentroniX Download Defense</strong> toast and desktop notification appear immediately on screen with <strong>[🛡️ Scan File]</strong> and <strong>[⬇️ Download As-Is]</strong>!</li>
+        <li>Click <strong>[Scan File]</strong> to inspect and quarantine the threat.</li>
+      </ol>
+    </div>
+  </div>
+</body>
+</html>
