@@ -11,18 +11,22 @@ const USER_PROFILE_KEY = 'sentronix_user_profile'
 export function getWorkspaceId() {
   if (typeof window === 'undefined') return 'default-tenant'
   
-  // If user is logged in, use their email or account ID as workspace
-  const user = getUserProfile()
-  if (user && user.email) {
-    return `user-${user.email.replace(/[^a-zA-Z0-9]/g, '_')}`
+  // 1. Check if an active workspace ID is already stored in session
+  let wsId = localStorage.getItem(WORKSPACE_KEY)
+  if (wsId && wsId.trim()) {
+    return wsId.trim()
   }
 
-  let wsId = localStorage.getItem(WORKSPACE_KEY)
-  if (!wsId) {
-    const randomHex = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 6)
+  // 2. If none exists, generate a unique sandbox ID for this operator
+  const randomHex = Math.random().toString(36).substring(2, 8)
+  const user = getUserProfile()
+  if (user && user.email) {
+    const prefix = user.email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '')
+    wsId = `ws-${prefix}-${randomHex}`
+  } else {
     wsId = `ws-${randomHex}`
-    localStorage.setItem(WORKSPACE_KEY, wsId)
   }
+  localStorage.setItem(WORKSPACE_KEY, wsId)
   return wsId
 }
 
@@ -31,8 +35,11 @@ export function getWorkspaceId() {
  */
 export function resetWorkspaceId() {
   if (typeof window === 'undefined') return 'default-tenant'
-  const randomHex = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 6)
-  const newWsId = `ws-${randomHex}`
+  const randomHex = Math.random().toString(36).substring(2, 8)
+  const user = getUserProfile()
+  const newWsId = user && user.email 
+    ? `ws-${user.email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '')}-${randomHex}`
+    : `ws-${randomHex}`
   localStorage.setItem(WORKSPACE_KEY, newWsId)
   return newWsId
 }

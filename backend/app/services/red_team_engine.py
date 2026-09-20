@@ -326,7 +326,9 @@ class RedTeamEngine:
     def get_strike_history(tenant_id: str = "default-tenant") -> List[Dict[str, Any]]:
         if tenant_id in STRIKE_HISTORY_BY_TENANT:
             return STRIKE_HISTORY_BY_TENANT[tenant_id]
-        return STRIKE_HISTORY
+        if tenant_id == "default-tenant":
+            return STRIKE_HISTORY
+        return []
 
     @staticmethod
     def execute_strike(
