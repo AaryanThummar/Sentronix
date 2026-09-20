@@ -57,6 +57,9 @@ Thumbs.db
 # Docker Artifacts
 .docker/
 
+# Academic Chapter Documents (Never upload to Git)
+Chapter_*.docx
+
 # Personal Presentation & Testing Guides (Never upload to Git)
 *ZOOM_PRESENTATION_AND_RECORDING_GUIDE*
 *PURPLE_TEAM_ARENA_TESTING_GUIDE*
