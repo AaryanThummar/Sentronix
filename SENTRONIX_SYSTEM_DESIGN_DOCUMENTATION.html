@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SentroniX — System Design Documentation (SDD)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0c0e14;
+      --card-bg: #151821;
+      --card-border: #252a38;
+      --primary: #6366f1;
+      --primary-light: #818cf8;
+      --primary-glow: rgba(99, 102, 241, 0.15);
+      --accent: #38bdf8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dark: #64748b;
+      --code-bg: #090b10;
+      --sidebar-width: 280px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.65;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar Navigation */
+    aside {
+      width: var(--sidebar-width);
+      background: var(--card-bg);
+      border-right: 1px solid var(--card-border);
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      overflow-y: auto;
+      padding: 28px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      z-index: 100;
+    }
+
+    aside .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    aside .brand-icon {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    aside .brand h2 {
+      font-family: 'Hanken Grotesk', sans-serif;
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+
+    aside .brand span {
+      display: block;
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--primary-light);
+    }
+
+    aside nav ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    aside nav a {
+      display: block;
+      padding: 8px 12px;
+      border-radius: 6px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    aside nav a:hover {
+      background: var(--primary-glow);
+      color: #fff;
+      transform: translateX(3px);
+    }
+
+    aside .meta-card {
+      margin-top: auto;
+      padding: 14px;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      font-size: 11px;
+      color: var(--text-dark);
+    }
+
+    aside .meta-card strong {
+      color: var(--text-muted);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    /* Main Content Area */
+    main {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      padding: 48px 60px 80px;
+      max-width: 1200px;
+    }
+
+    header.doc-header {
+      margin-bottom: 40px;
+      padding-bottom: 30px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .badge-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .badge.primary { background: rgba(99, 102, 241, 0.2); color: var(--primary-light); border: 1px solid rgba(99, 102, 241, 0.4); }
+    .badge.success { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.4); }
+    .badge.accent  { background: rgba(56, 189, 248, 0.2); color: var(--accent); border: 1px solid rgba(56, 189, 248, 0.4); }
+
+    h1 {
+      font-family: 'Hanken Grotesk', sans-serif;
+      font-size: 36px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.02em;
+      margin-bottom: 10px;
+      line-height: 1.2;
+    }
+
+    .doc-subtitle {
+      font-size: 17px;
+      color: var(--text-muted);
+      max-width: 800px;
+      margin-bottom: 24px;
+    }
+
+    .metadata-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-top: 20px;
+    }
+
+    .meta-item span.label {
+      display: block;
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-dark);
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    .meta-item span.value {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .meta-item a {
+      color: var(--primary-light);
+      text-decoration: none;
+    }
+
+    .meta-item a:hover {
+      text-decoration: underline;
+    }
+
+    /* Content Typography & Sections */
+    section {
+      margin-bottom: 56px;
+      scroll-margin-top: 30px;
+    }
+
+    h2 {
+      font-family: 'Hanken Grotesk', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    h2 .section-num {
+      color: var(--primary-light);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 18px;
+    }
+
+    h3 {
+      font-family: 'Hanken Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--primary-light);
+      margin: 28px 0 12px;
+    }
+
+    p {
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      font-size: 14.5px;
+    }
+
+    ul, ol {
+      margin: 0 0 16px 24px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    li {
+      margin-bottom: 6px;
+    }
+
+    /* Cards & Containers */
+    .bento-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 24px;
+      margin: 20px 0;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .bento-card.highlight {
+      border-color: rgba(99, 102, 241, 0.4);
+      background: linear-gradient(180deg, rgba(99, 102, 241, 0.05), var(--card-bg));
+    }
+
+    /* Figure & Image Styling */
+    .figure-container {
+      background: #000;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 24px 0 14px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .figure-container:hover {
+      border-color: var(--primary);
+    }
+
+    .figure-container img {
+      width: 100%;
+      height: auto;
+      display: block;
+      cursor: zoom-in;
+    }
+
+    .figure-caption {
+      padding: 12px 18px;
+      background: var(--card-bg);
+      border-top: 1px solid var(--card-border);
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .figure-caption strong {
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 16px 0 24px;
+      background: var(--card-bg);
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--card-border);
+    }
+
+    th {
+      background: rgba(0, 0, 0, 0.4);
+      color: var(--text-main);
+      text-align: left;
+      padding: 12px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+      color: #fff;
+    }
+
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--code-bg);
+      color: var(--accent);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #cbd5e1;
+      line-height: 1.5;
+      margin: 14px 0;
+    }
+
+    /* Script Callout */
+    .script-box {
+      background: rgba(99, 102, 241, 0.08);
+      border-left: 4px solid var(--primary);
+      padding: 18px 22px;
+      border-radius: 0 8px 8px 0;
+      margin: 18px 0;
+      font-style: italic;
+      color: #cbd5e1;
+      font-size: 14px;
+    }
+
+    .script-box strong {
+      display: block;
+      font-style: normal;
+      font-size: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase;
+      color: var(--primary-light);
+      margin-bottom: 6px;
+    }
+
+    /* Print / Zoom Action Bar */
+    .action-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-light);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border-color: var(--card-border);
+      color: var(--text-muted);
+    }
+
+    .btn-outline:hover {
+      background: var(--card-bg);
+      color: #fff;
+    }
+
+    @media print {
+      aside, .action-bar { display: none; }
+      main { margin-left: 0; padding: 20px; }
+      body { background: #fff; color: #000; }
+      .bento-card { border: 1px solid #ccc; background: #fafafa; }
+      pre, code { background: #f0f0f0; color: #000; border-color: #ddd; }
+      h1, h2, h3 { color: #000; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar Navigation -->
+  <aside>
+    <div class="brand">
+      <div class="brand-icon">⚡</div>
+      <div>
+        <h2>SentroniX</h2>
+        <span>SDD Specification v1.0</span>
+      </div>
+    </div>
+
+    <nav>
+      <ul>
+        <li><a href="#section-1">1. Executive Summary</a></li>
+        <li><a href="#section-2">2. System Architecture</a></li>
+        <li><a href="#section-3">3. The 4 Defensive Pillars</a></li>
+        <li><a href="#fig-4-1">Fig 4.1: Database ERD</a></li>
+        <li><a href="#fig-4-2">Fig 4.2: Use Case Diagram</a></li>
+        <li><a href="#fig-4-3">Fig 4.3: Strike Sequence</a></li>
+        <li><a href="#fig-4-4">Fig 4.4: AI Patch Sequence</a></li>
+        <li><a href="#fig-4-5">Fig 4.5: DevSecOps Activity</a></li>
+        <li><a href="#fig-4-6">Fig 4.6: Algorithm Flowchart</a></li>
+        <li><a href="#section-5">5. Data Dictionary</a></li>
+        <li><a href="#section-6">6. REST API Design</a></li>
+        <li><a href="#section-7">7. Security Architecture</a></li>
+        <li><a href="#section-8">8. Cloud CI/CD Deployment</a></li>
+        <li><a href="#section-9">9. Zoom Presentation Script</a></li>
+      </ul>
+    </nav>
+
+    <div class="meta-card">
+      <strong>Final Year Project (SPM)</strong>
+      Project Lead: Keval Doshi<br>
+      Co-Lead: Aaryan Thummar<br>
+      Academic Submission: 2026
+    </div>
+  </aside>
+
+  <!-- Main Document Body -->
+  <main>
+
+    <div class="action-bar">
+      <button class="btn btn-primary" onclick="window.print()">🖨️ Print / Save as PDF</button>
+      <a href="https://sentronix.onrender.com" target="_blank" class="btn btn-outline">🌐 Open Live App</a>
+      <a href="https://github.com/Kevaldoshi123/Sentronix" target="_blank" class="btn btn-outline">📂 GitHub Repository</a>
+    </div>
+
+    <header class="doc-header">
+      <div class="badge-bar">
+        <span class="badge primary">IEEE / ISO Compliant SDD</span>
+        <span class="badge success">Live Production Ready</span>
+        <span class="badge accent">Multi-Tenant Cloud Native</span>
+      </div>
+      <h1>SentroniX: System Design Documentation</h1>
+      <p class="doc-subtitle">
+        High-Level & Low-Level Architectural Design Specification for an Autonomous Purple Team Cybersecurity & AI-Driven Threat Management Platform.
+      </p>
+
+      <div class="metadata-grid">
+        <div class="meta-item">
+          <span class="label">Project Title</span>
+          <span class="value">SentroniX Platform</span>
+        </div>
+        <div class="meta-item">
+          <span class="label">Course / Degree</span>
+          <span class="value">Software Project Management (B.Sc. IT)</span>
+        </div>
+        <div class="meta-item">
+          <span class="label">Authors</span>
+          <span class="value">Keval Doshi & Aaryan Thummar</span>
+        </div>
+        <div class="meta-item">
+          <span class="label">Live Deployment</span>
+          <span class="value"><a href="https://sentronix.onrender.com" target="_blank">sentronix.onrender.com</a></span>
+        </div>
+      </div>
+    </header>
+
+    <!-- SECTION 1 -->
+    <section id="section-1">
+      <h2><span class="section-num">1.0</span> Executive Summary & Architectural Goals</h2>
+      <p>
+        Modern enterprise cybersecurity operations suffer from three major bottlenecks: the traditional <strong>Offensive vs. Defensive Silo</strong>, chronic <strong>Alert Fatigue without Actionable Code Patches</strong>, and the rise of <strong>Covert Multimedia Payloads</strong> (e.g., LSB steganography in images).
+      </p>
+      <div class="bento-card highlight">
+        <h3 style="margin-top:0">Architectural Mission Statement</h3>
+        <p>
+          <strong>SentroniX</strong> bridges the gap between penetration testing and defensive engineering by uniting <strong>Red Team adversary emulation (MITRE ATT&CK)</strong>, <strong>Blue Team real-time WAF packet interception</strong>, and <strong>Google Gemini AI automated patch synthesis</strong> into a single automated, continuous cloud ecosystem.
+        </p>
+      </div>
+    </section>
+
+    <!-- SECTION 2 -->
+    <section id="section-2">
+      <h2><span class="section-num">2.0</span> High-Level System Architecture (Tiered Model)</h2>
+      <p>
+        SentroniX is engineered as a decoupled, 4-tier micro-service inspired modular monolith:
+      </p>
+      <pre>
+┌────────────────────────────────────────────────────────────────────────┐
+│                      1. CLIENT PRESENTATION TIER                       │
+│  • Single Page Application (React 18, Vite 8, Tailwind CSS v4)         │
+│  • Real-time Purple Team Terminal & Telemetry Packet Inspector         │
+│  • Role-Based Access Control UI & Interactive Jira/GitHub Patch Modal  │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ HTTPS / RESTful JSON / WSS
+┌───────────────────────────────────▼────────────────────────────────────┐
+│                    2. API GATEWAY & APPLICATION TIER                   │
+│  • High-Performance Asynchronous FastAPI (Python 3.11)                 │
+│  • JWT Authentication & Tenant Session Middleware                      │
+│  • Rate Limiting, CORS Policy Enforcement, Input Validation (Pydantic) │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+         ┌──────────────────────────┼──────────────────────────┐
+         │                          │                          │
+┌────────▼──────────────┐ ┌─────────▼──────────────┐ ┌─────────▼──────────────┐
+│ 3A. OFFENSIVE ENGINE  │ │ 3B. DEFENSIVE ENGINE   │ │ 3C. AI REMEDIATION     │
+│ • Atomic Strikes      │ │ • AST Grammar Guard    │ │ • Gemini 1.5 Flash/Pro │
+│ • MITRE Caldera APT   │ │ • Dynamic WAF Matrix   │ │ • Unified Diff Engine  │
+│ • SecLists Discovery  │ │ • Shannon Entropy Steg │ │ • Jira REST API Bridge │
+│ • Target Live Fuzzer  │ │ • Rate & CIDR Filter   │ │ • GitHub CI/CD PR Sync │
+└───────────────────────┘ └────────────────────────┘ └────────────────────────┘
+                                    │
+┌───────────────────────────────────▼────────────────────────────────────┐
+│                  4. PERSISTENCE & INFRASTRUCTURE TIER                  │
+│  • Relational Storage: PostgreSQL / SQLite with SQLAlchemy ORM         │
+│  • Deployment: Multi-Stage Docker Container on Render Cloud PaaS       │
+│  • External Integrations: Atlassian Jira Cloud, Discord SecOps Bot     │
+└────────────────────────────────────────────────────────────────────────┘
+      </pre>
+    </section>
+
+    <!-- SECTION 3 -->
+    <section id="section-3">
+      <h2><span class="section-num">3.0</span> The Four Defensive Pillars & AI Engine</h2>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div class="bento-card">
+          <h3 style="margin-top:0">🛡️ Pillar 1: App & Code-Level Defense</h3>
+          <ul>
+            <li><strong>SAST:</strong> Abstract Syntax Tree analysis for OWASP Top 10 flaws.</li>
+            <li><strong>DAST:</strong> Automated dynamic HTTP fuzzing on live target endpoints.</li>
+            <li><strong>SCA:</strong> Vulnerable dependency scanning against the NVD database.</li>
+          </ul>
+        </div>
+        <div class="bento-card">
+          <h3 style="margin-top:0">🖼️ Pillar 2: File & Stego Defense</h3>
+          <ul>
+            <li><strong>LSB Bitplane Analysis:</strong> Probes low-order image bits for malware shells.</li>
+            <li><strong>Shannon Entropy:</strong> Threshold calculation (H &ge; 7.95 = Malicious).</li>
+            <li><strong>Chi-Square Testing:</strong> Mathematical anomaly detection in RGB channels.</li>
+          </ul>
+        </div>
+        <div class="bento-card">
+          <h3 style="margin-top:0">🔑 Pillar 3: Identity & IAM Security</h3>
+          <ul>
+            <li><strong>Stateless JWT:</strong> Strict RS256/HS256 signature verification.</li>
+            <li><strong>IDOR Guard:</strong> Tenant context verification across all user parameter queries.</li>
+            <li><strong>Dual Hashing:</strong> PBKDF2-HMAC-SHA256 with 200,000 iterations + bcrypt.</li>
+          </ul>
+        </div>
+        <div class="bento-card">
+          <h3 style="margin-top:0">⚔️ Pillar 4: Autonomous Purple Team</h3>
+          <ul>
+            <li><strong>Atomic Strikes:</strong> Individual MITRE ATT&CK techniques with live telemetry.</li>
+            <li><strong>MITRE Caldera:</strong> Automated 3-stage APT breach emulation campaigns.</li>
+            <li><strong>WAF Switchboard:</strong> Real-time toggle matrix for live defense bypass tests.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: FORMAL DIAGRAMS -->
+    <section id="section-4">
+      <h2><span class="section-num">4.0</span> Formal Architectural UML Diagrams</h2>
+      <p>
+        The following 6 formal architectural models define the structural and behavioral design of SentroniX:
+      </p>
+
+      <!-- Fig 4.1 -->
+      <div id="fig-4-1" style="margin-top: 30px;">
+        <h3>Figure 4.1: Database Schema & Entity-Relationship Diagram (ERD)</h3>
+        <p>
+          Specifies the 3rd Normal Form (3NF) relational schema ensuring strict multi-tenant data isolation across users, scans, vulnerability findings, AI remediations, and WAF rules.
+        </p>
+        <div class="figure-container">
+          <img src="diagrams_sentronix_custom/fig_4_1_erd.png" alt="Figure 4.1: Entity-Relationship Diagram">
+          <div class="figure-caption">
+            <span><strong>Figure 4.1:</strong> Relational Database Entity-Relationship Diagram (ERD)</span>
+            <span>Third Normal Form (3NF)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fig 4.2 -->
+      <div id="fig-4-2" style="margin-top: 40px;">
+        <h3>Figure 4.2: System Use Case Diagram</h3>
+        <p>
+          Illustrates functional boundaries and actor interactions between SecOps Analysts, DevSecOps Engineers, Red Team Operators, and System Administrators.
+        </p>
+        <div class="figure-container">
+          <img src="diagrams_sentronix_custom/fig_4_2_use_case.png" alt="Figure 4.2: Use Case Diagram">
+          <div class="figure-caption">
+            <span><strong>Figure 4.2:</strong> System Use Case & Actor Boundary Model</span>
+            <span>UML 2.5 Specification</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fig 4.3 -->
+      <div id="fig-4-3" style="margin-top: 40px;">
+        <h3>Figure 4.3: Sequence Diagram: Multi-Stage Attack Simulation & WAF Defense</h3>
+        <p>
+          Traces the synchronous call flow during an adversarial strike: payload transmission, Layer-7 WAF policy inspection, defense interception, and terminal packet streaming.
+        </p>
+        <div class="figure-container">
+          <img src="diagrams_sentronix_custom/fig_4_3_sequence_strike.png" alt="Figure 4.3: Sequence Diagram Strike Defense">
+          <div class="figure-caption">
+            <span><strong>Figure 4.3:</strong> Sequence Diagram — Adversary Strike & WAF Interception</span>
+            <span>Synchronous Flow</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fig 4.4 -->
+      <div id="fig-4-4" style="margin-top: 40px;">
+        <h3>Figure 4.4: Sequence Diagram: AI Vulnerability Triage & Automated Patch Synthesis</h3>
+        <p>
+          Depicts the automated triage pipeline: finding extraction, zero-shot Google Gemini 1.5 prompt synthesis, Unified Git Diff formatting, and 1-click Jira / GitHub PR synchronization.
+        </p>
+        <div class="figure-container">
+          <img src="diagrams_sentronix_custom/fig_4_4_sequence_ai_patch.png" alt="Figure 4.4: Sequence Diagram AI Remediation">
+          <div class="figure-caption">
+            <span><strong>Figure 4.4:</strong> Sequence Diagram — Gemini AI Remediation & DevSecOps Bridge</span>
+            <span>Asynchronous Lifecycle</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fig 4.5 -->
+      <div id="fig-4-5" style="margin-top: 40px;">
+        <h3>Figure 4.5: Activity Diagram: End-to-End DevSecOps Security Lifecycle</h3>
+        <p>
+          Models the workflow state machine: concurrent SAST/DAST/Steg scanning, automated triage gateways, composite score calculations, and incident escalation.
+        </p>
+        <div class="figure-container">
+          <img src="diagrams_sentronix_custom/fig_4_5_activity.png" alt="Figure 4.5: Activity Diagram">
+          <div class="figure-caption">
+            <span><strong>Figure 4.5:</strong> Activity Diagram — Continuous Security Lifecycle Workflow</span>
+            <span>Control Flow State Machine</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fig 4.6 -->
+      <div id="fig-4-6" style="margin-top: 40px;">
+        <h3>Figure 4.6: Algorithm Flowchart: Shannon Entropy & Multi-Layer Threat Scoring</h3>
+        <p>
+          Details the mathematical decision tree powering the steganography analyzer and the composite executive security posture score formula.
+        </p>
+        <div class="figure-container">
+          <img src="diagrams_sentronix_custom/fig_4_6_algorithm.png" alt="Figure 4.6: Algorithm Flowchart">
+          <div class="figure-caption">
+            <span><strong>Figure 4.6:</strong> Algorithm Flowchart — Shannon Entropy Math & Scoring Logic</span>
+            <span>Mathematical Decision Model</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: DATA DICTIONARY -->
+    <section id="section-5">
+      <h2><span class="section-num">5.0</span> Data Design & Comprehensive Data Dictionary</h2>
+      <p>
+        Managed via SQLAlchemy 2.0 ORM with PostgreSQL on Render Cloud:
+      </p>
+
+      <h3>Table: `users`</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Column</th>
+            <th>Type</th>
+            <th>Constraints</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>id</code></td><td>INTEGER</td><td>PRIMARY KEY, AUTOINCREMENT</td><td>Unique user identifier</td></tr>
+          <tr><td><code>email</code></td><td>VARCHAR(255)</td><td>UNIQUE, NOT NULL, INDEXED</td><td>User account login email</td></tr>
+          <tr><td><code>hashed_password</code></td><td>VARCHAR(512)</td><td>NOT NULL</td><td>Salted PBKDF2 / bcrypt cryptographic hash</td></tr>
+          <tr><td><code>tenant_id</code></td><td>VARCHAR(128)</td><td>NOT NULL, INDEXED</td><td>Workspace multi-tenant partition key</td></tr>
+          <tr><td><code>role</code></td><td>VARCHAR(32)</td><td>DEFAULT 'ANALYST'</td><td>RBAC role (ADMIN, ANALYST, AUDITOR)</td></tr>
+          <tr><td><code>created_at</code></td><td>TIMESTAMP</td><td>DEFAULT CURRENT_TIMESTAMP</td><td>Account registration timestamp</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Table: `findings`</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Column</th>
+            <th>Type</th>
+            <th>Constraints</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>id</code></td><td>INTEGER</td><td>PRIMARY KEY, AUTOINCREMENT</td><td>Unique finding record ID</td></tr>
+          <tr><td><code>tenant_id</code></td><td>VARCHAR(128)</td><td>NOT NULL, INDEXED</td><td>Multi-tenant workspace isolation scope</td></tr>
+          <tr><td><code>title</code></td><td>VARCHAR(255)</td><td>NOT NULL</td><td>Vulnerability summary description</td></tr>
+          <tr><td><code>severity</code></td><td>VARCHAR(16)</td><td>NOT NULL</td><td>CRITICAL, HIGH, MEDIUM, LOW, INFO</td></tr>
+          <tr><td><code>cwe</code></td><td>VARCHAR(32)</td><td>NULLABLE</td><td>Common Weakness Enumeration (e.g. CWE-89)</td></tr>
+          <tr><td><code>mitre_id</code></td><td>VARCHAR(32)</td><td>NULLABLE</td><td>MITRE ATT&CK technique (e.g. T1190)</td></tr>
+          <tr><td><code>file_location</code></td><td>VARCHAR(512)</td><td>NOT NULL</td><td>Source file path & line number</td></tr>
+          <tr><td><code>status</code></td><td>VARCHAR(32)</td><td>DEFAULT 'OPEN'</td><td>OPEN, TRIAGED, REMEDIATED</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- SECTION 6: API INTERFACE -->
+    <section id="section-6">
+      <h2><span class="section-num">6.0</span> RESTful API Interface Specification</h2>
+      <div class="bento-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Endpoint</th>
+              <th>Auth</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><code>POST</code></td><td><code>/api/v1/auth/register</code></td><td>None</td><td>Registers user & creates isolated tenant workspace</td></tr>
+            <tr><td><code>POST</code></td><td><code>/api/v1/auth/login</code></td><td>None</td><td>Authenticates credentials; issues stateless JWT</td></tr>
+            <tr><td><code>POST</code></td><td><code>/api/v1/red-team/atomic-strike</code></td><td>Bearer</td><td>Fires MITRE technique; captures WAF response</td></tr>
+            <tr><td><code>POST</code></td><td><code>/api/v1/red-team/campaigns/run</code></td><td>Bearer</td><td>Executes 3-phase autonomous Caldera APT simulation</td></tr>
+            <tr><td><code>POST</code></td><td><code>/api/v1/red-team/fuzzing/run</code></td><td>Bearer</td><td>Probes perimeter using SecLists sensitive paths</td></tr>
+            <tr><td><code>POST</code></td><td><code>/api/v1/ai/remediate</code></td><td>Bearer</td><td>Generates Unified Git Diff fix using Gemini LLM</td></tr>
+            <tr><td><code>POST</code></td><td><code>/api/v1/ai/jira-ticket</code></td><td>Bearer</td><td>Syncs finding & patch to Atlassian Jira Cloud</td></tr>
+            <tr><td><code>POST</code></td><td><code>/api/v1/steg/scan</code></td><td>Bearer</td><td>Computes Shannon entropy on uploaded images</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SECTION 7: PRESENTATION SCRIPT -->
+    <section id="section-9">
+      <h2><span class="section-num">9.0</span> Zoom Video Presentation Script (Talking Points)</h2>
+      <p>
+        Use this structured verbal script when sharing your screen on Zoom to explain this Design Document to your professor:
+      </p>
+
+      <div class="script-box">
+        <strong>1. Opening & Architecture Introduction (~60 Seconds)</strong>
+        "Respected Professor, welcome to our System Design presentation for <strong>SentroniX</strong>. As shown in Section 2, our platform is engineered as a cloud-native, 4-tier architecture. It bridges offensive adversary emulation (Red Team), real-time WAF packet interception (Blue Team), and automated Gemini AI code remediation into a unified continuous pipeline. Everything is deployed live on Render Cloud using a multi-stage Docker container with a React/Vite frontend and an asynchronous FastAPI backend."
+      </div>
+
+      <div class="script-box">
+        <strong>2. Explaining the Formal Diagrams (~120 Seconds)</strong>
+        "Let me highlight the formal UML models in Section 4:
+        <br><br>
+        • <strong>Figure 4.1 (ERD)</strong>: Our relational schema is designed in 3rd Normal Form with strict tenant isolation. Notice that every scan, finding, remediation, and audit log is partitioned by <code>tenant_id</code>.
+        <br><br>
+        • <strong>Figure 4.2 (Use Case Diagram)</strong>: Here you see our primary actors: SecOps Analysts running autonomous Caldera APT campaigns, DevSecOps Engineers using our 1-click AI patch engine, and Administrators governing live WAF switchboard rules.
+        <br><br>
+        • <strong>Figures 4.3 & 4.4 (Sequence Diagrams)</strong>: Figure 4.3 illustrates Layer-7 packet interception during a live strike, while Figure 4.4 demonstrates how our AI engine takes a detected vulnerability, prompts Google Gemini 1.5, generates a Unified Git Diff, and immediately synchronizes with Atlassian Jira and GitHub PRs.
+        <br><br>
+        • <strong>Figure 4.6 (Algorithm Flowchart)</strong>: This details our mathematical Shannon Entropy engine: <em>H(X) = -&sum; P(x) log<sub>2</sub> P(x)</em>. When an image exceeds 7.95 entropy, it flags encrypted reverse shell payloads embedded within pixel bitplanes."
+      </div>
+
+      <div class="script-box">
+        <strong>3. Closing Statement (~30 Seconds)</strong>
+        "To conclude, SentroniX doesn't just find vulnerabilities — it actively tests defensive resilience through breach emulation, and immediately fixes the problem through automated AI code patches. All six design diagrams, API contracts, and database schemas in this document reflect our fully implemented, live production system."
+      </div>
+    </section>
+
+  </main>
+
+</body>
+</html>
