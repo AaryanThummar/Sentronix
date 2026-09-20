@@ -559,6 +559,14 @@
       <p>
         SentroniX is engineered as a decoupled, 4-tier micro-service inspired modular monolith:
       </p>
+
+      <div class="figure-container">
+        <img src="diagrams_sentronix_custom/fig_4_0_architecture.png" alt="Figure 4.0: 4-Tier Cloud Architecture">
+        <div class="figure-caption">
+          <span><strong>Figure 4.0:</strong> SentroniX 4-Tier Cloud Architecture & System Decomposition</span>
+          <span>High-Level Architecture Model</span>
+        </div>
+      </div>
       <pre>
 ┌────────────────────────────────────────────────────────────────────────┐
 │                      1. CLIENT PRESENTATION TIER                       │
@@ -807,7 +815,45 @@
       </div>
     </section>
 
-    <!-- SECTION 7: PRESENTATION SCRIPT -->
+    <!-- SECTION 7: SECURITY ARCHITECTURE -->
+    <section id="section-7">
+      <h2><span class="section-num">7.0</span> Security, Multi-Tenancy & Cryptographic Architecture</h2>
+      <div class="bento-card">
+        <ul>
+          <li><strong>Dual-Layer Password Hashing:</strong> Primary bcrypt (12 rounds) with standard library <code>hashlib.pbkdf2_hmac("sha256", ...)</code> (200,000 iterations, 16-byte random salt, constant-time verification) fallback ensuring zero cloud deployment failure.</li>
+          <li><strong>Stateless JWT Validation:</strong> HMAC-SHA256 signed access tokens with 24-hour expiration, carrying authenticated <code>sub</code> (email) and <code>tenant_id</code> payload claims.</li>
+          <li><strong>Multi-Tenant Data Isolation:</strong> Every ORM query automatically injects <code>WHERE tenant_id = :active_tenant</code>, preventing cross-tenant telemetry leaks.</li>
+          <li><strong>Layer-7 WAF Rule Engine:</strong> Abstract Syntax Tree (AST) validation for SQL injection, DOM sanitization for XSS, and link-local address filtering for SSRF.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SECTION 8: CLOUD DEPLOYMENT & CI/CD -->
+    <section id="section-8">
+      <h2><span class="section-num">8.0</span> DevOps, Cloud Deployment & CI/CD Pipeline</h2>
+      <p>
+        SentroniX is fully automated from git push to production hosting on Render Cloud PaaS using a multi-stage Docker build pipeline:
+      </p>
+
+      <div class="figure-container">
+        <img src="diagrams_sentronix_custom/fig_4_7_cicd_deployment.png" alt="Figure 4.7: Continuous CI/CD Deployment Pipeline">
+        <div class="figure-caption">
+          <span><strong>Figure 4.7:</strong> Continuous CI/CD & Multi-Stage Docker Cloud Deployment Pipeline</span>
+          <span>Automated Cloud Pipeline</span>
+        </div>
+      </div>
+
+      <div class="bento-card">
+        <ol>
+          <li><strong>Stage 1 (Frontend Compilation):</strong> Node.js 20 Alpine executes <code>vite build</code>, producing optimized, minified Single Page Application assets.</li>
+          <li><strong>Stage 2 (Backend Production Packaging):</strong> Python 3.11 slim runtime copies static frontend assets, installs pinned dependencies, and boots Uvicorn ASGI server.</li>
+          <li><strong>Automated Render Trigger:</strong> Webhook triggers deployment upon commit to <code>main</code> branch with automated zero-downtime health verification.</li>
+          <li><strong>SecOps Incident Streaming:</strong> Live deployment and vulnerability notifications broadcast instantly to the Discord Bot channel.</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- SECTION 9: PRESENTATION SCRIPT -->
     <section id="section-9">
       <h2><span class="section-num">9.0</span> Zoom Video Presentation Script (Talking Points)</h2>
       <p>

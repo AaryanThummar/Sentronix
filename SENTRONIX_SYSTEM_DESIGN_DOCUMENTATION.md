@@ -57,6 +57,8 @@ Modern enterprise cybersecurity operations suffer from three critical architectu
 
 SentroniX is designed as a modern **4-Tier Cloud Architecture**:
 
+![Figure 4.0: 4-Tier Cloud Architecture](file:///c:/Users/Keval%20Doshi/Desktop/SentroniX/diagrams_sentronix_custom/fig_4_0_architecture.png)
+
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
 │                      1. CLIENT PRESENTATION TIER                       │
@@ -326,6 +328,8 @@ All API endpoints follow strict REST conventions, consume and produce `applicati
 ---
 
 ## 8. DevOps, Cloud Deployment & CI/CD Pipeline
+
+![Figure 4.7: Continuous CI/CD Deployment Pipeline](file:///c:/Users/Keval%20Doshi/Desktop/SentroniX/diagrams_sentronix_custom/fig_4_7_cicd_deployment.png)
 
 ```
 [Developer Git Push] ──> [GitHub Repository (main)]
