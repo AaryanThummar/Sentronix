@@ -448,17 +448,25 @@ export default function AIPatchModal({ finding, isOpen = true, onClose, onRemedi
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-3 rounded-xl bg-error-container/10 border border-error-container/30 space-y-1">
-                      <span className="text-[11px] font-bold text-danger-offensive uppercase">Vulnerable Implementation</span>
-                      <pre className="text-[11px] font-mono text-rose-300 overflow-x-auto whitespace-pre-wrap">
-                        {patchData.vulnerable_snippet}
-                      </pre>
+                    <div className="p-4 rounded-xl bg-surface-container-low border border-rose-500/30 space-y-2">
+                      <span className="text-[11px] font-bold text-rose-500 dark:text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <AlertTriangle size={13} /> Vulnerable Implementation
+                      </span>
+                      <div className="p-3 rounded-lg bg-inverse-surface border border-border-strong overflow-x-auto">
+                        <pre className="text-[11px] font-mono text-rose-400 whitespace-pre-wrap">
+                          {patchData.vulnerable_snippet}
+                        </pre>
+                      </div>
                     </div>
-                    <div className="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/30 space-y-1">
-                      <span className="text-[11px] font-bold text-emerald-400 uppercase">Patched Implementation</span>
-                      <pre className="text-[11px] font-mono text-emerald-300 overflow-x-auto whitespace-pre-wrap">
-                        {patchData.remediated_snippet}
-                      </pre>
+                    <div className="p-4 rounded-xl bg-surface-container-low border border-emerald-500/30 space-y-2">
+                      <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <CheckCircle2 size={13} /> Patched Implementation
+                      </span>
+                      <div className="p-3 rounded-lg bg-inverse-surface border border-border-strong overflow-x-auto">
+                        <pre className="text-[11px] font-mono text-emerald-400 whitespace-pre-wrap font-medium">
+                          {patchData.remediated_snippet}
+                        </pre>
+                      </div>
                     </div>
                   </div>
                 </div>
