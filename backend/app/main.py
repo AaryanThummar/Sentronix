@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.database import engine, Base
-from app.api.v1 import auth, steg, dashboard, defense, app_defense, ai, red_team
+from app.api.v1 import auth, steg, dashboard, defense, app_defense, ai, red_team, reports
 from app.models import user, vulnerability, steg as steg_model
 
 # Initialize DB tables (for SQLite ease of use without Alembic initially)
@@ -27,6 +27,7 @@ app.include_router(defense.router, prefix="/api/v1/defense", tags=["Defensive To
 app.include_router(app_defense.router, prefix="/api/v1/defense/app", tags=["App & Code-Level Defense"])
 app.include_router(ai.router, prefix="/api/v1/ai", tags=["AI Remediation"])
 app.include_router(red_team.router, prefix="/api/v1/red-team", tags=["Red Team Simulator"])
+app.include_router(reports.router, prefix="/api/v1/reports", tags=["Reports"])
 
 # Mount compiled frontend SPA if available (for single-port, zero-docker execution)
 dist_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../frontend/dist"))
