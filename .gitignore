@@ -63,3 +63,7 @@ Chapter_*.docx
 # Personal Presentation & Testing Guides (Never upload to Git)
 *ZOOM_PRESENTATION_AND_RECORDING_GUIDE*
 *PURPLE_TEAM_ARENA_TESTING_GUIDE*
+
+# Discord Bot & Launchers (Local only)
+run_discord_bot.bat
+backend/app/workers/discord_bot.py
