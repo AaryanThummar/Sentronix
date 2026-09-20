@@ -4,13 +4,13 @@ from app.core.database import get_db
 from app.services.ai_engine import ai_engine
 from app.models.vulnerability import UnifiedFinding
 from pydantic import BaseModel
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Union
 
 router = APIRouter()
 
 class PatchRequest(BaseModel):
-    id: Optional[str] = None
-    title: str
+    id: Optional[Union[str, int]] = None
+    title: Optional[str] = "Security Vulnerability"
     tool: Optional[str] = "Security Scanner"
     severity: Optional[str] = "HIGH"
     location: Optional[str] = "app/main.py"
@@ -18,7 +18,7 @@ class PatchRequest(BaseModel):
     api_key: Optional[str] = None
 
 class RemediateRequest(BaseModel):
-    id: str  # e.g. "finding-1" or "steg-2"
+    id: Union[str, int]  # e.g. "finding-1" or "steg-2" or 1
     patch_applied: Optional[str] = None
 
 class JiraTicketRequest(BaseModel):
@@ -55,9 +55,10 @@ def mark_remediated(payload: RemediateRequest, db: Session = Depends(get_db)):
     """
     Marks a vulnerability as remediated, updating its record in the database.
     """
-    if payload.id.startswith("finding-"):
+    id_str = str(payload.id)
+    if id_str.startswith("finding-") or id_str.isdigit():
         try:
-            finding_id = int(payload.id.replace("finding-", ""))
+            finding_id = int(id_str.replace("finding-", ""))
             finding = db.query(UnifiedFinding).filter(UnifiedFinding.id == finding_id).first()
             if finding:
                 finding.ai_remediation_patch = payload.patch_applied or "Remediated via SentroniX AI Patch"

@@ -62,12 +62,12 @@ export default function AIPatchModal({ finding, isOpen = true, onClose, onRemedi
           ...(keyToUse ? { 'X-Gemini-API-Key': keyToUse } : {})
         },
         body: JSON.stringify({
-          id: finding.id,
-          title: finding.title,
-          tool: finding.tool,
-          severity: finding.severity,
-          location: finding.location,
-          description: finding.description,
+          id: finding.id != null ? String(finding.id) : null,
+          title: finding.title || 'Security Vulnerability',
+          tool: finding.tool || 'Security Scanner',
+          severity: finding.severity || 'HIGH',
+          location: finding.location || 'app/main.py',
+          description: finding.description || '',
           api_key: keyToUse || null
         })
       })
