@@ -28,10 +28,15 @@
    - [Figure 4.5: Activity Diagram: End-to-End DevSecOps Security Lifecycle](#figure-45-activity-diagram-end-to-end-devsecops-security-lifecycle)
    - [Figure 4.6: Algorithm Flowchart: Shannon Entropy & Multi-Layer Threat Scoring](#figure-46-algorithm-flowchart-shannon-entropy--multi-layer-threat-scoring)
 5. [Data Design & Comprehensive Data Dictionary](#5-data-design--comprehensive-data-dictionary)
-6. [Component & RESTful API Interface Design](#6-component--restful-api-interface-design)
-7. [Security, Multi-Tenancy & Cryptographic Architecture](#7-security-multi-tenancy--cryptographic-architecture)
-8. [DevOps, Cloud Deployment & CI/CD Pipeline](#8-devops-cloud-deployment--cicd-pipeline)
-9. [Zoom Video Presentation Script & Talking Points for Professor Review](#9-zoom-video-presentation-script--talking-points-for-professor-review)
+6. [Software Project Management & Scheduling Models (WBS, AON, AOA, CPM)](#6-software-project-management--scheduling-models-wbs-aon-aoa-cpm)
+   - [Figure 6.1: Work Breakdown Structure (WBS) Hierarchical Model](#61-work-breakdown-structure-wbs)
+   - [Figure 6.2: Activity-on-Node (AON) Precedence Network Diagram](#62-activity-on-node-aon-precedence-network-diagram)
+   - [Figure 6.3: Activity-on-Arrow (AOA) Milestone Network Diagram](#63-activity-on-arrow-aoa-milestone-network-diagram)
+   - [Figure 6.4: Critical Path Method (CPM) Network Diagram & Slack Analysis](#64-critical-path-method-cpm-network--mathematical-analysis)
+7. [Component & RESTful API Interface Design](#7-component--restful-api-interface-design)
+8. [Security, Multi-Tenancy & Cryptographic Architecture](#8-security-multi-tenancy--cryptographic-architecture)
+9. [DevOps, Cloud Deployment & CI/CD Pipeline](#9-devops-cloud-deployment--cicd-pipeline)
+10. [Zoom Video Presentation Script & Talking Points for Professor Review](#10-zoom-video-presentation-script--talking-points-for-professor-review)
 
 ---
 
@@ -284,16 +289,101 @@ Granular database record for each identified vulnerability.
 
 ---
 
-## 6. Component & RESTful API Interface Design
+## 6. Software Project Management & Scheduling Models (WBS, AON, AOA, CPM)
+
+To ensure disciplined engineering execution, rigorous resource allocation, and predictable delivery of the SentroniX platform, formal **Software Project Management (SPM)** modeling was conducted. This section details the Work Breakdown Structure (WBS), Activity-on-Node (AON) precedence network, Activity-on-Arrow (AOA) milestone network, and the mathematical Critical Path Method (CPM) calculations governing the project lifecycle.
+
+### 6.1 Work Breakdown Structure (WBS)
+The Work Breakdown Structure (WBS) decomposes the SentroniX platform into a hierarchical tree of manageable deliverables, phases, work packages, and actionable tasks. The breakdown spans six core phases: Planning & Requirements, Core Security Engine, Autonomous Purple Team Arena, Generative AI & DevSecOps Ecosystem, Frontend & Extension Presentation, and Master QA & Cloud Deployment.
+
+![Figure 6.1: Work Breakdown Structure (WBS)](file:///c:/Users/Keval%20Doshi/Desktop/SentroniX/diagrams_sentronix_custom/fig_5_1_wbs.png)
+
+| WBS Code | Work Package Name | Lead Subtasks & Deliverables | Engineering Focus |
+| :--- | :--- | :--- | :--- |
+| **1.0** | **Planning & Requirements** | 1.1 Threat Modeling, 1.2 MITRE ATT&CK Mapping, 1.3 Multi-tenant Workspace Isolation Reqs, 1.4 SDD Architecture Spec | Security Architecture & Domain Scoping |
+| **2.0** | **Core Engine & Active Defense** | 2.1 FastAPI Asynchronous Endpoints, 2.2 PBKDF2/JWT Stateless IAM, 2.3 Layer-7 WAF Rule Switchboard, 2.4 Relational 3NF Schemas | Backend & Gateway Infrastructure |
+| **3.0** | **Purple Team Offensive Arena** | 3.1 Atomic Strikes Engine, 3.2 MITRE Caldera 3-Stage APT Campaigns, 3.3 SecLists Path Fuzzer, 3.4 LSB Steganography Shannon Entropy | Autonomous Red/Blue Orchestration |
+| **4.0** | **AI Remediation & DevSecOps** | 4.1 Google Gemini 1.5/3.6 Flash LLM Pipeline, 4.2 Unified Git Diff Engine, 4.3 Atlassian Jira Cloud Sync, 4.4 GitHub PR Branch Staging | Automated Closed-Loop Remediation |
+| **5.0** | **Client Presentation & Extension** | 5.1 React 18 / Vite SPA Client, 5.2 Bento Telemetry Dashboard & Smooth Tabs, 5.3 Sliding Vulnerability Drawer, 5.4 Active Defense Chrome Extension V3 | Frontend UX & Browser Protection |
+| **6.0** | **Master QA, CI/CD & Deployment** | 6.1 16-Point Automated Test Suite, 6.2 Multi-Stage Dockerfile Compilation, 6.3 Render Cloud 24/7 Deployment, 6.4 Academic SDD & User Manuals | Quality Assurance & Production Release |
+
+---
+
+### 6.2 Activity-on-Node (AON) Precedence Network Diagram
+The Activity-on-Node (AON) precedence diagram represents tasks as rectangular nodes and task dependencies as directional arrows. It defines Finish-to-Start (FS) logical relationships across parallel development streams, illustrating how backend, frontend, security, and AI modules develop concurrently and converge at critical milestones.
+
+![Figure 6.2: Activity-on-Node (AON) Precedence Network Diagram](file:///c:/Users/Keval%20Doshi/Desktop/SentroniX/diagrams_sentronix_custom/fig_5_2_aon.png)
+
+**Key Topological Insights from the SentroniX AON Diagram**:
+- **High Concurrency**: Following the completion of Task B (*System Architecture*), three major workstreams execute in parallel: Task C (*FastAPI Backend Core*), Task D (*Layer-7 WAF Engine*), and Task E (*React 18 Frontend Client*).
+- **Convergence Gates**: Task K (*End-to-End System Integration*) serves as the primary convergence gate, requiring successful completion of Task F (*Red Team Strikes*), Task G (*Steganography Analyzer*), Task I (*Jira & GitHub PR Sync*), and Task J (*Browser Extension V3*) before full system test harnesses can execute.
+
+---
+
+### 6.3 Activity-on-Arrow (AOA) Milestone Network Diagram
+The Activity-on-Arrow (AOA) network diagram, also known as the Arrow Diagramming Method (ADM), represents activities as directional arrows connecting numbered circular event (milestone) nodes. An event node represents a distinct point in time signifying the completion of preceding activities and the commencement of succeeding activities.
+
+![Figure 6.3: Activity-on-Arrow (AOA) Milestone Network Diagram](file:///c:/Users/Keval%20Doshi/Desktop/SentroniX/diagrams_sentronix_custom/fig_5_3_aoa.png)
+
+**Role of Dummy Activities in SentroniX AOA Modeling**:  
+Under formal AOA modeling rules, no two event nodes may be connected by more than one activity arrow, and dependencies without direct predecessor time consumption must be modeled via zero-duration "Dummy" activities (represented by dashed arrows):
+- **Dummy d1 (Node 4 $\to$ Node 6)**: Enforces that Atomic Red Team strikes (Task F) cannot proceed without the underlying WAF tokenization engine (Task D), even though Task F's primary duration stems from the backend runner (Task C).
+- **Dummy d2 (Node 4 $\to$ Node 7)**: Represents the prerequisite of Layer-7 inspection headers for the image Steganography engine (Task G).
+- **Dummy d5 (Node 9 $\to$ Node 10)**: Chains the completion of Jira/GitHub automated DevSecOps synchronization directly into the E2E Platform Integration milestone (Node 10).
+
+---
+
+### 6.4 Critical Path Method (CPM) Network & Mathematical Analysis
+The Critical Path Method (CPM) is a mathematically rigorous project scheduling technique used to identify the longest sequence of dependent tasks and determine the absolute minimum project completion time. Tasks on the critical path possess zero Total Slack (Float); any delay in a critical task directly causes a day-for-day delay in the final delivery of the SentroniX platform.
+
+![Figure 6.4: Critical Path Method (CPM) Network Diagram](file:///c:/Users/Keval%20Doshi/Desktop/SentroniX/diagrams_sentronix_custom/fig_5_4_cpm.png)
+
+**Mathematical Formulas**:
+- **Forward Pass (Early Dates)**:
+  $$\text{Earliest Start (ES)} = \max(\text{EF of all Predecessors})$$
+  $$\text{Earliest Finish (EF)} = \text{ES} + \text{Duration}$$
+- **Backward Pass (Late Dates)**:
+  $$\text{Latest Finish (LF)} = \min(\text{LS of all Successors})$$
+  $$\text{Latest Start (LS)} = \text{LF} - \text{Duration}$$
+- **Total Float / Slack**:
+  $$\text{Total Slack} = \text{LS} - \text{ES} = \text{LF} - \text{EF}$$
+- **Critical Path Condition**: A task is Critical if and only if $\text{Slack} = 0$.
+
+#### CPM Schedule Calculation Table
+| Task ID | Activity Description | Predecessors | Dur (Days) | ES | EF | LS | LF | Total Slack | Critical? |
+| :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **A** | Threat Modeling & Requirements Definition | None | 5 | 0 | 5 | 0 | 5 | 0 | **YES (Critical)** |
+| **B** | System Architecture & Schema Design | A | 5 | 5 | 10 | 5 | 10 | 0 | **YES (Critical)** |
+| **C** | FastAPI Asynchronous Engine & Multi-Tenant IAM | B | 8 | 10 | 18 | 10 | 18 | 0 | **YES (Critical)** |
+| **D** | Layer-7 WAF Rule Switchboard & Tokenizer | B | 7 | 10 | 17 | 15 | 22 | 5 | NO (Float = 5d) |
+| **E** | React 18 / Vite SPA Client & Bento Dashboard | B | 8 | 10 | 18 | 18 | 26 | 8 | NO (Float = 8d) |
+| **F** | MITRE ATT&CK Atomic Strikes & Caldera Runner | C, D | 10 | 18 | 28 | 22 | 32 | 4 | NO (Float = 4d) |
+| **G** | Shannon Entropy LSB Steganography Engine | C, D | 6 | 18 | 24 | 26 | 32 | 8 | NO (Float = 8d) |
+| **H** | Gemini 1.5 AI Code Remediation & Git Diff | C | 9 | 18 | 27 | 18 | 27 | 0 | **YES (Critical)** |
+| **I** | Atlassian Jira Cloud & GitHub PR Automation | H | 5 | 27 | 32 | 27 | 32 | 0 | **YES (Critical)** |
+| **J** | Active Defense Chromium Browser Extension V3 | E | 6 | 18 | 24 | 26 | 32 | 8 | NO (Float = 8d) |
+| **K** | Full Platform End-to-End System Integration | F, G, I, J | 7 | 32 | 39 | 32 | 39 | 0 | **YES (Critical)** |
+| **L** | Master QA Verification Suite & Security Tests | K | 6 | 39 | 45 | 39 | 45 | 0 | **YES (Critical)** |
+| **M** | Multi-Stage Docker Packaging & Render Deploy | L | 4 | 45 | 49 | 45 | 49 | 0 | **YES (Critical)** |
+| **N** | Master SDD, User Manual & CISO Defense Sign-off | M | 3 | 49 | 52 | 49 | 52 | 0 | **YES (Critical)** |
+
+> **Critical Path Analysis & Engineering Takeaway**:  
+> **Critical Path**: $\mathbf{A \rightarrow B \rightarrow C \rightarrow H \rightarrow I \rightarrow K \rightarrow L \rightarrow M \rightarrow N}$  
+> **Total Project Duration**: **52 Working Days (10.4 Weeks)**.  
+> **Strategic Scheduling Insight**: The AI Remediation and DevSecOps workstream (Tasks C $\to$ H $\to$ I) forms the governing critical path rather than the offensive strikes (Task F) or frontend UI (Task E). Developing Google Gemini LLM prompt engineering, synthesizing valid Unified Git Diffs, and implementing Atlassian Jira Cloud OAuth/REST integrations took 14 sequential working days (Tasks H + I), whereas the Red Team engine took 10 days (Slack = 4d) and the React UI had 8 days of slack. This empirical project management finding guided our agile sprint allocation, ensuring senior engineering focus remained on the AI and Jira integration pipeline.
+
+---
+
+## 7. Component & RESTful API Interface Design
 
 All API endpoints follow strict REST conventions, consume and produce `application/json`, and enforce token authentication via `Authorization: Bearer <JWT>` and workspace partition headers (`X-Tenant-ID`).
 
-### 6.1 Authentication & Workspace API (`/api/v1/auth`)
+### 7.1 Authentication & Workspace API (`/api/v1/auth`)
 - `POST /api/v1/auth/register`: Creates isolated tenant credentials.
 - `POST /api/v1/auth/login`: Authenticates user; issues stateless JWT access token.
 - `GET /api/v1/auth/me`: Returns current user session details and active tenant workspace.
 
-### 6.2 Purple Team & Adversary Emulation API (`/api/v1/red-team`)
+### 7.2 Purple Team & Adversary Emulation API (`/api/v1/red-team`)
 - `GET /api/v1/red-team/scenarios`: Returns catalog of 8+ MITRE ATT&CK atomic strike scenarios.
 - `POST /api/v1/red-team/atomic-strike`: Fires an atomic strike against an endpoint and records WAF interception telemetry.
 - `GET /api/v1/red-team/campaigns`: Lists multi-phase APT profiles (e.g. APT-29 Cozy Bear).
@@ -302,17 +392,17 @@ All API endpoints follow strict REST conventions, consume and produce `applicati
 - `POST /api/v1/red-team/live-scan`: Launches customizable HTTP payload bursts against any public target URL.
 - `POST /api/v1/red-team/waf-rules/toggle`: Dynamically enables/disables specific defensive filters.
 
-### 6.3 AI Remediation & DevSecOps API (`/api/v1/ai`)
+### 7.3 AI Remediation & DevSecOps API (`/api/v1/ai`)
 - `POST /api/v1/ai/remediate`: Sends finding context to Gemini LLM; returns Unified Git Diff.
 - `POST /api/v1/ai/jira-ticket`: Posts an issue with CVSS score and attached diff to Jira Cloud.
 - `POST /api/v1/ai/github-pr`: Stages the remediation patch into a remote git branch via GitHub API.
 
-### 6.4 Steganography & Data Inspection API (`/api/v1/steg`)
+### 7.4 Steganography & Data Inspection API (`/api/v1/steg`)
 - `POST /api/v1/steg/scan`: Accepts multipart file upload; performs Shannon entropy analysis and LSB byteplane extraction; returns threat verdict and entropy chart data.
 
 ---
 
-## 7. Security, Multi-Tenancy & Cryptographic Architecture
+## 8. Security, Multi-Tenancy & Cryptographic Architecture
 
 1. **Dual-Layer Password Storage**:
    - Primary: `passlib` with `bcrypt` (12 rounds).
@@ -327,9 +417,9 @@ All API endpoints follow strict REST conventions, consume and produce `applicati
 
 ---
 
-## 8. DevOps, Cloud Deployment & CI/CD Pipeline
+## 9. DevOps, Cloud Deployment & CI/CD Pipeline
 
-![Figure 4.7: Continuous CI/CD Deployment Pipeline](file:///c:/Users/Keval%20Doshi/Desktop/SentroniX/diagrams_sentronix_custom/fig_4_7_cicd_deployment.png)
+![Figure 9.1: Continuous CI/CD Deployment Pipeline](file:///c:/Users/Keval%20Doshi/Desktop/SentroniX/diagrams_sentronix_custom/fig_4_7_cicd_deployment.png)
 
 ```
 [Developer Git Push] ──> [GitHub Repository (main)]
@@ -354,7 +444,7 @@ All API endpoints follow strict REST conventions, consume and produce `applicati
 
 ---
 
-## 9. Zoom Video Presentation Script & Talking Points for Professor Review
+## 10. Zoom Video Presentation Script & Talking Points for Professor Review
 
 > **Tips for Presenter (Keval Doshi)**:  
 > When recording your Zoom video, share this document on your screen or open the accompanying diagrams. Use the script below as your guide:
@@ -364,12 +454,18 @@ All API endpoints follow strict REST conventions, consume and produce `applicati
 > *As shown in Section 2 of our Design Document, SentroniX is engineered as a cloud-native, 4-tier architecture. It bridges offensive adversary emulation (Red Team), real-time WAF packet interception (Blue Team), and automated Gemini AI code remediation into a single continuous pipeline.*  
 > *Everything is deployed live on Render Cloud using a multi-stage Docker container with a React/Vite frontend and a high-performance asynchronous FastAPI backend."*
 
-### Explaining the Formal Diagrams (Time: ~2 Minutes)
-> *"Let me guide you through the formal UML models and design artifacts in Section 4:*
-> 1. ***Figure 4.1 (ERD & Database Schema)***: *We designed our database in 3rd Normal Form with strict tenant isolation. Notice how every scan, finding, remediation, and audit log is partitioned by `tenant_id`, ensuring enterprise-grade multi-tenancy.*
-> 2. ***Figure 4.2 (Use Case Diagram)***: *Here you see our actor interactions. SecOps Analysts trigger MITRE Caldera campaigns and compliance audits; DevSecOps Engineers use our 1-click AI patch engine and Jira sync; Administrators govern real-time WAF policies.*
-> 3. ***Figure 4.3 & 4.4 (Sequence Diagrams)***: *Figure 4.3 illustrates our Layer-7 packet inspection during a strike, while Figure 4.4 demonstrates how our AI engine takes a detected vulnerability, prompts Google Gemini 1.5, generates a Unified Git Diff, and immediately synchronizes with Atlassian Jira and GitHub PRs.*
-> 4. ***Figure 4.5 & 4.6 (Activity & Algorithm Models)***: *Figure 4.6 details our mathematical Shannon Entropy engine: $H(X) = -\sum P(x) \log_2 P(x)$. If an image's entropy exceeds $7.95$, it indicates high-entropy encrypted shellcode concealed within pixel bitplanes, triggering immediate quarantine.*
+### Explaining the Formal UML Diagrams & Algorithms (Time: ~2 Minutes)
+> *"Let me guide you through the formal UML models and design artifacts in Section 4:*  
+> 1. ***Figure 4.1 (ERD & Database Schema)***: *We designed our database in 3rd Normal Form with strict tenant isolation. Notice how every scan, finding, remediation, and audit log is partitioned by `tenant_id`, ensuring enterprise-grade multi-tenancy.*  
+> 2. ***Figure 4.2 (Use Case Diagram)***: *Here you see our actor interactions. SecOps Analysts trigger MITRE Caldera campaigns and compliance audits; DevSecOps Engineers use our 1-click AI patch engine and Jira sync; Administrators govern real-time WAF policies.*  
+> 3. ***Figure 4.3 & 4.4 (Sequence Diagrams)***: *Figure 4.3 illustrates our Layer-7 packet inspection during a strike, while Figure 4.4 demonstrates how our AI engine takes a detected vulnerability, prompts Google Gemini 1.5, generates a Unified Git Diff, and immediately synchronizes with Atlassian Jira and GitHub PRs.*  
+> 4. ***Figure 4.5 & 4.6 (Activity & Algorithm Models)***: *Figure 4.6 details our mathematical Shannon Entropy engine: $H(X) = -\sum P(x) \log_2 P(x)$. If an image's entropy exceeds $7.95$, it indicates high-entropy encrypted shellcode concealed within pixel bitplanes, triggering immediate quarantine.*"
 
-### Closing & Industry Relevance (Time: ~30 Seconds)
-> *"To conclude, SentroniX doesn't just find vulnerabilities — it actively proves defensive resilience through breach emulation, and immediately fixes the problem through automated AI code patches. All six design diagrams, API contracts, and database schemas in this document reflect our fully implemented, live production system."*
+### Software Project Management, Scheduling & Critical Path (Time: ~90 Seconds)
+> *"Moving to Section 6, let me walk you through our Software Project Management models:*  
+> - ***Figure 6.1 (WBS)***: *We systematically decomposed SentroniX into six core phases, breaking down high-level objectives into 24 discrete work packages from initial threat modeling to Render cloud deployment.*  
+> - ***Figure 6.2 (AON Network)***: *Our Activity-on-Node precedence model highlights the parallel tracks we executed — concurrent development of the FastAPI core backend, Layer-7 WAF switchboard, and React frontend, all converging into Task K for E2E integration.*  
+> - ***Figure 6.3 (AOA Network)***: *In our Activity-on-Arrow diagram, you can see how milestones are sequenced with numbered event nodes, using dummy activities (d1 through d5) to enforce logical dependencies between WAF tokenization and offensive strike execution.*  
+> - ***Figure 6.4 (CPM & Slack Analysis)***: *We computed the Forward and Backward passes across all 14 project activities. As proven in Table 6.4, our Critical Path is A $\to$ B $\to$ C $\to$ H $\to$ I $\to$ K $\to$ L $\to$ M $\to$ N, totaling exactly 52 working days. Because Tasks H (Gemini AI Patching) and I (Jira/GitHub Sync) had zero slack, they governed the overall release schedule, while the WAF and Frontend workstreams enjoyed 5 to 8 days of float.*"
+
+> *"To conclude, SentroniX doesn't just find vulnerabilities — it actively proves defensive resilience through breach emulation, and immediately fixes the problem through automated AI code patches. All twelve design and SPM diagrams, API contracts, mathematical models, and database schemas in this document reflect our fully implemented, live production system."*
